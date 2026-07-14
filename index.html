@@ -286,6 +286,24 @@
   <div class="cols">
   <div>
 
+  <!-- 실시간 고래 체결 -->
+  <section style="margin-top:0;margin-bottom:22px">
+    <h2>🐋 실시간 고래 체결 <span class="help">?<span class="tip">한 번에 10만 달러(약 1.5억원) 이상 체결된 대형 거래만 골라 보여줘요. 큰손(고래)들의 매수·매도 흐름은 단기 방향을 가늠하는 참고 지표로 쓰여요.</span></span></h2>
+    <div class="whale-card">
+      <div class="whale-verdict">
+        <div class="wv-emoji" id="wvEmoji">🐋</div>
+        <div>
+          <div class="wv-title" id="wvTitle">고래 체결 수집 중…</div>
+          <div class="wv-sub" id="wvSub">대형 체결이 쌓이면 지금 흐름을 쉽게 해석해드려요</div>
+        </div>
+      </div>
+      <div class="lsbar" id="whaleBar" style="display:none">
+        <div class="l" id="wbL">매수</div><div class="s" id="wbS">매도</div>
+      </div>
+      <div class="whale-list" id="whaleList"><div class="err">실시간 연결 중… $100K 이상 대형 체결이 나오면 바로 표시돼요</div></div>
+    </div>
+  </section>
+
   <!-- 핵심 지표 타일 -->
   <div class="tiles">
     <div class="tile">
@@ -337,25 +355,6 @@
         <div class="chart-hint">차트 위에서 지표 추가·그림·시간대 변경 가능 📊</div>
       </div>
       <div class="tv-wrap"><div id="tvchart"></div></div>
-    </div>
-  </section>
-
-  <!-- 실시간 고래 체결 -->
-  <section>
-    <h2>🐋 실시간 고래 체결 <span class="help">?<span class="tip">한 번에 10만 달러(약 1.5억원) 이상 체결된 대형 거래만 골라 보여줘요. 큰손(고래)들의 매수·매도 흐름은 단기 방향을 가늠하는 참고 지표로 쓰여요.</span></span></h2>
-    <div class="whale-card">
-      <div class="whale-verdict">
-        <div class="wv-emoji" id="wvEmoji">🐋</div>
-        <div>
-          <div class="wv-title" id="wvTitle">고래 체결 수집 중…</div>
-          <div class="wv-sub" id="wvSub">대형 체결이 쌓이면 지금 흐름을 쉽게 해석해드려요</div>
-        </div>
-      </div>
-      <div class="lsbar" id="whaleBar" style="display:none">
-        <div class="l" id="wbL">매수</div><div class="s" id="wbS">매도</div>
-      </div>
-      <div class="whale-list" id="whaleList"><div class="err">실시간 연결 중… $100K 이상 대형 체결이 나오면 바로 표시돼요</div></div>
-      <div class="whale-note">* 참고용 해석이며, 실제 가격은 다르게 움직일 수 있습니다.</div>
     </div>
   </section>
 
