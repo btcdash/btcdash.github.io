@@ -650,20 +650,40 @@ async function loadChat(){
 // ---- 실시간 고래 체결 (바이낸스 웹소켓) ----
 const WHALE_MIN = 50_000;   // 표시 기준: $50K 이상
 let whales = [];
+function handleWhaleTrade(t){
+  const usd = parseFloat(t.p)*parseFloat(t.q);
+  if(usd < WHALE_MIN) return;
+  whales.unshift({time: t.T||Date.now(), side: t.m?'sell':'buy', usd, price:parseFloat(t.p)});
+  if(whales.length>30) whales.length = 30;
+  renderWhales();
+}
+// 실시간 연결이 막힌 환경(일부 회사망 등)을 대비해 3단계 자동 전환:
+// 선물 실시간 → 현물 실시간 → 5초 주기 조회
+function whaleTryWs(url, onDead){
+  let got=false, ws;
+  try{ ws = new WebSocket(url); }catch(e){ onDead(); return; }
+  const watchdog = setTimeout(()=>{ if(!got){ try{ws.close();}catch(e){} } }, 15000);
+  ws.onmessage = ev=>{ got=true; handleWhaleTrade(JSON.parse(ev.data)); };
+  ws.onclose = ()=>{
+    clearTimeout(watchdog);
+    if(got) setTimeout(()=>whaleTryWs(url, onDead), 3000);   // 잘 되다 끊김 → 같은 곳 재연결
+    else onDead();                                            // 데이터가 안 옴 → 다음 방식으로
+  };
+  ws.onerror = ()=>{ try{ws.close();}catch(e){} };
+}
+function whaleRestPoll(){
+  let lastId = 0;
+  setInterval(async ()=>{
+    try{
+      const j = await fetch('https://fapi.binance.com/fapi/v1/aggTrades?symbol=BTCUSDT&limit=100').then(r=>r.json());
+      if(Array.isArray(j)) j.forEach(t=>{ if(t.a>lastId){ lastId=t.a; handleWhaleTrade(t); } });
+    }catch(e){}
+  }, 5000);
+}
 function whaleConnect(){
-  try{
-    const ws = new WebSocket('wss://fstream.binance.com/ws/btcusdt@aggTrade');
-    ws.onmessage = ev=>{
-      const t = JSON.parse(ev.data);
-      const usd = parseFloat(t.p)*parseFloat(t.q);
-      if(usd < WHALE_MIN) return;
-      whales.unshift({time:Date.now(), side: t.m?'sell':'buy', usd, price:parseFloat(t.p)});
-      if(whales.length>30) whales.length = 30;
-      renderWhales();
-    };
-    ws.onclose = ()=>setTimeout(whaleConnect, 3000);   // 끊기면 자동 재연결
-    ws.onerror = ()=>{ try{ws.close();}catch(e){} };
-  }catch(e){ setTimeout(whaleConnect, 5000); }
+  whaleTryWs('wss://fstream.binance.com/ws/btcusdt@aggTrade', ()=>
+    whaleTryWs('wss://stream.binance.com:9443/ws/btcusdt@aggTrade', ()=>
+      whaleRestPoll()));
 }
 function renderWhales(){
   const list=$('whaleList');
