@@ -210,7 +210,7 @@
     </div>
     <div class="cta-group">
       <a class="cta ask" href="https://telegram.me/richtrading_support_bot" target="_blank">💬 문의·건의</a>
-      <a class="cta" id="refLink" href="#" target="_blank">거래소 수수료 페이백 받기 →</a>
+      <a class="cta" id="refLink" href="https://telegram.me/richtrading_support_bot" target="_blank">💰 페이백 가입 문의 →</a>
     </div>
   </header>
 
@@ -251,17 +251,17 @@
       </div>
       <div class="ad-row">
         <div>
-          <span class="ad-badge">🤝 리치 제휴 거래소</span>
-          <div class="ad-title"><span class="gold">TAPBIT</span> 가입하고 혜택 받자!</div>
-          <div class="ad-sub">리치를 통해 가입하면 아래 혜택을 전부 챙길 수 있어요 — 문의 주시면 바로 안내해드립니다</div>
+          <span class="ad-badge">🤝 리치 × 탭비트 공식 제휴</span>
+          <div class="ad-title"><span class="gold">탭비트</span>, 리치로 가입하면<br>혜택이 다릅니다</div>
+          <div class="ad-sub">✅ 코인마켓캡(CMC) 등재 글로벌 정식 거래소 · 아래 혜택은 리치 경유 가입 시 적용돼요</div>
         </div>
-        <span class="ad-cta">💬 가입 문의하고 혜택 받기 →</span>
+        <span class="ad-cta">💬 1:1 문의로 혜택 안내받기 →</span>
       </div>
       <div class="ad-feats">
         <div class="f"><i>💸</i><div><b>수수료 페이백</b><span>거래할 때마다 수수료 환급</span></div></div>
-        <div class="f"><i>🎁</i><div><b>리워드 · 쿠폰</b><span>입금·거래 미션 보상 지급</span></div></div>
-        <div class="f"><i>🎉</i><div><b>각종 이벤트</b><span>시즌별 이벤트 혜택 안내</span></div></div>
-        <div class="f"><i>🏆</i><div><b>트레이딩 대회</b><span>상금 걸린 대회 참여 기회</span></div></div>
+        <div class="f"><i>🎁</i><div><b>리워드 · 쿠폰</b><span>입금·거래 미션 보상</span></div></div>
+        <div class="f"><i>🎉</i><div><b>각종 이벤트</b><span>시즌별 혜택 우선 안내</span></div></div>
+        <div class="f"><i>🏆</i><div><b>트레이딩 대회</b><span>상금 걸린 대회 참여</span></div></div>
       </div>
     </a>
 
@@ -407,9 +407,9 @@ const cls = n => n>0?'up':(n<0?'down':'neutral');
 // ===== 링크 설정 (여기만 바꾸면 됨) =====
 const REFERRAL_URL = 'https://www.tapbit.com/auth/KYSMLSK';   // 텝비트 페이백(레퍼럴) 가입 주소
 const TELEGRAM_URL = 'https://telegram.me/+zPgdJPId5_tmMDY9';   // 텔레그램 소통방 주소
-if (REFERRAL_URL !== '#'){ $('refLink').href = REFERRAL_URL; }   // 우상단 버튼만 직접 가입 링크
 if (TELEGRAM_URL !== '#'){ $('ad1').href = TELEGRAM_URL; }
-// 탭비트 배너(ad0)는 문의봇으로 연결 (HTML에 직접 지정됨)
+// 우상단 버튼·탭비트 배너 모두 문의봇으로 연결 (HTML에 직접 지정됨)
+// 레퍼럴 직접 링크: REFERRAL_URL — 문의 응대 시 개별 전달용으로만 사용
 
 // ---- 배너 롤링 (8초마다) ----
 let adIdx = 0;
