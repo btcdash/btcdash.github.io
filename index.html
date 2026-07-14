@@ -64,7 +64,8 @@
   .g-zoom{background:var(--surface2);border:1px solid var(--border);color:var(--ink2);font-size:11px;font-weight:700;padding:4px 9px;border-radius:6px;cursor:pointer}
   .g-zoom:hover{color:var(--ink);border-color:var(--ink3)}
   .g-chart-wrap{border:1px solid var(--border);border-radius:10px;background:#0a0e15;padding:6px 4px;margin-bottom:8px}
-  #gChart{width:100%;height:110px;display:block}
+  #gChart{width:100%;height:175px;display:block}
+  .g-livebadge{font-size:10px;color:#22c55e;font-weight:700;animation:chatpulse 2s infinite;margin-right:3px}
   /* 차트 확대 모달 */
   #gChartModal{position:fixed;inset:0;z-index:100003;background:rgba(0,0,0,.85);display:none;flex-direction:column;padding:16px}
   #gChartModal.show{display:flex}
@@ -350,14 +351,18 @@
   <!-- 모의 트레이딩 게임 (왼쪽) -->
   <aside class="gamebox">
     <div class="game-head">🎮 모의 트레이딩 <span class="help">?<span class="tip">가상 시드 100만원으로 진짜 BTC 시세에 베팅하는 연습 게임이에요. 실제 돈이 아니니 부담 없이 연습해보세요. 기록은 이 브라우저에 저장돼요.</span></span></div>
-    <div class="g-price"><b id="gPrice">—</b><span>BTC/USDT 실시간</span></div>
     <div class="g-chart-top">
       <div class="g-tf" id="gTfTabs">
         <button data-tf="1m" class="on">1분</button>
         <button data-tf="5m">5분</button>
         <button data-tf="15m">15분</button>
       </div>
-      <button class="g-zoom" id="gZoom" title="크게 보기">⛶ 확대</button>
+      <div style="display:flex;gap:4px;align-items:center">
+        <span class="g-livebadge">● 실시간</span>
+        <button class="g-zoom" id="gZoomIn" title="확대">＋</button>
+        <button class="g-zoom" id="gZoomOut" title="축소">－</button>
+        <button class="g-zoom" id="gZoom" title="전체화면">⛶</button>
+      </div>
     </div>
     <div class="g-chart-wrap"><svg id="gChart" preserveAspectRatio="none"></svg></div>
     <div class="g-eq"><span>내 시드</span><b id="gEquity">—</b></div>
@@ -909,12 +914,13 @@ const krwFmt = v=>{
   return a>=1e8 ? (v/1e8).toFixed(2)+'억' : a>=1e4 ? Math.round(v/1e4).toLocaleString()+'만' : Math.round(v).toLocaleString()+'원';
 };
 let gP = null;
-let gCandles = [];                    // 게임 캔들차트
+let gCandles = [];                    // 게임 캔들차트 (최대 120개 보관)
 let gTf = '1m';
+let gView = 48;                       // 화면에 보이는 캔들 수 (휠/버튼으로 확대·축소)
 const gTfMs = {'1m':60000, '5m':300000, '15m':900000};
 async function gSeedSeries(){
   try{
-    const k = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=${gTf}&limit=48`).then(r=>r.json());
+    const k = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=${gTf}&limit=120`).then(r=>r.json());
     if(Array.isArray(k)) gCandles = k.map(c=>({t:+c[0], o:+c[1], h:+c[2], l:+c[3], c:+c[4]}));
   }catch(e){}
 }
@@ -924,30 +930,31 @@ function gPushTick(p){
   const m = Math.floor(Date.now()/step)*step;
   const last = gCandles[gCandles.length-1];
   if(last.t >= m){ last.c=p; if(p>last.h)last.h=p; if(p<last.l)last.l=p; }
-  else { gCandles.push({t:m, o:last.c, h:p, l:p, c:p}); if(gCandles.length>48) gCandles.shift(); }
+  else { gCandles.push({t:m, o:last.c, h:p, l:p, c:p}); if(gCandles.length>120) gCandles.shift(); }
 }
 function gDrawTo(svg, big){
   if(!gCandles.length || !svg) return;
-  const W = svg.clientWidth||258, H = svg.clientHeight||110, padR = big?60:42, plotW = W-padR;
-  const fs = big?13:8.5;
-  let hi = Math.max(...gCandles.map(c=>c.h)), lo = Math.min(...gCandles.map(c=>c.l));
+  const view = gCandles.slice(-gView);
+  const W = svg.clientWidth||258, H = svg.clientHeight||175, padR = big?62:46, plotW = W-padR;
+  const fs = big?13:10;
+  let hi = Math.max(...view.map(c=>c.h)), lo = Math.min(...view.map(c=>c.l));
   if(G.pos){ hi = Math.max(hi, G.pos.entry); lo = Math.min(lo, G.pos.entry); }
   const pad = (hi-lo)*0.08 || 1; hi += pad; lo -= pad;
-  const x = i => (i+0.5)/gCandles.length*plotW, y = v => (hi-v)/(hi-lo)*H;
-  const cw = Math.max(2, plotW/gCandles.length*0.62);
+  const x = i => (i+0.5)/view.length*plotW, y = v => (hi-v)/(hi-lo)*H;
+  const cw = Math.max(1.5, plotW/view.length*0.62);
   let s = '';
   for(let g2=0; g2<=4; g2++){
     const v = lo+(hi-lo)*g2/4, yy = y(v);
     s += `<line x1="0" y1="${yy}" x2="${plotW}" y2="${yy}" stroke="#242b38" stroke-width="0.7"/>`;
     s += `<text x="${plotW+3}" y="${yy+fs*0.4}" fill="#6b7683" font-size="${fs}">${Math.round(v).toLocaleString()}</text>`;
   }
-  gCandles.forEach((c,i)=>{
+  view.forEach((c,i)=>{
     const up = c.c>=c.o, col = up?'#f6465d':'#3b82f6', cx = x(i);
-    s += `<line x1="${cx}" y1="${y(c.h)}" x2="${cx}" y2="${y(c.l)}" stroke="${col}" stroke-width="${big?1.2:0.8}"/>`;
+    s += `<line x1="${cx}" y1="${y(c.h)}" x2="${cx}" y2="${y(c.l)}" stroke="${col}" stroke-width="${big?1.2:0.9}"/>`;
     const yo = y(c.o), yc = y(c.c), top = Math.min(yo,yc), hh = Math.max(0.8, Math.abs(yc-yo));
     s += `<rect x="${(cx-cw/2).toFixed(1)}" y="${top.toFixed(1)}" width="${cw.toFixed(1)}" height="${hh.toFixed(1)}" fill="${col}"/>`;
   });
-  const lastP = gCandles[gCandles.length-1].c, yl = y(lastP);
+  const lastP = view[view.length-1].c, yl = y(lastP);
   s += `<line x1="0" y1="${yl}" x2="${plotW}" y2="${yl}" stroke="#f0b90b" stroke-width="0.7" stroke-dasharray="3 2"/>`;
   s += `<rect x="${plotW}" y="${yl-fs}" width="${padR}" height="${fs*2}" rx="2" fill="#f0b90b"/>`;
   s += `<text x="${plotW+3}" y="${yl+fs*0.4}" fill="#111" font-size="${fs}" font-weight="700">${Math.round(lastP).toLocaleString()}</text>`;
@@ -959,6 +966,16 @@ function gDrawTo(svg, big){
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.innerHTML = s;
 }
+// 확대/축소 (거래소처럼): 휠 스크롤 또는 ＋/－ 버튼
+function gZoomBy(d){
+  gView = Math.max(15, Math.min(120, gView + d));
+  gDrawChart();
+}
+['gChart','gChartBig'].forEach(id=>{
+  $(id).addEventListener('wheel', e=>{ e.preventDefault(); gZoomBy(e.deltaY>0 ? 8 : -8); }, {passive:false});
+});
+$('gZoomIn').onclick = ()=>gZoomBy(-10);
+$('gZoomOut').onclick = ()=>gZoomBy(10);
 function gDrawChart(){
   gDrawTo($('gChart'), false);
   if($('gChartModal').classList.contains('show')) gDrawTo($('gChartBig'), true);
@@ -983,12 +1000,9 @@ $('gTfTabs').addEventListener('click', e=>{
 // 확대
 $('gZoom').onclick = ()=>{ $('gChartModal').classList.add('show'); setTimeout(gDrawChart, 30); };
 $('gChartModalClose').onclick = ()=>$('gChartModal').classList.remove('show');
-$('gChart').style.cursor = 'zoom-in';
-$('gChart').onclick = ()=>$('gZoom').click();
 const gLiqPrice = p => p.side>0 ? p.entry*(1-0.98/p.lev) : p.entry*(1+0.98/p.lev);
 const gPriceAtRoe = (p, roe) => p.entry*(1 + p.side*roe/100/p.lev);   // 목표 ROE가 되는 가격
 function gRender(){
-  if(gP) $('gPrice').textContent = fmt(gP,1);
   $('gEquity').textContent = krwFmt(G.eq);
   const pos = G.pos;
   $('gOpen').style.display = pos?'none':'block';
