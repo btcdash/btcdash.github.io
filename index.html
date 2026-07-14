@@ -23,7 +23,22 @@
   *{margin:0;padding:0;box-sizing:border-box}
   body{background:var(--bg);color:var(--ink);font-family:'Segoe UI','Malgun Gothic',sans-serif;min-height:100vh}
   a{color:inherit;text-decoration:none}
-  .wrap{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+  .wrap{max-width:1340px;margin:0 auto;padding:20px 16px 60px}
+  .cols{display:grid;grid-template-columns:1fr 310px;gap:18px;align-items:start}
+  @media(max-width:1000px){.cols{grid-template-columns:1fr}}
+
+  /* ===== 실시간 소통방 패널 ===== */
+  .chatbox{background:var(--surface);border:1px solid var(--border);border-radius:12px;position:sticky;top:16px;display:flex;flex-direction:column;max-height:calc(100vh - 32px)}
+  .chat-head{padding:14px 16px;font-weight:700;font-size:14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+  .chat-live{font-size:10px;background:#f6465d;color:#fff;padding:2px 7px;border-radius:10px;font-weight:800;animation:chatpulse 2s infinite}
+  @keyframes chatpulse{50%{opacity:.5}}
+  .chat-list{padding:8px 14px 12px;overflow-y:auto;flex:1;min-height:220px}
+  .chat-msg{margin:12px 0}
+  .chat-name{font-size:12px;font-weight:700;color:var(--accent)}
+  .chat-time{font-size:10px;color:var(--ink3);margin-left:6px;font-weight:400}
+  .chat-text{font-size:13px;color:var(--ink);margin-top:4px;line-height:1.55;word-break:break-word;background:var(--surface2);border:1px solid var(--border);padding:8px 11px;border-radius:2px 10px 10px 10px;display:inline-block;max-width:100%}
+  .chat-join{display:block;text-align:center;background:#2ea6ff;color:#fff;font-weight:700;font-size:13px;padding:12px;border-radius:0 0 12px 12px;transition:opacity .15s}
+  .chat-join:hover{opacity:.85}
 
   header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:6px 0 22px}
   .logo{font-size:22px;font-weight:800;letter-spacing:-.5px}
@@ -122,6 +137,9 @@
     <div class="ad-dots"><i class="on" onclick="showAd(0)"></i><i onclick="showAd(1)"></i></div>
   </div>
 
+  <div class="cols">
+  <div>
+
   <!-- 핵심 지표 타일 -->
   <div class="tiles">
     <div class="tile">
@@ -193,6 +211,17 @@
       </div>
     </div>
   </section>
+
+  </div><!-- 왼쪽 열 끝 -->
+
+  <!-- 실시간 소통방 패널 -->
+  <aside class="chatbox">
+    <div class="chat-head">💬 [리치] 실시간 소통방 <span class="chat-live">LIVE</span></div>
+    <div class="chat-list" id="chatList"><div class="err">불러오는 중…</div></div>
+    <a class="chat-join" href="https://telegram.me/Richtradingschool" target="_blank">소통방 참여하기 →</a>
+  </aside>
+
+  </div><!-- cols 끝 -->
 
   <footer>
     본 사이트의 모든 정보는 투자 참고용이며, 투자 권유나 매매 신호가 아닙니다. 암호화폐 선물 거래는 원금 전액 손실 위험이 있습니다.
@@ -358,14 +387,37 @@ function calc(){
 }
 ['cSide','cMargin','cLev','cEntry','cExit','cFee'].forEach(id=>$(id).addEventListener('input',calc));
 
+// ---- 실시간 소통방 (90초마다) ----
+const CHAT_GIST = '8a77c26fe9ccfdd270b8d7be450db9e0';
+async function loadChat(){
+  try{
+    const g = await fetch('https://api.github.com/gists/'+CHAT_GIST)
+      .then(r=>{ if(!r.ok) throw new Error('gist http '+r.status); return r.json(); });
+    const d = JSON.parse(g.files['chat.json'].content);
+    const list = $('chatList');
+    if(!d.messages || !d.messages.length){ list.innerHTML='<div class="err">아직 대화가 없습니다</div>'; return; }
+    list.innerHTML='';
+    d.messages.forEach(m=>{
+      const w=document.createElement('div'); w.className='chat-msg';
+      const n=document.createElement('div'); n.className='chat-name'; n.textContent=m.name;
+      const t=document.createElement('span'); t.className='chat-time'; t.textContent=(m.date||'')+' '+(m.time||'');
+      n.appendChild(t);
+      const x=document.createElement('div'); x.className='chat-text'; x.textContent=m.text;
+      w.appendChild(n); w.appendChild(x); list.appendChild(w);
+    });
+    list.scrollTop = list.scrollHeight;   // 최신 글이 보이게 아래로
+  }catch(e){ console.error('[소통방]', e); }
+}
+
 // ---- 시작 & 주기 ----
-loadPrices(); loadKimchi(); loadFng(); loadRsi(); loadLs(); loadFunding();
+loadPrices(); loadKimchi(); loadFng(); loadRsi(); loadLs(); loadFunding(); loadChat();
 setInterval(loadPrices, 10_000);
 setInterval(loadKimchi, 60_000);
 setInterval(loadFng, 600_000);
 setInterval(loadRsi, 300_000);
 setInterval(loadLs, 300_000);
 setInterval(loadFunding, 300_000);
+setInterval(loadChat, 90_000);
 </script>
 </body>
 </html>
