@@ -28,7 +28,7 @@
   @media(max-width:1000px){.cols{grid-template-columns:1fr}}
 
   /* ===== 실시간 소통방 패널 ===== */
-  .chatbox{background:var(--surface);border:1px solid var(--border);border-radius:12px;position:sticky;top:16px;display:flex;flex-direction:column;max-height:calc(100vh - 32px)}
+  .chatbox{background:var(--surface);border:1px solid var(--border);border-radius:12px;position:sticky;top:16px;display:flex;flex-direction:column;max-height:540px}
   .chat-head{padding:14px 16px;font-weight:700;font-size:14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
   .chat-live{font-size:10px;background:#f6465d;color:#fff;padding:2px 7px;border-radius:10px;font-weight:800;animation:chatpulse 2s infinite}
   @keyframes chatpulse{50%{opacity:.5}}
@@ -405,7 +405,8 @@ async function loadChat(){
     list.innerHTML='';
     d.messages.forEach(m=>{
       const w=document.createElement('div'); w.className='chat-msg';
-      const n=document.createElement('div'); n.className='chat-name'; n.textContent=m.name;
+      const n=document.createElement('div'); n.className='chat-name';
+      n.textContent = (m.name==='Group') ? '[리치] 트레이딩 스쿨' : m.name;   // 방장 글 표시명
       const t=document.createElement('span'); t.className='chat-time'; t.textContent=(m.date||'')+' '+(m.time||'');
       n.appendChild(t); w.appendChild(n);
       if(m.text){
