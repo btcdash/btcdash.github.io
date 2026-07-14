@@ -242,6 +242,11 @@
   #tvchart{width:100%;height:100%}
   @media(max-width:600px){.tv-wrap{height:380px}.chart-hint{display:none}}
 
+  /* ===== 섹션 바로가기 칩 ===== */
+  .jump{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 18px}
+  .jump a{font-size:12px;font-weight:700;color:var(--ink2);background:var(--surface);border:1px solid var(--border);padding:7px 13px;border-radius:20px;cursor:pointer;transition:all .12s}
+  .jump a:hover{color:var(--accent);border-color:var(--accent)}
+
   /* ===== 지금 들어가도 돼? ===== */
   .v-btn{width:100%;border:0;border-radius:14px;padding:18px;font-size:18px;font-weight:900;cursor:pointer;color:#111;background:linear-gradient(92deg,#ffd452,#f0b90b);box-shadow:0 6px 22px rgba(240,185,11,.25);transition:transform .1s}
   .v-btn:hover{transform:translateY(-1px)}
@@ -430,7 +435,7 @@
   <div class="cols">
 
   <!-- 모의 트레이딩 게임 (왼쪽) -->
-  <aside class="gamebox">
+  <aside class="gamebox" id="secGame">
     <div class="game-head">🎮 모의 트레이딩 <span class="help">?<span class="tip">가상 시드 100만원으로 진짜 BTC 시세에 베팅하는 연습 게임이에요. 실제 돈이 아니니 부담 없이 연습해보세요. 기록은 이 브라우저에 저장돼요.</span></span></div>
     <div class="g-grid">
     <!-- 왼쪽: 랭킹 + 거래내역 -->
@@ -536,8 +541,17 @@
     </div>
   </section>
 
+  <!-- 섹션 바로가기 -->
+  <div class="jump">
+    <a data-to="secWhale">🐋 고래체결</a>
+    <a data-to="secTiles">📊 핵심지표</a>
+    <a data-to="secChart">📈 전문차트</a>
+    <a data-to="secGame">🎮 모의투자</a>
+    <a data-to="secChat">💬 소통방</a>
+  </div>
+
   <!-- 실시간 고래 체결 -->
-  <section style="margin-top:0;margin-bottom:22px">
+  <section id="secWhale" style="margin-top:0;margin-bottom:22px">
     <h2>🐋 실시간 고래 체결 <span class="help">?<span class="tip">한 번에 5만 달러(약 7천만원) 이상 체결된 대형 거래만 골라 보여줘요. 큰손(고래)들의 매수·매도 흐름은 단기 방향을 가늠하는 참고 지표로 쓰여요.</span></span></h2>
     <div class="whale-card">
       <div class="whale-verdict">
@@ -555,7 +569,7 @@
   </section>
 
   <!-- 핵심 지표 타일 -->
-  <div class="tiles">
+  <div class="tiles" id="secTiles">
     <div class="tile">
       <div class="label">BTC 가격 (바이낸스 선물)</div>
       <div class="value" id="btcPrice">—</div>
@@ -593,7 +607,7 @@
   </div>
 
   <!-- 코인 차트 (트레이딩뷰 전문차트) -->
-  <section>
+  <section id="secChart">
     <div class="chart-card">
       <div class="chart-top">
         <div class="coin-tabs" id="coinTabs">
@@ -611,7 +625,7 @@
   </div><!-- 왼쪽 열 끝 -->
 
   <!-- 실시간 소통방 패널 -->
-  <aside class="chatbox">
+  <aside class="chatbox" id="secChat">
     <div class="chat-head">💬 [리치] 실시간 소통방 <span class="chat-live">LIVE</span></div>
     <div class="chat-list" id="chatList"><div class="err">불러오는 중…</div></div>
     <a class="chat-join" href="https://telegram.me/Richtradingschool" target="_blank">소통방 참여하기 →</a>
@@ -1726,6 +1740,14 @@ $('vBtn').onclick = ()=>{
   if(vOpen){ vCompute(); vTimer = setInterval(vCompute, 15_000); }
   else clearInterval(vTimer);
 };
+
+// ---- 섹션 바로가기 칩 ----
+document.querySelectorAll('.jump a').forEach(a=>{
+  a.onclick = ()=>{
+    const el = document.getElementById(a.dataset.to);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  };
+});
 
 // ---- 상단 탭 전환 (대시보드 / 뉴스 / 계산기) ----
 function showPage(p){
