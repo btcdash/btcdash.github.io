@@ -387,12 +387,17 @@ function calc(){
 }
 ['cSide','cMargin','cLev','cEntry','cExit','cFee'].forEach(id=>$(id).addEventListener('input',calc));
 
-// ---- 실시간 소통방 (90초마다) ----
+// ---- 실시간 소통방 (15초마다 · 변경 없으면 요청 횟수 안 씀) ----
 const CHAT_GIST = '8a77c26fe9ccfdd270b8d7be450db9e0';
+let chatEtag = null;
 async function loadChat(){
   try{
-    const g = await fetch('https://api.github.com/gists/'+CHAT_GIST)
-      .then(r=>{ if(!r.ok) throw new Error('gist http '+r.status); return r.json(); });
+    const r = await fetch('https://api.github.com/gists/'+CHAT_GIST,
+      { headers: chatEtag ? {'If-None-Match': chatEtag} : {} });
+    if(r.status === 304) return;              // 새 글 없음 — 무료 확인
+    if(!r.ok) throw new Error('gist http '+r.status);
+    chatEtag = r.headers.get('ETag');
+    const g = await r.json();
     const d = JSON.parse(g.files['chat.json'].content);
     const list = $('chatList');
     if(!d.messages || !d.messages.length){ list.innerHTML='<div class="err">아직 대화가 없습니다</div>'; return; }
@@ -417,7 +422,7 @@ setInterval(loadFng, 600_000);
 setInterval(loadRsi, 300_000);
 setInterval(loadLs, 300_000);
 setInterval(loadFunding, 300_000);
-setInterval(loadChat, 90_000);
+setInterval(loadChat, 15_000);
 </script>
 </body>
 </html>
