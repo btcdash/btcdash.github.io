@@ -705,7 +705,6 @@ async function loadChat(){
     if(!r.ok) throw new Error('chat http '+r.status);
     const d = await r.json();
     if(d.updated === chatLastUpd) return;   // 새 글 없으면 화면 안 건드림 (스크롤 유지)
-    if(chatLastUpd) beep([1320], 0.1, 0.15);   // 새 소통방 글 알림음 (첫 로드는 제외)
     chatLastUpd = d.updated;
     const list = $('chatList');
     if(!d.messages || !d.messages.length){ list.innerHTML='<div class="err">아직 대화가 없습니다</div>'; return; }
@@ -899,6 +898,7 @@ function gOpenPos(side){
   const margin = Math.floor(G.eq * +$('gStake').value);
   if(margin < 1000) return;
   G.pos = {side, lev:+$('gLev').value, margin, entry:gP};
+  beep(side>0 ? [523,784] : [784,523], 0.11);   // 진입음: 롱↗ 숏↘
   gSave(); gRender();
 }
 function gClosePos(atPrice, forced){
@@ -925,6 +925,7 @@ function gDca(){
   const q1 = pos.margin*pos.lev/pos.entry, q2 = add*pos.lev/gP;
   pos.entry = (pos.margin+add)*pos.lev/(q1+q2);   // 새 평단
   pos.margin += add;
+  beep([440,587], 0.11);   // 물타기음
   gSave(); gRender();
 }
 $('gLong').onclick = ()=>gOpenPos(1);
