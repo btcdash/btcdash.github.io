@@ -239,6 +239,24 @@
   #tvchart{width:100%;height:100%}
   @media(max-width:600px){.tv-wrap{height:380px}.chart-hint{display:none}}
 
+  /* ===== 지금 들어가도 돼? ===== */
+  .v-btn{width:100%;border:0;border-radius:14px;padding:18px;font-size:18px;font-weight:900;cursor:pointer;color:#111;background:linear-gradient(92deg,#ffd452,#f0b90b);box-shadow:0 6px 22px rgba(240,185,11,.25);transition:transform .1s}
+  .v-btn:hover{transform:translateY(-1px)}
+  .v-btn small{display:block;font-size:12px;font-weight:600;color:#3a2c00;margin-top:3px}
+  .v-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;margin-top:10px}
+  .v-verdict{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+  .v-emoji{font-size:38px;line-height:1}
+  .v-title{font-size:19px;font-weight:900}
+  .v-sub{font-size:13px;color:var(--ink2);margin-top:3px;line-height:1.5}
+  .v-list{display:flex;flex-direction:column;gap:1px;border-top:1px solid var(--border)}
+  .v-row{display:grid;grid-template-columns:150px 1fr auto;gap:10px;padding:9px 4px;border-bottom:1px solid var(--border);font-size:12.5px;align-items:center}
+  .v-row .vn{color:var(--ink2);font-weight:600}
+  .v-row .vv{color:var(--ink3);font-variant-numeric:tabular-nums}
+  .v-row .vj{font-weight:700;text-align:right;white-space:nowrap}
+  .v-row .vj.up{color:var(--up)} .v-row .vj.down{color:var(--down)} .v-row .vj.neutral{color:var(--ink3)} .v-row .vj.warn{color:#f59e0b}
+  .v-note{font-size:11px;color:var(--ink3);margin-top:10px;line-height:1.5}
+  @media(max-width:600px){.v-row{grid-template-columns:105px 1fr auto;font-size:11.5px}}
+
   /* ===== 고래 체결 ===== */
   .whale-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
   .whale-verdict{display:flex;align-items:center;gap:14px;margin-bottom:12px}
@@ -483,6 +501,22 @@
   </aside>
 
   <div>
+
+  <!-- 🤔 지금 들어가도 돼? -->
+  <section style="margin-top:0;margin-bottom:22px">
+    <button id="vBtn" class="v-btn">🤔 지금 들어가도 돼? <small>클릭 한 번으로 지표 12종 종합 진단</small></button>
+    <div id="vCard" class="v-card" style="display:none">
+      <div class="v-verdict">
+        <span class="v-emoji" id="vEmoji">⏳</span>
+        <div>
+          <div class="v-title" id="vTitle">분석 중…</div>
+          <div class="v-sub" id="vSub">지표를 모으고 있어요</div>
+        </div>
+      </div>
+      <div id="vList" class="v-list"></div>
+      <div class="v-note">* 자동 종합 분석 참고용이에요 — 투자 판단과 책임은 본인에게 있어요 · 30초마다 자동 갱신</div>
+    </div>
+  </section>
 
   <!-- 실시간 고래 체결 -->
   <section style="margin-top:0;margin-bottom:22px">
@@ -736,6 +770,7 @@ async function loadKimchi(){
 
     window.__usdkrw = krw / usdEq;   // 실시간 환율 (고래체결 원화 표시에 사용)
     const prem = (usdEq / usd - 1) * 100;
+    window.__kimp = prem;
     $('kimchi').textContent = pct(prem);
     $('kimchi').className = 'value ' + cls(prem);
     $('kimchiSub').textContent = `업비트 ₩${fmt(krw,0)}`;
@@ -754,6 +789,7 @@ async function loadFng(){
   try{
     const j = await fetch('https://api.alternative.me/fng/?limit=1').then(r=>r.json());
     const v = parseInt(j.data[0].value);
+    window.__fng = v;
     $('fng').textContent = v;
     $('fngBar').style.width = v+'%';
     const t = v<=25?'극단적 공포':v<=45?'공포':v<=55?'중립':v<=75?'탐욕':'극단적 탐욕';
@@ -776,6 +812,7 @@ async function loadRsi(){
       al=(al*(period-1)+(d<0?-d:0))/period;
     }
     const rsi = al===0?100:100-100/(1+ag/al);
+    window.__rsi = rsi;
     $('rsi').textContent = fmt(rsi,1);
     $('rsiBar').style.width = rsi+'%';
     $('rsiText').textContent = rsi>=70?'과매수 구간':rsi<=30?'과매도 구간':'중립';
@@ -789,6 +826,7 @@ async function loadLs(){
     const j = await fetch('https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol=BTCUSDT&period=1h&limit=1').then(r=>r.json());
     const d = j[0];
     const long = parseFloat(d.longAccount)*100, short = parseFloat(d.shortAccount)*100;
+    window.__lsr = parseFloat(d.longShortRatio);
     $('lsRatio').textContent = fmt(parseFloat(d.longShortRatio),2);
     $('lsbar').style.display='flex';
     $('lsL').style.width = long+'%';  $('lsL').textContent = '롱 '+fmt(long,1)+'%';
@@ -801,6 +839,7 @@ async function loadFunding(){
   try{
     const j = await fetch('https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT').then(r=>r.json());
     const f = parseFloat(j.lastFundingRate)*100;
+    window.__funding = f;
     $('funding').textContent = (f>=0?'+':'') + fmt(f,4) + '%';
     $('funding').className = 'value ' + cls(f);
   }catch(e){ $('funding').textContent='—'; }
@@ -952,6 +991,7 @@ function renderWhales(){
   const tot = buy+sell;
   if(tot < WHALE_MIN*3) return;   // 표본이 적을 땐 판정 보류
   const br = buy/tot*100;
+  window.__whaleBr = br; window.__whaleTot = tot;
   $('whaleBar').style.display='flex';
   $('wbL').style.width=br+'%';        $('wbL').textContent='매수 '+fmt(br,0)+'%';
   $('wbS').style.width=(100-br)+'%';  $('wbS').textContent='매도 '+fmt(100-br,0)+'%';
@@ -1288,6 +1328,148 @@ setInterval(loadRsi, 300_000);
 setInterval(loadLs, 300_000);
 setInterval(loadFunding, 300_000);
 setInterval(loadChat, 10_000);
+
+// ---- 🤔 지금 들어가도 돼? (지표 12종 종합 진단) ----
+const EVENTS_RAW = 'https://gist.githubusercontent.com/btcdash/2dbcf6ec8074b85380d3cf119f6f1091/raw/events.json';
+let vOpen = false, vTimer = null;
+async function vCompute(){
+  const rows = []; let bull = 0, bear = 0, risk = 0; let evNear = false;
+  const R = (n,v,j,d)=>rows.push({n,v,j,d});
+
+  // ① 주요 발표 일정
+  try{
+    const ev = await fetch(EVENTS_RAW+'?ts='+Date.now()).then(r=>r.json());
+    const now = Date.now()/1000;
+    const next = (ev.events||[]).find(e=>e.ts > now-1800);
+    if(next){
+      const mins = Math.round((next.ts-now)/60);
+      const when = mins>=0 ? (mins<90 ? mins+'분 뒤' : Math.round(mins/60)+'시간 뒤') : (-mins)+'분 전 발표';
+      if(mins<=40 && mins>=-30){ evNear=true; risk++; R('📅 주요 발표', next.t, when+' · 도박 구간', 'warn'); }
+      else R('📅 주요 발표', next.t, when, 'neutral');
+    } else R('📅 주요 발표','이번 주 남은 대형 발표 없음','여유','neutral');
+  }catch(e){ R('📅 주요 발표','일정 로딩 실패','—','neutral'); }
+
+  // ② 1시간봉 기반: 이동평균 배열 · 볼린저 · 거래량
+  try{
+    const k = await fetch('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1h&limit=210').then(r=>r.json());
+    const closes = k.map(c=>+c[4]), vols = k.map(c=>+c[5]);
+    const last = closes[closes.length-1];
+    const ma = n => closes.slice(-n).reduce((a,b)=>a+b,0)/n;
+    const ma20=ma(20), ma50=ma(50), ma200=ma(200);
+    if(ma20>ma50 && ma50>ma200){ bull++; R('📊 이동평균 배열', `20>50>200 (현재가 ${fmt(last,0)})`, '정배열 · 상승 추세','up'); }
+    else if(ma20<ma50 && ma50<ma200){ bear++; R('📊 이동평균 배열', `20<50<200 (현재가 ${fmt(last,0)})`, '역배열 · 하락 추세','down'); }
+    else R('📊 이동평균 배열','MA 혼조','추세 전환 다툼 중','neutral');
+    // 볼린저 (20, 2σ)
+    const sd = Math.sqrt(closes.slice(-20).reduce((a,b)=>a+(b-ma20)**2,0)/20);
+    const bbPos = (last-(ma20-2*sd))/((ma20+2*sd)-(ma20-2*sd))*100;
+    if(bbPos>=90){ risk++; R('🎈 볼린저밴드','상단 '+fmt(bbPos,0)+'% 위치','과열 — 추격 매수 주의','warn'); }
+    else if(bbPos<=10){ bull++; R('🎈 볼린저밴드','하단 '+fmt(bbPos,0)+'% 위치','과매도 — 반등 나올 자리','up'); }
+    else R('🎈 볼린저밴드','밴드 내 '+fmt(bbPos,0)+'% 위치','정상 범위','neutral');
+    // 거래량
+    const va = vols.slice(-21,-1).reduce((a,b)=>a+b,0)/20, vr = vols[vols.length-1]/va;
+    if(vr>=2){ risk++; R('📢 거래량','평소의 '+fmt(vr,1)+'배','급증 — 큰 움직임 진행 중','warn'); }
+    else R('📢 거래량','평소의 '+fmt(vr,1)+'배','평온','neutral');
+    // 전일 고저 위치
+    const d2 = await fetch('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1d&limit=2').then(r=>r.json());
+    const yH=+d2[0][2], yL=+d2[0][3];
+    if(last>yH){ bull++; R('🧭 전일 고저 대비','전일 고가 '+fmt(yH,0)+' 돌파','상방 돌파','up'); }
+    else if(last<yL){ bear++; R('🧭 전일 고저 대비','전일 저가 '+fmt(yL,0)+' 이탈','하방 이탈','down'); }
+    else R('🧭 전일 고저 대비',`${fmt(yL,0)} ~ ${fmt(yH,0)} 사이`,'박스권','neutral');
+  }catch(e){}
+
+  // ③ 미결제약정 (OI) 변화
+  try{
+    const oi = await fetch('https://fapi.binance.com/futures/data/openInterestHist?symbol=BTCUSDT&period=15m&limit=5').then(r=>r.json());
+    if(Array.isArray(oi) && oi.length>=2){
+      const ch = ((+oi[oi.length-1].sumOpenInterest)/(+oi[0].sumOpenInterest)-1)*100;
+      if(ch>=1) R('🧲 미결제약정(1h)','+'+fmt(ch,2)+'%','신규 자금 유입 중','up');
+      else if(ch<=-1) R('🧲 미결제약정(1h)',fmt(ch,2)+'%','포지션 정리 중','down');
+      else R('🧲 미결제약정(1h)',(ch>=0?'+':'')+fmt(ch,2)+'%','변화 미미','neutral');
+    }
+  }catch(e){}
+
+  // ④ 테이커 매수/매도
+  try{
+    const tk = await fetch('https://fapi.binance.com/futures/data/takerlongshortRatio?symbol=BTCUSDT&period=15m&limit=1').then(r=>r.json());
+    if(Array.isArray(tk) && tk.length){
+      const r2 = +tk[0].buySellRatio;
+      if(r2>=1.1){ bull++; R('⚔️ 테이커 매수/매도',fmt(r2,2),'공격적 매수 우세','up'); }
+      else if(r2<=0.9){ bear++; R('⚔️ 테이커 매수/매도',fmt(r2,2),'공격적 매도 우세','down'); }
+      else R('⚔️ 테이커 매수/매도',fmt(r2,2),'균형','neutral');
+    }
+  }catch(e){}
+
+  // ⑤ 캐시된 지표들 (고래·RSI·펀딩·공탐·김프·개미 롱숏·단기 변동)
+  if(window.__whaleBr!==undefined){
+    const br = window.__whaleBr;
+    if(br>=63){ bull++; R('🐋 고래 흐름(15분)','매수 '+fmt(br,0)+'%','큰손 매수 우위','up'); }
+    else if(br<=37){ bear++; R('🐋 고래 흐름(15분)','매수 '+fmt(br,0)+'%','큰손 매도 우위','down'); }
+    else R('🐋 고래 흐름(15분)','매수 '+fmt(br,0)+'%','팽팽','neutral');
+  } else R('🐋 고래 흐름(15분)','수집 중','—','neutral');
+  if(window.__rsi!==undefined){
+    const rs = window.__rsi;
+    if(rs>=70){ risk++; R('📉 RSI(1시간)',fmt(rs,1),'과매수 — 추격 매수 위험','warn'); }
+    else if(rs<=30){ bull++; R('📉 RSI(1시간)',fmt(rs,1),'과매도 — 반등 가능 구간','up'); }
+    else R('📉 RSI(1시간)',fmt(rs,1),'중립','neutral');
+  }
+  if(window.__funding!==undefined){
+    const f = window.__funding;
+    if(f>=0.05){ bear++; R('💸 펀딩비',(f>=0?'+':'')+fmt(f,4)+'%','롱 붐빔 — 롱 진입엔 부담','down'); }
+    else if(f<=-0.02){ bull++; R('💸 펀딩비',fmt(f,4)+'%','숏 붐빔 — 반등 연료','up'); }
+    else R('💸 펀딩비',(f>=0?'+':'')+fmt(f,4)+'%','정상 범위','neutral');
+  }
+  if(window.__fng!==undefined){
+    const v = window.__fng;
+    if(v<=25){ bull++; R('😱 공포/탐욕',v+' (극단적 공포)','역발상 매수 구간으로 보기도','up'); }
+    else if(v>=75){ bear++; R('😱 공포/탐욕',v+' (극단적 탐욕)','과열 — 고점 신호로 보기도','down'); }
+    else R('😱 공포/탐욕',String(v),'중립권','neutral');
+  }
+  if(window.__kimp!==undefined){
+    const kp = window.__kimp;
+    if(kp>=3){ bear++; R('🇰🇷 김치 프리미엄',pct(kp),'국내 과열 신호','down'); }
+    else if(kp<=-2){ bull++; R('🇰🇷 김치 프리미엄',pct(kp),'역프 — 국내 침체(바닥권 신호로 보기도)','up'); }
+    else R('🇰🇷 김치 프리미엄',pct(kp),'평범','neutral');
+  }
+  if(window.__lsr!==undefined){
+    const ls = window.__lsr;
+    if(ls>=2.5){ bear++; R('🐜 개미 롱/숏',fmt(ls,2),'롱 쏠림 — 역지표 주의','down'); }
+    else if(ls<=0.6){ bull++; R('🐜 개미 롱/숏',fmt(ls,2),'숏 쏠림 — 역지표 주의','up'); }
+    else R('🐜 개미 롱/숏',fmt(ls,2),'보통','neutral');
+  }
+  if(gCandles.length>=16){
+    const c0 = gCandles[gCandles.length-16].c, c1 = gCandles[gCandles.length-1].c;
+    const mv = (c1/c0-1)*100;
+    if(Math.abs(mv)>=0.7){ risk++; R('⚡ 최근 15분',pct(mv),'단기 급변 중 — 진입 타이밍 주의','warn'); }
+    else R('⚡ 최근 15분',pct(mv),'안정','neutral');
+  }
+
+  // 종합 판정
+  let verdict;
+  const net = bull - bear;
+  if(evNear) verdict = {e:'🚫', t:'지금은 쉬어갈 때예요', s:'주요 발표 직전·직후예요 — 방향이 도박이 되는 구간이라 신규 진입은 비추천해요'};
+  else if(risk>=2) verdict = {e:'⚠️', t:'조심할 구간이에요', s:'과열·급변 신호가 겹쳐 있어요 — 들어가더라도 비중 줄이고 손절선은 필수예요'};
+  else if(net>=3) verdict = {e:'📈', t:'롱 쪽 근거가 우세해요', s:`상승 쪽 근거 ${bull}개 vs 하락 ${bear}개 — 그래도 분할 진입과 손절선은 기본이에요`};
+  else if(net<=-3) verdict = {e:'📉', t:'숏 쪽 근거가 우세해요', s:`하락 쪽 근거 ${bear}개 vs 상승 ${bull}개 — 그래도 분할 진입과 손절선은 기본이에요`};
+  else verdict = {e:'🤔', t:'지금은 관망이 편한 구간', s:`상승 ${bull}개 vs 하락 ${bear}개로 팽팽해요 — 서두를 이유가 없는 자리예요`};
+
+  $('vEmoji').textContent = verdict.e;
+  $('vTitle').textContent = verdict.t;
+  $('vSub').textContent = verdict.s;
+  const list = $('vList'); list.innerHTML='';
+  rows.forEach(r=>{
+    const d = document.createElement('div'); d.className='v-row';
+    const n = document.createElement('span'); n.className='vn'; n.textContent=r.n;
+    const v = document.createElement('span'); v.className='vv'; v.textContent=r.v;
+    const j = document.createElement('span'); j.className='vj '+r.d; j.textContent=r.j;
+    d.appendChild(n); d.appendChild(v); d.appendChild(j); list.appendChild(d);
+  });
+}
+$('vBtn').onclick = ()=>{
+  vOpen = !vOpen;
+  $('vCard').style.display = vOpen ? '' : 'none';
+  if(vOpen){ vCompute(); vTimer = setInterval(vCompute, 30_000); }
+  else clearInterval(vTimer);
+};
 
 // ---- 상단 탭 전환 (대시보드 / 뉴스 / 계산기) ----
 function showPage(p){
