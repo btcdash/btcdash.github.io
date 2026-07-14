@@ -13,6 +13,13 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="[리치] BTC 마켓 대시보드">
 <meta name="twitter:description" content="김치 프리미엄 · 공포/탐욕 · RSI · 펀딩비 · 실시간 시세를 한눈에 📊">
+<meta property="og:image" content="https://btcdash.github.io/icon-512.png">
+<meta name="theme-color" content="#0d1117">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <style>
   :root{
     --bg:#0d1117; --surface:#161b22; --surface2:#1c2330; --border:#2a3140;
@@ -87,6 +94,18 @@
 
   footer{margin-top:40px;font-size:11px;color:var(--ink3);line-height:1.7;border-top:1px solid var(--border);padding-top:16px}
   .err{color:var(--ink3);font-size:13px}
+
+  /* ===== 모바일 다듬기 ===== */
+  @media(max-width:600px){
+    .ad{min-height:120px;padding:20px}
+    .ad .ad-title{font-size:19px}
+    .ad .ad-sub{font-size:12px}
+    .tile .value{font-size:20px}
+    .logo{font-size:19px}
+    /* 시세표: 좁은 화면에선 고가/저가 열 숨김 */
+    thead th:nth-child(4),thead th:nth-child(5),
+    tbody td:nth-child(4),tbody td:nth-child(5){display:none}
+  }
 
   /* ===== 롤링 광고 배너 ===== */
   .adwrap{position:relative;margin:0 0 22px;border-radius:14px;overflow:hidden;border:1px solid var(--border)}
@@ -434,6 +453,9 @@ setInterval(loadRsi, 300_000);
 setInterval(loadLs, 300_000);
 setInterval(loadFunding, 300_000);
 setInterval(loadChat, 10_000);
+
+// ---- 앱(PWA) 등록 ----
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 </script>
 </body>
 </html>
