@@ -409,15 +409,15 @@ async function loadChat(){
       n.textContent = (m.name==='Group') ? '[리치] 트레이딩 스쿨' : m.name;   // 방장 글 표시명
       const t=document.createElement('span'); t.className='chat-time'; t.textContent=(m.date||'')+' '+(m.time||'');
       n.appendChild(t); w.appendChild(n);
-      if(m.text){
-        const x=document.createElement('div'); x.className='chat-text'; x.textContent=m.text;
-        w.appendChild(x);
-      }
-      if(m.img){
+      if(m.img){                       // 텔레그램처럼 사진 먼저, 글은 그 아래
         const im=document.createElement('img'); im.className='chat-img';
         im.src=m.img; im.loading='lazy'; im.alt='소통방 사진';
         im.onclick=()=>window.open(m.img,'_blank');
         w.appendChild(im);
+      }
+      if(m.text){
+        const x=document.createElement('div'); x.className='chat-text'; x.textContent=m.text;
+        w.appendChild(x);
       }
       list.appendChild(w);
     });
