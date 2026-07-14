@@ -98,9 +98,9 @@
   /* ? 도움말 아이콘 */
   .help{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--ink3);font-size:10px;font-weight:700;cursor:pointer;position:relative;flex-shrink:0}
   .help:hover{color:var(--ink);border-color:var(--ink3)}
-  .help .tip{display:none;position:absolute;bottom:22px;left:50%;transform:translateX(-50%);width:210px;background:#000;border:1px solid var(--border);color:var(--ink);font-size:11px;font-weight:400;line-height:1.6;padding:9px 11px;border-radius:8px;z-index:1000;box-shadow:0 6px 20px rgba(0,0,0,.5);text-align:left}
+  .help .tip{display:none;position:absolute;top:22px;left:50%;transform:translateX(-50%);width:210px;background:#000;border:1px solid var(--border);color:var(--ink);font-size:11px;font-weight:400;line-height:1.6;padding:9px 11px;border-radius:8px;z-index:100002;box-shadow:0 6px 20px rgba(0,0,0,.5);text-align:left}
   .help.on .tip,.help:hover .tip{display:block}
-  .help .tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#000}
+  .help .tip::after{content:'';position:absolute;bottom:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-bottom-color:#000}
   @media(max-width:520px){.help .tip{width:170px;left:auto;right:-4px;transform:none}.help .tip::after{left:auto;right:8px;transform:none}}
   .tile .value{font-size:24px;font-weight:800;letter-spacing:-.5px;line-height:1.15}
   #btcPrice{color:var(--accent);text-shadow:0 0 18px rgba(240,185,11,.25)}
@@ -349,6 +349,7 @@
       <div class="g-pnl" id="gPnl">—</div>
       <div class="g-liq" id="gLiq">—</div>
       <button class="g-close" id="gClose">💰 청산하기</button>
+      <button class="g-reset" id="gDca" style="display:block;margin-top:8px">➕ 물타기 <small style="color:var(--ink3)">(같은 방향 추가 베팅 · 평단 이동)</small></button>
     </div>
 
     <div class="g-record" id="gRecord">아직 전적이 없어요 — 첫 베팅 해보세요!</div>
@@ -839,7 +840,7 @@ function gRender(){
     if((pos.side>0 && gP<=liq) || (pos.side<0 && gP>=liq)){ gClosePos(liq, true); return; }
     const roe = pos.side*(gP-pos.entry)/pos.entry*pos.lev*100;
     const pnl = Math.round(pos.margin*roe/100);
-    $('gPosInfo').textContent = `${pos.side>0?'📈 롱':'📉 숏'} ${pos.lev}배 · 진입 ${fmt(pos.entry,1)} · 베팅 ${krwFmt(pos.margin)}`;
+    $('gPosInfo').textContent = `${pos.side>0?'📈 롱':'📉 숏'} ${pos.lev}배 · 평단 ${fmt(pos.entry,1)} · 베팅 ${krwFmt(pos.margin)}`;
     $('gRoe').textContent = (roe>=0?'+':'')+roe.toFixed(1)+'%';
     $('gRoe').className = 'g-roe '+cls(roe);
     $('gPnl').textContent = (pnl>=0?'+':'')+krwFmt(pnl);
@@ -869,9 +870,24 @@ function gClosePos(atPrice, forced){
   G.last = pnl; G.pos = null;
   gSave(); gSubmitRank(); gRender();
 }
+function gDca(){
+  const pos = G.pos; if(!pos || !gP) return;
+  // 추가 베팅: 선택한 비중만큼, 단 총 베팅이 시드를 넘지 않게
+  const add = Math.min(Math.floor(G.eq * +$('gStake').value), G.eq - pos.margin);
+  if(add < 1000){
+    $('gDca').textContent = '➕ 물타기 — 남은 시드가 부족해요';
+    setTimeout(()=>{ $('gDca').innerHTML = '➕ 물타기 <small style="color:var(--ink3)">(같은 방향 추가 베팅 · 평단 이동)</small>'; }, 1500);
+    return;
+  }
+  const q1 = pos.margin*pos.lev/pos.entry, q2 = add*pos.lev/gP;
+  pos.entry = (pos.margin+add)*pos.lev/(q1+q2);   // 새 평단
+  pos.margin += add;
+  gSave(); gRender();
+}
 $('gLong').onclick = ()=>gOpenPos(1);
 $('gShort').onclick = ()=>gOpenPos(-1);
 $('gClose').onclick = ()=>gClosePos();
+$('gDca').onclick = gDca;
 $('gReset').onclick = ()=>{ G.eq=GAME_START; G.pos=null; G.last=null; gSave(); gRender(); };
 // 닉네임 & 랭킹
 $('gNick').value = G.nick||'';
@@ -882,7 +898,7 @@ $('gNickSave').onclick = ()=>{
   $('gNickSave').textContent='완료!'; setTimeout(()=>$('gNickSave').textContent='등록',1500);
 };
 function gSubmitRank(){
-  if(!G.nick || G.eq<=GAME_START) return;   // 시작 시드보다 높아야 랭킹 등록
+  if(!G.nick || (G.w+G.l)===0) return;   // 닉네임 + 1판 이상이면 랭킹 등록
   fetch('https://ntfy.sh/'+RANK_TOPIC, {method:'POST',
     body: JSON.stringify({n:G.nick, e:Math.round(G.eq), w:G.w, t:G.w+G.l})}).catch(()=>{});
 }
