@@ -60,6 +60,13 @@
   @media(max-width:500px){.tiles{grid-template-columns:1fr}}
   .tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;min-height:104px}
   .tile .label{font-size:12px;color:var(--ink2);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  /* ? 도움말 아이콘 */
+  .help{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--ink3);font-size:10px;font-weight:700;cursor:pointer;position:relative;flex-shrink:0}
+  .help:hover{color:var(--ink);border-color:var(--ink3)}
+  .help .tip{display:none;position:absolute;bottom:22px;left:50%;transform:translateX(-50%);width:210px;background:#000;border:1px solid var(--border);color:var(--ink);font-size:11px;font-weight:400;line-height:1.6;padding:9px 11px;border-radius:8px;z-index:1000;box-shadow:0 6px 20px rgba(0,0,0,.5);text-align:left}
+  .help.on .tip,.help:hover .tip{display:block}
+  .help .tip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#000}
+  @media(max-width:520px){.help .tip{width:170px;left:auto;right:-4px;transform:none}.help .tip::after{left:auto;right:8px;transform:none}}
   .tile .value{font-size:24px;font-weight:800;letter-spacing:-.5px;line-height:1.15}
   .tile .sub{font-size:12px;color:var(--ink3);margin-top:6px}
   .up{color:var(--up)} .down{color:var(--down)} .neutral{color:var(--ink2)}
@@ -112,6 +119,21 @@
   #iosGuide .card ol{text-align:left;font-size:14px;line-height:2;color:var(--ink);padding-left:4px;list-style:none}
   #iosGuide .card .em{color:var(--accent);font-weight:700}
   #iosGuide .card button{margin-top:16px;background:var(--surface2);border:1px solid var(--border);color:var(--ink);padding:10px 20px;border-radius:8px;cursor:pointer}
+
+  /* ===== 코인 차트 ===== */
+  .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px 8px}
+  .chart-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+  .coin-tabs,.tf-tabs{display:flex;gap:4px}
+  .coin-tabs .ct,.tf-tabs .tf{background:var(--surface2);border:1px solid var(--border);color:var(--ink2);font-size:13px;font-weight:700;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .12s}
+  .tf-tabs .tf{font-size:12px;padding:6px 11px}
+  .coin-tabs .ct.on{background:var(--accent);color:#111;border-color:var(--accent)}
+  .tf-tabs .tf.on{background:var(--ink);color:#111;border-color:var(--ink)}
+  .chart-price{display:flex;align-items:baseline;gap:10px;margin:14px 2px 8px}
+  .chart-price #chSym{font-size:13px;color:var(--ink2);font-weight:600}
+  .chart-price #chLast{font-size:26px;font-weight:800;letter-spacing:-.5px}
+  .chart-wrap{position:relative;width:100%;height:340px}
+  #chart{width:100%;height:100%;display:block}
+  @media(max-width:600px){.chart-wrap{height:260px}.chart-price #chLast{font-size:22px}}
 
   /* ===== PC 앱 안내 (작은 배너) ===== */
   #pcApp{position:fixed;right:18px;bottom:18px;z-index:99999;background:#161b22;border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:none;align-items:center;gap:11px;box-shadow:0 8px 28px rgba(0,0,0,.45);max-width:270px}
@@ -194,29 +216,29 @@
       <div class="sub" id="btcChange">24h —</div>
     </div>
     <div class="tile">
-      <div class="label">김치 프리미엄</div>
+      <div class="label">김치 프리미엄 <span class="help">?<span class="tip">한국 거래소(업비트) 가격이 해외보다 얼마나 비싼지를 %로 나타낸 값. 플러스면 국내가 더 비싸다(김프), 마이너스면 더 싸다(역프)는 뜻이에요.</span></span></div>
       <div class="value" id="kimchi">—</div>
       <div class="sub" id="kimchiSub">업비트 vs 바이낸스</div>
     </div>
     <div class="tile">
-      <div class="label">공포 / 탐욕 지수</div>
+      <div class="label">공포 / 탐욕 지수 <span class="help">?<span class="tip">시장 심리를 0~100으로 나타낸 지표. 0에 가까울수록 투자자들이 공포(하락 두려움), 100에 가까울수록 탐욕(과열) 상태예요. 보통 극단적 공포일 때 저점인 경우가 많아요.</span></span></div>
       <div class="value" id="fng">—</div>
       <div class="sub" id="fngText">—</div>
       <div class="gaugebar"><i id="fngBar" style="width:0%"></i></div>
     </div>
     <div class="tile">
-      <div class="label">RSI (14 · 1시간봉)</div>
+      <div class="label">RSI (14 · 1시간봉) <span class="help">?<span class="tip">가격이 최근 얼마나 올랐는지를 0~100으로 나타낸 지표. 70 이상이면 과매수(너무 올라 조정 가능), 30 이하면 과매도(너무 내려 반등 가능)로 봐요.</span></span></div>
       <div class="value" id="rsi">—</div>
       <div class="sub" id="rsiText">—</div>
       <div class="gaugebar"><i id="rsiBar" style="width:0%"></i></div>
     </div>
     <div class="tile">
-      <div class="label">펀딩비 (BTCUSDT)</div>
+      <div class="label">펀딩비 (BTCUSDT) <span class="help">?<span class="tip">선물시장에서 롱·숏 한쪽이 반대쪽에 8시간마다 주고받는 수수료. 플러스면 롱이 숏에게 지불(매수세 우세), 마이너스면 그 반대예요.</span></span></div>
       <div class="value" id="funding">—</div>
       <div class="sub">8시간마다 정산</div>
     </div>
     <div class="tile">
-      <div class="label">롱 / 숏 비율 (계정 기준)</div>
+      <div class="label">롱 / 숏 비율 (계정 기준) <span class="help">?<span class="tip">선물 거래자 중 상승에 베팅(롱)한 사람과 하락에 베팅(숏)한 사람의 비율. 롱이 많으면 상승 기대가, 숏이 많으면 하락 기대가 우세하다는 뜻이에요.</span></span></div>
       <div class="value" id="lsRatio">—</div>
       <div class="lsbar" id="lsbar" style="display:none">
         <div class="l" id="lsL">롱</div><div class="s" id="lsS">숏</div>
@@ -224,13 +246,33 @@
     </div>
   </div>
 
-  <!-- 주요 코인 시세 -->
+  <!-- 코인 차트 -->
   <section>
-    <h2>주요 코인 시세 (선물 · 24시간)</h2>
-    <table>
-      <thead><tr><th>코인</th><th>가격 (USDT)</th><th>24h 변동</th><th>24h 고가</th><th>24h 저가</th><th>거래대금</th></tr></thead>
-      <tbody id="coinRows"><tr><td colspan="6" class="err">불러오는 중…</td></tr></tbody>
-    </table>
+    <div class="chart-card">
+      <div class="chart-top">
+        <div class="coin-tabs" id="coinTabs">
+          <button class="ct on" data-sym="BTCUSDT">BTC</button>
+          <button class="ct" data-sym="ETHUSDT">ETH</button>
+          <button class="ct" data-sym="SOLUSDT">SOL</button>
+          <button class="ct" data-sym="XRPUSDT">XRP</button>
+        </div>
+        <div class="tf-tabs" id="tfTabs">
+          <button class="tf" data-tf="15m">15분</button>
+          <button class="tf on" data-tf="1h">1시간</button>
+          <button class="tf" data-tf="4h">4시간</button>
+          <button class="tf" data-tf="1d">1일</button>
+        </div>
+      </div>
+      <div class="chart-price">
+        <span id="chSym">BTC/USDT</span>
+        <span id="chLast">—</span>
+        <span id="chChg" class="sub"></span>
+      </div>
+      <div class="chart-wrap">
+        <svg id="chart" preserveAspectRatio="none"></svg>
+        <div id="chartMsg" class="err" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">불러오는 중…</div>
+      </div>
+    </div>
   </section>
 
   <!-- 수수료/수익 계산기 -->
@@ -327,33 +369,79 @@ function showAd(i){
 }
 setInterval(()=>showAd((adIdx+1)%2), 8000);
 
-// ---- 시세 (10초마다) ----
-const COINS = ['BTCUSDT','ETHUSDT','SOLUSDT','XRPUSDT'];
+// ---- BTC 헤더 가격 (10초마다) ----
 async function loadPrices(){
   try{
-    const rs = await Promise.all(COINS.map(s =>
-      fetch('https://fapi.binance.com/fapi/v1/ticker/24hr?symbol='+s).then(r=>r.json())));
-    const btc = rs[0];
+    const btc = await fetch('https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=BTCUSDT').then(r=>r.json());
     $('btcPrice').textContent = '$'+fmt(btc.lastPrice, btc.lastPrice>1000?2:4);
     const ch = parseFloat(btc.priceChangePercent);
     $('btcChange').textContent = '24h ' + pct(ch);
     $('btcChange').className = 'sub ' + cls(ch);
-    $('coinRows').innerHTML = rs.map(t=>{
-      const c = parseFloat(t.priceChangePercent);
-      const name = t.symbol.replace('USDT','');
-      return `<tr><td>${name}<span class="coin-sym">USDT</span></td>
-        <td>${fmt(t.lastPrice, t.lastPrice>100?2:4)}</td>
-        <td class="${cls(c)}">${pct(c)}</td>
-        <td>${fmt(t.highPrice, t.highPrice>100?2:4)}</td>
-        <td>${fmt(t.lowPrice, t.lowPrice>100?2:4)}</td>
-        <td>$${fmt(t.quoteVolume/1e6,1)}M</td></tr>`;
-    }).join('');
     $('updated').textContent = '마지막 갱신 ' + new Date().toLocaleTimeString('ko-KR');
     if(!$('cEntry').value) $('cEntry').value = Math.round(btc.lastPrice);
     window.__btc = parseFloat(btc.lastPrice);
     calc();
-  }catch(e){ $('coinRows').innerHTML = '<tr><td colspan="6" class="err">시세 로드 실패 — 잠시 후 재시도</td></tr>'; }
+  }catch(e){ /* 헤더 가격 실패는 조용히 넘어감 */ }
 }
+
+// ---- 코인 캔들차트 (탭 전환 + 시간대 전환) ----
+let chSym = 'BTCUSDT', chTf = '1h';
+const SVGNS = 'http://www.w3.org/2000/svg';
+async function loadChart(){
+  const svg = $('chart'), msg = $('chartMsg');
+  try{
+    const k = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${chSym}&interval=${chTf}&limit=90`).then(r=>r.json());
+    if(!Array.isArray(k) || !k.length) throw new Error('empty');
+    msg.style.display='none';
+    const candles = k.map(c=>({t:c[0],o:+c[1],h:+c[2],l:+c[3],c:+c[4]}));
+    const last = candles[candles.length-1].c, first = candles[0].o;
+    const chg = (last/first-1)*100;
+    $('chSym').textContent = chSym.replace('USDT','')+'/USDT';
+    $('chLast').textContent = fmt(last, last>100?2:4);
+    $('chChg').textContent = pct(chg); $('chChg').className='sub '+cls(chg);
+
+    const W=svg.clientWidth||900, H=svg.clientHeight||340, padR=58, padB=20, padT=10;
+    const plotW=W-padR, plotH=H-padB-padT;
+    let hi=Math.max(...candles.map(c=>c.h)), lo=Math.min(...candles.map(c=>c.l));
+    const pad=(hi-lo)*0.08; hi+=pad; lo-=pad;
+    const x=i=>i/(candles.length)*plotW + plotW/candles.length*0.5;
+    const y=v=>padT + (hi-v)/(hi-lo)*plotH;
+    const cw=Math.max(2, plotW/candles.length*0.6);
+    svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+    let s='';
+    // 가로 눈금 + 오른쪽 가격 라벨
+    for(let g=0; g<=4; g++){
+      const v=lo+(hi-lo)*g/4, yy=y(v);
+      s+=`<line x1="0" y1="${yy}" x2="${plotW}" y2="${yy}" stroke="#2a3140" stroke-width="1"/>`;
+      s+=`<text x="${plotW+6}" y="${yy+4}" fill="#6b7683" font-size="11">${fmt(v, v>100?0:4)}</text>`;
+    }
+    // 캔들
+    candles.forEach((c,i)=>{
+      const up=c.c>=c.o, col=up?'#f6465d':'#3b82f6', cx=x(i);
+      s+=`<line x1="${cx}" y1="${y(c.h)}" x2="${cx}" y2="${y(c.l)}" stroke="${col}" stroke-width="1"/>`;
+      const yo=y(c.o), yc=y(c.c), top=Math.min(yo,yc), hgt=Math.max(1,Math.abs(yc-yo));
+      s+=`<rect x="${cx-cw/2}" y="${top}" width="${cw}" height="${hgt}" fill="${col}"/>`;
+    });
+    // 현재가 점선
+    const yl=y(last);
+    s+=`<line x1="0" y1="${yl}" x2="${plotW}" y2="${yl}" stroke="#f0b90b" stroke-width="1" stroke-dasharray="4 3"/>`;
+    s+=`<rect x="${plotW}" y="${yl-9}" width="${padR}" height="18" fill="#f0b90b"/>`;
+    s+=`<text x="${plotW+5}" y="${yl+4}" fill="#111" font-size="11" font-weight="700">${fmt(last,last>100?1:4)}</text>`;
+    svg.innerHTML=s;
+  }catch(e){ msg.style.display='flex'; msg.textContent='차트 로드 실패 — 잠시 후 재시도'; }
+}
+// 탭 이벤트
+$('coinTabs').addEventListener('click',e=>{
+  const b=e.target.closest('.ct'); if(!b) return;
+  document.querySelectorAll('#coinTabs .ct').forEach(x=>x.classList.toggle('on',x===b));
+  chSym=b.dataset.sym; loadChart();
+});
+$('tfTabs').addEventListener('click',e=>{
+  const b=e.target.closest('.tf'); if(!b) return;
+  document.querySelectorAll('#tfTabs .tf').forEach(x=>x.classList.toggle('on',x===b));
+  chTf=b.dataset.tf; loadChart();
+});
+window.addEventListener('resize', ()=>{ clearTimeout(window.__rz); window.__rz=setTimeout(loadChart,200); });
 
 // ---- 김치 프리미엄 (60초마다) — 코인게코 경유 업비트 시세 (직접 호출 시 업비트가 차단해서 우회) ----
 async function loadKimchi(){
@@ -502,14 +590,25 @@ async function loadChat(){
 }
 
 // ---- 시작 & 주기 ----
-loadPrices(); loadKimchi(); loadFng(); loadRsi(); loadLs(); loadFunding(); loadChat();
+loadPrices(); loadChart(); loadKimchi(); loadFng(); loadRsi(); loadLs(); loadFunding(); loadChat();
 setInterval(loadPrices, 10_000);
+setInterval(loadChart, 20_000);
 setInterval(loadKimchi, 60_000);
 setInterval(loadFng, 600_000);
 setInterval(loadRsi, 300_000);
 setInterval(loadLs, 300_000);
 setInterval(loadFunding, 300_000);
 setInterval(loadChat, 10_000);
+
+// ---- ? 도움말: 폰에서 탭하면 열림 ----
+document.querySelectorAll('.help').forEach(h=>{
+  h.addEventListener('click', e=>{
+    e.stopPropagation();
+    document.querySelectorAll('.help.on').forEach(o=>{ if(o!==h) o.classList.remove('on'); });
+    h.classList.toggle('on');
+  });
+});
+document.addEventListener('click', ()=>document.querySelectorAll('.help.on').forEach(o=>o.classList.remove('on')));
 
 // ---- 앱(PWA) 등록 ----
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
