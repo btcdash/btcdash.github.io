@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTC 마켓 대시보드</title>
+<style>
+  :root{
+    --bg:#0d1117; --surface:#161b22; --surface2:#1c2330; --border:#2a3140;
+    --ink:#e6edf3; --ink2:#9aa7b4; --ink3:#6b7683;
+    --up:#f6465d; --down:#3b82f6;      /* 한국식: 상승=빨강, 하락=파랑 */
+    --accent:#f0b90b; --good:#22c55e;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Segoe UI','Malgun Gothic',sans-serif;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+
+  header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:6px 0 22px}
+  .logo{font-size:22px;font-weight:800;letter-spacing:-.5px}
+  .logo span{color:var(--accent)}
+  .updated{font-size:12px;color:var(--ink3)}
+  .cta{background:var(--accent);color:#111;font-weight:700;font-size:14px;padding:10px 18px;border-radius:8px;transition:opacity .15s}
+  .cta:hover{opacity:.85}
+
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media(max-width:800px){.tiles{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:500px){.tiles{grid-template-columns:1fr}}
+  .tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;min-height:104px}
+  .tile .label{font-size:12px;color:var(--ink2);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .tile .value{font-size:24px;font-weight:800;letter-spacing:-.5px;line-height:1.15}
+  .tile .sub{font-size:12px;color:var(--ink3);margin-top:6px}
+  .up{color:var(--up)} .down{color:var(--down)} .neutral{color:var(--ink2)}
+
+  .gaugebar{height:6px;background:var(--surface2);border-radius:3px;margin-top:10px;position:relative;overflow:hidden}
+  .gaugebar i{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--accent)}
+
+  .lsbar{display:flex;height:22px;border-radius:6px;overflow:hidden;margin-top:10px;font-size:11px;font-weight:700;gap:2px}
+  .lsbar .l{background:var(--up);display:flex;align-items:center;padding-left:8px;color:#fff;border-radius:6px 0 0 6px}
+  .lsbar .s{background:var(--down);display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:#fff;border-radius:0 6px 6px 0}
+
+  section{margin-top:26px}
+  h2{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  h2::before{content:'';width:3px;height:15px;background:var(--accent);border-radius:2px;display:inline-block}
+
+  table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;font-size:14px}
+  thead th{font-size:12px;font-weight:600;color:var(--ink3);text-align:right;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface2)}
+  thead th:first-child{text-align:left}
+  tbody td{padding:13px 16px;text-align:right;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums}
+  tbody tr:last-child td{border-bottom:0}
+  tbody td:first-child{text-align:left;font-weight:700}
+  .coin-sym{color:var(--ink3);font-weight:400;font-size:12px;margin-left:4px}
+
+  .calc{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+  .calc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+  .field label{display:block;font-size:12px;color:var(--ink2);margin-bottom:6px}
+  .field input,.field select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--ink);padding:10px 12px;font-size:14px;outline:none}
+  .field input:focus{border-color:var(--accent)}
+  .calc-out{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:16px}
+  .calc-out .tile{min-height:auto;padding:12px 16px}
+  .calc-out .value{font-size:19px}
+
+  footer{margin-top:40px;font-size:11px;color:var(--ink3);line-height:1.7;border-top:1px solid var(--border);padding-top:16px}
+  .err{color:var(--ink3);font-size:13px}
+
+  /* ===== 롤링 광고 배너 ===== */
+  .adwrap{position:relative;margin:0 0 22px;border-radius:14px;overflow:hidden;border:1px solid var(--border)}
+  .ad{display:none;align-items:center;justify-content:space-between;gap:20px;padding:30px 34px;min-height:150px;cursor:pointer}
+  .ad.on{display:flex;animation:adfade .5s ease}
+  @keyframes adfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .ad .ad-badge{display:inline-block;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,.18);color:#fff;margin-bottom:10px}
+  .ad .ad-title{font-size:26px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1.25;text-shadow:0 2px 10px rgba(0,0,0,.25)}
+  .ad .ad-title em{font-style:normal;color:#ffe45c}
+  .ad .ad-sub{font-size:13px;color:rgba(255,255,255,.85);margin-top:8px}
+  .ad .ad-cta{flex-shrink:0;background:#fff;color:#111;font-weight:800;font-size:14px;padding:12px 22px;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.3);white-space:nowrap}
+  .ad-1{background:linear-gradient(120deg,#1a1c2c 0%,#3d2c00 45%,#b8860b 130%)}
+  .ad-2{background:linear-gradient(120deg,#0b1b3a 0%,#123a6b 55%,#1e90ff 140%)}
+  .ad-dots{position:absolute;right:14px;bottom:10px;display:flex;gap:6px}
+  .ad-dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35);cursor:pointer}
+  .ad-dots i.on{background:#fff}
+  @media(max-width:640px){.ad{flex-direction:column;align-items:flex-start;padding:22px}.ad .ad-cta{align-self:stretch;text-align:center}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="logo">BTC <span>마켓 대시보드</span></div>
+      <div class="updated" id="updated">불러오는 중…</div>
+    </div>
+    <a class="cta" id="refLink" href="#" target="_blank">거래소 수수료 페이백 받기 →</a>
+  </header>
+
+  <!-- 롤링 광고 배너 -->
+  <div class="adwrap" id="adwrap">
+    <a class="ad ad-1 on" id="ad0" target="_blank" href="#">
+      <div>
+        <span class="ad-badge">💰 수수료 페이백</span>
+        <div class="ad-title">거래할 때마다 새는 수수료,<br><em>페이백으로 돌려받자!</em></div>
+        <div class="ad-sub">아래 링크로 가입하면 거래 수수료 일부가 매번 돌아옵니다</div>
+      </div>
+      <span class="ad-cta">페이백 가입하기 →</span>
+    </a>
+    <a class="ad ad-2" id="ad1" target="_blank" href="#">
+      <div>
+        <span class="ad-badge">✈️ 텔레그램 뉴스룸</span>
+        <div class="ad-title">가장 빠른 코인 소식,<br><em>텔레그램 채널</em>에서!</div>
+        <div class="ad-sub">실시간 시장 동향과 투자 인사이트를 빠르게 전달해드립니다</div>
+      </div>
+      <span class="ad-cta">채널 입장하기 →</span>
+    </a>
+    <div class="ad-dots"><i class="on" onclick="showAd(0)"></i><i onclick="showAd(1)"></i></div>
+  </div>
+
+  <!-- 핵심 지표 타일 -->
+  <div class="tiles">
+    <div class="tile">
+      <div class="label">BTC 가격 (바이낸스 선물)</div>
+      <div class="value" id="btcPrice">—</div>
+      <div class="sub" id="btcChange">24h —</div>
+    </div>
+    <div class="tile">
+      <div class="label">김치 프리미엄</div>
+      <div class="value" id="kimchi">—</div>
+      <div class="sub" id="kimchiSub">업비트 vs 바이낸스</div>
+    </div>
+    <div class="tile">
+      <div class="label">공포 / 탐욕 지수</div>
+      <div class="value" id="fng">—</div>
+      <div class="sub" id="fngText">—</div>
+      <div class="gaugebar"><i id="fngBar" style="width:0%"></i></div>
+    </div>
+    <div class="tile">
+      <div class="label">RSI (14 · 1시간봉)</div>
+      <div class="value" id="rsi">—</div>
+      <div class="sub" id="rsiText">—</div>
+      <div class="gaugebar"><i id="rsiBar" style="width:0%"></i></div>
+    </div>
+    <div class="tile">
+      <div class="label">펀딩비 (BTCUSDT)</div>
+      <div class="value" id="funding">—</div>
+      <div class="sub">8시간마다 정산</div>
+    </div>
+    <div class="tile">
+      <div class="label">롱 / 숏 비율 (계정 기준)</div>
+      <div class="value" id="lsRatio">—</div>
+      <div class="lsbar" id="lsbar" style="display:none">
+        <div class="l" id="lsL">롱</div><div class="s" id="lsS">숏</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 주요 코인 시세 -->
+  <section>
+    <h2>주요 코인 시세 (선물 · 24시간)</h2>
+    <table>
+      <thead><tr><th>코인</th><th>가격 (USDT)</th><th>24h 변동</th><th>24h 고가</th><th>24h 저가</th><th>거래대금</th></tr></thead>
+      <tbody id="coinRows"><tr><td colspan="6" class="err">불러오는 중…</td></tr></tbody>
+    </table>
+  </section>
+
+  <!-- 수수료/수익 계산기 -->
+  <section>
+    <h2>선물 수익 · 수수료 계산기</h2>
+    <div class="calc">
+      <div class="calc-grid">
+        <div class="field"><label>포지션</label>
+          <select id="cSide"><option value="1">롱 (매수)</option><option value="-1">숏 (매도)</option></select></div>
+        <div class="field"><label>증거금 (USDT)</label><input type="number" id="cMargin" value="100"></div>
+        <div class="field"><label>레버리지 (배)</label><input type="number" id="cLev" value="50"></div>
+        <div class="field"><label>진입가</label><input type="number" id="cEntry" placeholder="예: 62800"></div>
+        <div class="field"><label>목표가 (청산 시점)</label><input type="number" id="cExit" placeholder="예: 63200"></div>
+        <div class="field"><label>수수료율 % (테이커, 편도)</label><input type="number" id="cFee" value="0.05" step="0.01"></div>
+      </div>
+      <div class="calc-out">
+        <div class="tile"><div class="label">예상 손익 (PnL)</div><div class="value" id="rPnl">—</div></div>
+        <div class="tile"><div class="label">수익률 (증거금 대비)</div><div class="value" id="rRoe">—</div></div>
+        <div class="tile"><div class="label">왕복 수수료</div><div class="value" id="rFee">—</div></div>
+        <div class="tile"><div class="label">추정 청산가</div><div class="value" id="rLiq">—</div></div>
+      </div>
+      <div class="sub" style="margin-top:12px;color:var(--ink3);font-size:12px">
+        * 격리 마진 · 유지증거금 미반영 근사치입니다. 수수료 페이백을 받으면 위 수수료의 일부가 돌아옵니다.
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    본 사이트의 모든 정보는 투자 참고용이며, 투자 권유나 매매 신호가 아닙니다. 암호화폐 선물 거래는 원금 전액 손실 위험이 있습니다.
+    데이터 출처: Binance · Upbit · alternative.me · 환율(open.er-api.com)
+  </footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmt = (n, d=2) => Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+const pct = n => (n>=0?'+':'') + fmt(n) + '%';
+const cls = n => n>0?'up':(n<0?'down':'neutral');
+
+// ===== 링크 설정 (여기만 바꾸면 됨) =====
+const REFERRAL_URL = 'https://www.tapbit.com/auth/KYSMLSK';   // 텝비트 페이백(레퍼럴) 가입 주소
+const TELEGRAM_URL = 'https://telegram.me/+zPgdJPId5_tmMDY9';   // 텔레그램 소통방 주소
+if (REFERRAL_URL !== '#'){ $('refLink').href = REFERRAL_URL; $('ad0').href = REFERRAL_URL; }
+if (TELEGRAM_URL !== '#'){ $('ad1').href = TELEGRAM_URL; }
+
+// ---- 배너 롤링 (8초마다) ----
+let adIdx = 0;
+function showAd(i){
+  adIdx = i;
+  document.querySelectorAll('.ad').forEach((el,n)=>el.classList.toggle('on', n===i));
+  document.querySelectorAll('.ad-dots i').forEach((el,n)=>el.classList.toggle('on', n===i));
+}
+setInterval(()=>showAd((adIdx+1)%2), 8000);
+
+// ---- 시세 (10초마다) ----
+const COINS = ['BTCUSDT','ETHUSDT','SOLUSDT','XRPUSDT'];
+async function loadPrices(){
+  try{
+    const rs = await Promise.all(COINS.map(s =>
+      fetch('https://fapi.binance.com/fapi/v1/ticker/24hr?symbol='+s).then(r=>r.json())));
+    const btc = rs[0];
+    $('btcPrice').textContent = '$'+fmt(btc.lastPrice, btc.lastPrice>1000?2:4);
+    const ch = parseFloat(btc.priceChangePercent);
+    $('btcChange').textContent = '24h ' + pct(ch);
+    $('btcChange').className = 'sub ' + cls(ch);
+    $('coinRows').innerHTML = rs.map(t=>{
+      const c = parseFloat(t.priceChangePercent);
+      const name = t.symbol.replace('USDT','');
+      return `<tr><td>${name}<span class="coin-sym">USDT</span></td>
+        <td>${fmt(t.lastPrice, t.lastPrice>100?2:4)}</td>
+        <td class="${cls(c)}">${pct(c)}</td>
+        <td>${fmt(t.highPrice, t.highPrice>100?2:4)}</td>
+        <td>${fmt(t.lowPrice, t.lowPrice>100?2:4)}</td>
+        <td>$${fmt(t.quoteVolume/1e6,1)}M</td></tr>`;
+    }).join('');
+    $('updated').textContent = '마지막 갱신 ' + new Date().toLocaleTimeString('ko-KR');
+    if(!$('cEntry').value) $('cEntry').value = Math.round(btc.lastPrice);
+    window.__btc = parseFloat(btc.lastPrice);
+    calc();
+  }catch(e){ $('coinRows').innerHTML = '<tr><td colspan="6" class="err">시세 로드 실패 — 잠시 후 재시도</td></tr>'; }
+}
+
+// ---- 김치 프리미엄 (60초마다) ----
+async function loadKimchi(){
+  try{
+    const [ub, fx] = await Promise.all([
+      fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC').then(r=>r.json()),
+      fetch('https://open.er-api.com/v6/latest/USD').then(r=>r.json())
+    ]);
+    const krw = ub[0].trade_price;
+    const rate = fx.rates.KRW;
+    const usd = window.__btc || null;
+    if(!usd){ setTimeout(loadKimchi, 3000); return; }
+    const prem = (krw / (usd*rate) - 1) * 100;
+    $('kimchi').textContent = pct(prem);
+    $('kimchi').className = 'value ' + cls(prem);
+    $('kimchiSub').textContent = `업비트 ₩${fmt(krw,0)} · 환율 ${fmt(rate,0)}원`;
+  }catch(e){ $('kimchi').textContent = '—'; $('kimchiSub').textContent = '로드 실패'; }
+}
+
+// ---- 공포/탐욕 (10분마다) ----
+async function loadFng(){
+  try{
+    const j = await fetch('https://api.alternative.me/fng/?limit=1').then(r=>r.json());
+    const v = parseInt(j.data[0].value);
+    $('fng').textContent = v;
+    $('fngBar').style.width = v+'%';
+    const t = v<=25?'극단적 공포':v<=45?'공포':v<=55?'중립':v<=75?'탐욕':'극단적 탐욕';
+    $('fngText').textContent = t;
+    $('fng').className = 'value ' + (v<=45?'down':v>=55?'up':'neutral');
+  }catch(e){ $('fng').textContent='—'; }
+}
+
+// ---- RSI (5분마다) ----
+async function loadRsi(){
+  try{
+    const k = await fetch('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1h&limit=200').then(r=>r.json());
+    const closes = k.map(c=>parseFloat(c[4]));
+    const period=14; let g=0,l=0;
+    for(let i=1;i<=period;i++){ const d=closes[i]-closes[i-1]; d>0?g+=d:l-=d; }
+    let ag=g/period, al=l/period;
+    for(let i=period+1;i<closes.length;i++){
+      const d=closes[i]-closes[i-1];
+      ag=(ag*(period-1)+(d>0?d:0))/period;
+      al=(al*(period-1)+(d<0?-d:0))/period;
+    }
+    const rsi = al===0?100:100-100/(1+ag/al);
+    $('rsi').textContent = fmt(rsi,1);
+    $('rsiBar').style.width = rsi+'%';
+    $('rsiText').textContent = rsi>=70?'과매수 구간':rsi<=30?'과매도 구간':'중립';
+    $('rsi').className = 'value ' + (rsi>=70?'up':rsi<=30?'down':'neutral');
+  }catch(e){ $('rsi').textContent='—'; }
+}
+
+// ---- 롱/숏 비율 (5분마다) ----
+async function loadLs(){
+  try{
+    const j = await fetch('https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol=BTCUSDT&period=1h&limit=1').then(r=>r.json());
+    const d = j[0];
+    const long = parseFloat(d.longAccount)*100, short = parseFloat(d.shortAccount)*100;
+    $('lsRatio').textContent = fmt(parseFloat(d.longShortRatio),2);
+    $('lsbar').style.display='flex';
+    $('lsL').style.width = long+'%';  $('lsL').textContent = '롱 '+fmt(long,1)+'%';
+    $('lsS').style.width = short+'%'; $('lsS').textContent = '숏 '+fmt(short,1)+'%';
+  }catch(e){ $('lsRatio').textContent='—'; }
+}
+
+// ---- 펀딩비 (5분마다) ----
+async function loadFunding(){
+  try{
+    const j = await fetch('https://fapi.binance.com/fapi/v1/premiumIndex?symbol=BTCUSDT').then(r=>r.json());
+    const f = parseFloat(j.lastFundingRate)*100;
+    $('funding').textContent = (f>=0?'+':'') + fmt(f,4) + '%';
+    $('funding').className = 'value ' + cls(f);
+  }catch(e){ $('funding').textContent='—'; }
+}
+
+// ---- 계산기 ----
+function calc(){
+  const side=+$('cSide').value, m=+$('cMargin').value, lev=+$('cLev').value,
+        e=+$('cEntry').value, x=+$('cExit').value, feeR=+$('cFee').value/100;
+  if(!m||!lev||!e){ return; }
+  const notional = m*lev;
+  const fee = notional*feeR*2;
+  $('rFee').textContent = fmt(fee)+' USDT';
+  const liq = e*(1 - side*(1/lev)*0.98);   // 유지증거금 대략 반영한 근사
+  $('rLiq').textContent = fmt(liq, e>1000?0:4);
+  if(x){
+    const pnl = notional*side*(x-e)/e - fee;
+    const roe = pnl/m*100;
+    $('rPnl').textContent = (pnl>=0?'+':'')+fmt(pnl)+' USDT';
+    $('rPnl').className='value '+cls(pnl);
+    $('rRoe').textContent = pct(roe);
+    $('rRoe').className='value '+cls(roe);
+  } else { $('rPnl').textContent='목표가 입력'; $('rRoe').textContent='—'; }
+}
+['cSide','cMargin','cLev','cEntry','cExit','cFee'].forEach(id=>$(id).addEventListener('input',calc));
+
+// ---- 시작 & 주기 ----
+loadPrices(); loadKimchi(); loadFng(); loadRsi(); loadLs(); loadFunding();
+setInterval(loadPrices, 10_000);
+setInterval(loadKimchi, 60_000);
+setInterval(loadFng, 600_000);
+setInterval(loadRsi, 300_000);
+setInterval(loadLs, 300_000);
+setInterval(loadFunding, 300_000);
+</script>
+</body>
+</html>
