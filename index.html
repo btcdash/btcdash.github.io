@@ -31,9 +31,40 @@
   *{margin:0;padding:0;box-sizing:border-box}
   body{background:var(--bg);color:var(--ink);font-family:'Segoe UI','Malgun Gothic',sans-serif;min-height:100vh}
   a{color:inherit;text-decoration:none}
-  .wrap{max-width:1340px;margin:0 auto;padding:20px 16px 60px}
-  .cols{display:grid;grid-template-columns:1fr 310px;gap:18px;align-items:start}
-  @media(max-width:1000px){.cols{grid-template-columns:1fr}}
+  .wrap{max-width:1560px;margin:0 auto;padding:20px 16px 60px}
+  .cols{display:grid;grid-template-columns:290px 1fr 310px;gap:18px;align-items:start}
+  @media(max-width:1250px){.cols{grid-template-columns:1fr 310px}.gamebox{grid-column:1/-1;order:3;position:static!important;max-height:none!important}}
+  @media(max-width:1000px){.cols{grid-template-columns:1fr}.cols>div{order:1}.gamebox{grid-column:auto;order:2}.chatbox{order:3}}
+
+  /* ===== 모의 트레이딩 게임 ===== */
+  .gamebox{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;position:sticky;top:16px;max-height:calc(100vh - 32px);overflow-y:auto}
+  .game-head{font-weight:800;font-size:14px;display:flex;align-items:center;gap:6px;margin-bottom:12px}
+  .g-price{text-align:center;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px}
+  .g-price b{font-size:22px;font-weight:800;letter-spacing:-.5px;display:block}
+  .g-price span{font-size:11px;color:var(--ink3)}
+  .g-eq{font-size:13px;color:var(--ink2);display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 2px}
+  .g-eq b{font-size:16px;color:var(--accent)}
+  .g-opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+  .g-opts select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--ink);padding:9px 10px;font-size:13px;outline:none}
+  .g-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .g-btns button{border:0;border-radius:10px;padding:14px 6px;font-size:14px;font-weight:800;color:#fff;cursor:pointer;transition:opacity .12s}
+  .g-btns button:hover{opacity:.85}
+  .g-long{background:var(--up)} .g-short{background:var(--down)}
+  .g-posinfo{font-size:13px;font-weight:700;text-align:center;margin-bottom:6px}
+  .g-roe{font-size:34px;font-weight:900;text-align:center;letter-spacing:-1px;line-height:1.1}
+  .g-pnl{font-size:14px;font-weight:700;text-align:center;margin-top:2px}
+  .g-liq{font-size:11px;color:var(--ink3);text-align:center;margin-top:6px}
+  .g-close{width:100%;margin-top:12px;border:0;border-radius:10px;padding:13px;font-size:14px;font-weight:800;background:var(--accent);color:#111;cursor:pointer}
+  .g-record{font-size:12px;color:var(--ink2);text-align:center;margin-top:12px;line-height:1.7}
+  .g-reset{width:100%;margin-top:8px;border:1px solid var(--border);border-radius:10px;padding:11px;font-size:13px;font-weight:700;background:var(--surface2);color:var(--ink);cursor:pointer}
+  .g-rank{margin-top:14px;border-top:1px solid var(--border);padding-top:12px}
+  .g-rank-head{font-size:13px;font-weight:800;margin-bottom:8px}
+  .g-rrow{display:flex;justify-content:space-between;font-size:12.5px;padding:4px 2px;border-bottom:1px solid var(--border)}
+  .g-rrow:last-child{border-bottom:0}
+  .g-rrow b{color:var(--accent);font-variant-numeric:tabular-nums}
+  .g-nick{display:flex;gap:6px;margin-top:10px}
+  .g-nick input{flex:1;min-width:0;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--ink);padding:8px 10px;font-size:13px;outline:none}
+  .g-nick button{border:0;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;background:var(--accent);color:#111;cursor:pointer}
 
   /* ===== 실시간 소통방 패널 ===== */
   .chatbox{background:var(--surface);border:1px solid var(--border);border-radius:12px;position:sticky;top:16px;display:flex;flex-direction:column;max-height:540px}
@@ -285,6 +316,54 @@
   </div>
 
   <div class="cols">
+
+  <!-- 모의 트레이딩 게임 (왼쪽) -->
+  <aside class="gamebox">
+    <div class="game-head">🎮 모의 트레이딩 <span class="help">?<span class="tip">가상 시드 100만원으로 진짜 BTC 시세에 베팅하는 연습 게임이에요. 실제 돈이 아니니 부담 없이 연습해보세요. 기록은 이 브라우저에 저장돼요.</span></span></div>
+    <div class="g-price"><b id="gPrice">—</b><span>BTC/USDT 실시간</span></div>
+    <div class="g-eq"><span>내 시드</span><b id="gEquity">—</b></div>
+
+    <div id="gOpen">
+      <div class="g-opts">
+        <select id="gLev">
+          <option value="10">10배</option>
+          <option value="25" selected>25배</option>
+          <option value="50">50배</option>
+          <option value="100">100배</option>
+        </select>
+        <select id="gStake">
+          <option value="0.1">시드 10%</option>
+          <option value="0.25" selected>시드 25%</option>
+          <option value="0.5">시드 50%</option>
+        </select>
+      </div>
+      <div class="g-btns">
+        <button class="g-long" id="gLong">📈 롱<br><small>오른다에 베팅</small></button>
+        <button class="g-short" id="gShort">📉 숏<br><small>내린다에 베팅</small></button>
+      </div>
+    </div>
+
+    <div id="gPos" style="display:none">
+      <div class="g-posinfo" id="gPosInfo">—</div>
+      <div class="g-roe neutral" id="gRoe">0.0%</div>
+      <div class="g-pnl" id="gPnl">—</div>
+      <div class="g-liq" id="gLiq">—</div>
+      <button class="g-close" id="gClose">💰 청산하기</button>
+    </div>
+
+    <div class="g-record" id="gRecord">아직 전적이 없어요 — 첫 베팅 해보세요!</div>
+    <button id="gReset" class="g-reset" style="display:none">💀 파산! 시드 초기화하고 다시 시작</button>
+
+    <div class="g-rank">
+      <div class="g-rank-head">🏆 랭킹 TOP 10</div>
+      <div id="gRankList" class="err" style="font-size:12px">불러오는 중…</div>
+      <div class="g-nick">
+        <input id="gNick" maxlength="12" placeholder="랭킹용 닉네임">
+        <button id="gNickSave">등록</button>
+      </div>
+    </div>
+  </aside>
+
   <div>
 
   <!-- 실시간 고래 체결 -->
@@ -724,6 +803,106 @@ function renderWhales(){
   }
 }
 whaleConnect();
+
+// ---- 🎮 모의 트레이딩 게임 ----
+const GAME_START = 1_000_000;                    // 시작 시드 100만원
+const RANK_TOPIC = 'rich-btcdash-rank-x8a2k9';
+const RANK_RAW = 'https://gist.githubusercontent.com/btcdash/2dbcf6ec8074b85380d3cf119f6f1091/raw/rank.json';
+let G;
+try{ G = JSON.parse(localStorage.getItem('richgame')||'null'); }catch(e){ G=null; }
+if(!G) G = {eq:GAME_START, w:0, l:0, pos:null, nick:'', last:null};
+const gSave = ()=>localStorage.setItem('richgame', JSON.stringify(G));
+const krwFmt = v=>{
+  const a=Math.abs(v);
+  return a>=1e8 ? (v/1e8).toFixed(2)+'억' : a>=1e4 ? Math.round(v/1e4).toLocaleString()+'만' : Math.round(v).toLocaleString()+'원';
+};
+let gP = null;
+async function gTick(){
+  try{
+    const j = await fetch('https://fapi.binance.com/fapi/v1/ticker/price?symbol=BTCUSDT').then(r=>r.json());
+    gP = parseFloat(j.price);
+    gRender();
+  }catch(e){}
+}
+const gLiqPrice = p => p.side>0 ? p.entry*(1-0.98/p.lev) : p.entry*(1+0.98/p.lev);
+function gRender(){
+  if(gP) $('gPrice').textContent = fmt(gP,1);
+  $('gEquity').textContent = krwFmt(G.eq);
+  const pos = G.pos;
+  $('gOpen').style.display = pos?'none':'block';
+  $('gPos').style.display = pos?'block':'none';
+  // 파산 판정 (포지션 없고 최소 베팅도 못 할 때)
+  $('gReset').style.display = (!pos && G.eq<10000)?'block':'none';
+  if(pos && gP){
+    const liq = gLiqPrice(pos);
+    // 청산가 도달 → 강제청산
+    if((pos.side>0 && gP<=liq) || (pos.side<0 && gP>=liq)){ gClosePos(liq, true); return; }
+    const roe = pos.side*(gP-pos.entry)/pos.entry*pos.lev*100;
+    const pnl = Math.round(pos.margin*roe/100);
+    $('gPosInfo').textContent = `${pos.side>0?'📈 롱':'📉 숏'} ${pos.lev}배 · 진입 ${fmt(pos.entry,1)} · 베팅 ${krwFmt(pos.margin)}`;
+    $('gRoe').textContent = (roe>=0?'+':'')+roe.toFixed(1)+'%';
+    $('gRoe').className = 'g-roe '+cls(roe);
+    $('gPnl').textContent = (pnl>=0?'+':'')+krwFmt(pnl);
+    $('gPnl').className = 'g-pnl '+cls(pnl);
+    $('gLiq').textContent = `⚠️ 청산가 ${fmt(liq,1)} (여기 닿으면 베팅금 전액 날아감)`;
+  }
+  const tot = G.w+G.l;
+  let rec = tot ? `${G.w}승 ${G.l}패 · 승률 ${(G.w/tot*100).toFixed(0)}%` : '아직 전적이 없어요 — 첫 베팅 해보세요!';
+  if(G.last!==null) rec += `<br>지난 판: <b class="${cls(G.last)}">${G.last>=0?'+':''}${krwFmt(G.last)}</b>`;
+  $('gRecord').innerHTML = rec;
+}
+function gOpenPos(side){
+  if(!gP || G.pos) return;
+  const margin = Math.floor(G.eq * +$('gStake').value);
+  if(margin < 1000) return;
+  G.pos = {side, lev:+$('gLev').value, margin, entry:gP};
+  gSave(); gRender();
+}
+function gClosePos(atPrice, forced){
+  const pos = G.pos; if(!pos) return;
+  const price = atPrice || gP; if(!price) return;
+  let roe = pos.side*(price-pos.entry)/pos.entry*pos.lev*100;
+  if(forced) roe = -98;                        // 강제청산: 베팅금 거의 전액 손실
+  const pnl = Math.round(pos.margin*Math.max(roe,-100)/100);
+  G.eq = Math.max(0, G.eq + pnl);
+  pnl>0 ? G.w++ : G.l++;
+  G.last = pnl; G.pos = null;
+  gSave(); gSubmitRank(); gRender();
+}
+$('gLong').onclick = ()=>gOpenPos(1);
+$('gShort').onclick = ()=>gOpenPos(-1);
+$('gClose').onclick = ()=>gClosePos();
+$('gReset').onclick = ()=>{ G.eq=GAME_START; G.pos=null; G.last=null; gSave(); gRender(); };
+// 닉네임 & 랭킹
+$('gNick').value = G.nick||'';
+$('gNickSave').onclick = ()=>{
+  const n = $('gNick').value.trim().slice(0,12);
+  if(!n) return;
+  G.nick = n; gSave(); gSubmitRank();
+  $('gNickSave').textContent='완료!'; setTimeout(()=>$('gNickSave').textContent='등록',1500);
+};
+function gSubmitRank(){
+  if(!G.nick || G.eq<=GAME_START) return;   // 시작 시드보다 높아야 랭킹 등록
+  fetch('https://ntfy.sh/'+RANK_TOPIC, {method:'POST',
+    body: JSON.stringify({n:G.nick, e:Math.round(G.eq), w:G.w, t:G.w+G.l})}).catch(()=>{});
+}
+async function gLoadRank(){
+  try{
+    const d = await fetch(RANK_RAW+'?ts='+Date.now()).then(r=>r.json());
+    const el = $('gRankList');
+    if(!d.top || !d.top.length){ el.textContent='아직 참가자가 없어요 — 1등을 찜하세요!'; return; }
+    el.innerHTML=''; el.className='';
+    d.top.slice(0,10).forEach((p,i)=>{
+      const row=document.createElement('div'); row.className='g-rrow';
+      const nm=document.createElement('span'); nm.textContent=(['🥇','🥈','🥉'][i]||(i+1)+'. ')+' '+p.n;
+      const val=document.createElement('b'); val.textContent=krwFmt(p.e);
+      row.appendChild(nm); row.appendChild(val); el.appendChild(row);
+    });
+  }catch(e){}
+}
+gTick(); gRender(); gLoadRank();
+setInterval(gTick, 2000);
+setInterval(gLoadRank, 60_000);
 
 // ---- 시작 & 주기 ----
 loadPrices(); buildChart(); loadKimchi(); loadFng(); loadRsi(); loadLs(); loadFunding(); loadChat();
