@@ -37,6 +37,7 @@
   .chat-name{font-size:12px;font-weight:700;color:var(--accent)}
   .chat-time{font-size:10px;color:var(--ink3);margin-left:6px;font-weight:400}
   .chat-text{font-size:13px;color:var(--ink);margin-top:4px;line-height:1.55;word-break:break-word;background:var(--surface2);border:1px solid var(--border);padding:8px 11px;border-radius:2px 10px 10px 10px;display:inline-block;max-width:100%}
+  .chat-img{display:block;max-width:100%;border-radius:10px;margin-top:6px;border:1px solid var(--border);cursor:zoom-in}
   .chat-join{display:block;text-align:center;background:#2ea6ff;color:#fff;font-weight:700;font-size:13px;padding:12px;border-radius:0 0 12px 12px;transition:opacity .15s}
   .chat-join:hover{opacity:.85}
 
@@ -389,23 +390,37 @@ function calc(){
 
 // ---- 실시간 소통방 (10초마다 · 조회 제한 없는 경로 사용) ----
 const CHAT_RAW = 'https://gist.githubusercontent.com/btcdash/8a77c26fe9ccfdd270b8d7be450db9e0/raw/chat.json';
+let chatLastUpd = '';
 async function loadChat(){
   try{
     const r = await fetch(CHAT_RAW + '?ts=' + Date.now());   // 매번 새 주소로 캐시 우회
     if(!r.ok) throw new Error('chat http '+r.status);
     const d = await r.json();
+    if(d.updated === chatLastUpd) return;   // 새 글 없으면 화면 안 건드림 (스크롤 유지)
+    chatLastUpd = d.updated;
     const list = $('chatList');
     if(!d.messages || !d.messages.length){ list.innerHTML='<div class="err">아직 대화가 없습니다</div>'; return; }
+    // 과거 글 읽는 중이면(위로 스크롤) 새 글이 와도 화면을 안 끌어내림
+    const nearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 80;
     list.innerHTML='';
     d.messages.forEach(m=>{
       const w=document.createElement('div'); w.className='chat-msg';
       const n=document.createElement('div'); n.className='chat-name'; n.textContent=m.name;
       const t=document.createElement('span'); t.className='chat-time'; t.textContent=(m.date||'')+' '+(m.time||'');
-      n.appendChild(t);
-      const x=document.createElement('div'); x.className='chat-text'; x.textContent=m.text;
-      w.appendChild(n); w.appendChild(x); list.appendChild(w);
+      n.appendChild(t); w.appendChild(n);
+      if(m.text){
+        const x=document.createElement('div'); x.className='chat-text'; x.textContent=m.text;
+        w.appendChild(x);
+      }
+      if(m.img){
+        const im=document.createElement('img'); im.className='chat-img';
+        im.src=m.img; im.loading='lazy'; im.alt='소통방 사진';
+        im.onclick=()=>window.open(m.img,'_blank');
+        w.appendChild(im);
+      }
+      list.appendChild(w);
     });
-    list.scrollTop = list.scrollHeight;   // 최신 글이 보이게 아래로
+    if(nearBottom || !list.dataset.init){ list.scrollTop = list.scrollHeight; list.dataset.init='1'; }
   }catch(e){ console.error('[소통방]', e); }
 }
 
