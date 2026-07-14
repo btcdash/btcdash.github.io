@@ -397,8 +397,8 @@
 
     <div id="gOpen">
       <div class="g-in">
-        <label>베팅 금액 (원) — <b id="gAmtPct" style="color:var(--accent)">25%</b></label>
-        <div style="display:flex;gap:6px"><input type="number" id="gAmt" placeholder="예: 250000" step="10000"><button id="gMax" type="button">최대</button></div>
+        <label>베팅 금액 (만원) — <b id="gAmtPct" style="color:var(--accent)">25%</b></label>
+        <div style="display:flex;gap:6px"><input type="number" id="gAmt" placeholder="예: 25 (=25만원)" step="1"><button id="gMax" type="button">최대</button></div>
         <input type="range" id="gAmtSlide" min="0" max="100" step="5" value="25" style="width:100%;accent-color:var(--accent);margin-top:10px">
         <div class="g-slide-marks"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
       </div>
@@ -437,8 +437,8 @@
       <div id="gTpslState" class="g-tpsl-state">익절·손절 미설정 (숫자 입력 후 적용)</div>
       <button class="g-close" id="gClose">💰 청산하기</button>
       <div class="g-in" style="margin-top:8px">
-        <label>물타기 금액 (원)</label>
-        <div style="display:flex;gap:6px"><input type="number" id="gDcaAmt" placeholder="예: 100000" step="10000"><button id="gDca" type="button">➕ 물타기</button></div>
+        <label>물타기 금액 (만원)</label>
+        <div style="display:flex;gap:6px"><input type="number" id="gDcaAmt" placeholder="예: 10 (=10만원)" step="1"><button id="gDca" type="button">➕ 물타기</button></div>
       </div>
     </div>
 
@@ -1102,7 +1102,7 @@ function gRender(){
 }
 function gOpenPos(side){
   if(!gP || G.pos) return;
-  const margin = Math.floor(+$('gAmt').value || 0);
+  const margin = Math.floor((+$('gAmt').value || 0) * 10000);   // 만원 단위 입력
   const lev = Math.min(100, Math.max(1, Math.round(+$('gLevIn').value || 25)));
   if(margin < 1000 || margin > G.eq){
     $('gAmt').style.borderColor = 'var(--up)';
@@ -1139,7 +1139,7 @@ function gClosePos(atPrice, reason){
 }
 function gDca(){
   const pos = G.pos; if(!pos || !gP) return;
-  const add = Math.floor(+$('gDcaAmt').value || 0);
+  const add = Math.floor((+$('gDcaAmt').value || 0) * 10000);   // 만원 단위 입력
   if(add < 1000 || add > G.eq - pos.margin){
     $('gDcaAmt').style.borderColor = 'var(--up)';
     setTimeout(()=>$('gDcaAmt').style.borderColor = '', 1200);
@@ -1168,16 +1168,16 @@ $('gShort').onclick = ()=>gOpenPos(-1);
 $('gClose').onclick = ()=>gClosePos();
 $('gDca').onclick = gDca;
 function gSyncPct(){
-  const p = Math.max(0, Math.min(100, Math.round((+$('gAmt').value||0)/Math.max(1,G.eq)*100)));
+  const p = Math.max(0, Math.min(100, Math.round((+$('gAmt').value||0)*10000/Math.max(1,G.eq)*100)));
   $('gAmtSlide').value = p; $('gAmtPct').textContent = p+'%';
 }
 $('gAmtSlide').oninput = ()=>{
   const p = +$('gAmtSlide').value;
-  $('gAmt').value = Math.max(0, Math.floor(G.eq*p/100/1000)*1000);
+  $('gAmt').value = Math.max(0, Math.floor(G.eq*p/100/10000));   // 만원 단위
   $('gAmtPct').textContent = p+'%';
 };
 $('gAmt').oninput = gSyncPct;
-$('gMax').onclick = ()=>{ $('gAmt').value = G.eq; gSyncPct(); };
+$('gMax').onclick = ()=>{ $('gAmt').value = Math.floor(G.eq/10000); gSyncPct(); };
 // 포지션 중 익절/손절 개별 적용·해제
 function gFlash(btn, txt, orig){ btn.textContent=txt; setTimeout(()=>btn.textContent=orig,1200); }
 $('gTpApply').onclick = ()=>{ if(!G.pos) return; G.pos.tp = Math.max(0,+$('gTpE').value||0)||null; gSave(); gDrawChart(); gRender(); gFlash($('gTpApply'),'✓','적용'); };
@@ -1218,7 +1218,7 @@ async function gLoadRank(){
   }catch(e){}
 }
 gSeedSeries().then(gDrawChart);
-if(!$('gAmt').value) $('gAmt').value = Math.max(1000, Math.floor(G.eq*0.25/1000)*1000);   // 기본 베팅액: 시드 25%
+if(!$('gAmt').value) $('gAmt').value = Math.max(1, Math.floor(G.eq*0.25/10000));   // 기본 베팅액: 시드 25% (만원 단위)
 gSyncPct();
 
 // ---- 방문 집계 (익명 · 화면 표시 없음, 관리자만 조회) ----
