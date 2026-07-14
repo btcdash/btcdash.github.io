@@ -64,6 +64,7 @@
   .g-in button{flex-shrink:0;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--ink);font-size:12px;font-weight:700;padding:0 12px;cursor:pointer}
   .g-in2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
   .g-tpsl{font-size:11px;color:var(--ink3);text-align:center;margin-top:4px}
+  .g-slide-marks{display:flex;justify-content:space-between;font-size:10px;color:var(--ink3);margin-top:2px;padding:0 2px}
   .g-hist-head{font-size:13px;font-weight:800;margin-top:14px;border-top:1px solid var(--border);padding-top:12px;margin-bottom:6px}
   .g-hist{max-height:150px;overflow-y:auto}
   .g-hrow{display:grid;grid-template-columns:40px 52px 1fr 74px;gap:6px;font-size:11.5px;padding:5px 2px;border-bottom:1px solid var(--border);align-items:center;font-variant-numeric:tabular-nums}
@@ -340,8 +341,10 @@
 
     <div id="gOpen">
       <div class="g-in">
-        <label>베팅 금액 (원)</label>
+        <label>베팅 금액 (원) — <b id="gAmtPct" style="color:var(--accent)">25%</b></label>
         <div style="display:flex;gap:6px"><input type="number" id="gAmt" placeholder="예: 250000" step="10000"><button id="gMax" type="button">최대</button></div>
+        <input type="range" id="gAmtSlide" min="0" max="100" step="5" value="25" style="width:100%;accent-color:var(--accent);margin-top:10px">
+        <div class="g-slide-marks"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
       </div>
       <div class="g-in">
         <label>레버리지 (1~100배)</label>
@@ -1013,7 +1016,17 @@ $('gLong').onclick = ()=>gOpenPos(1);
 $('gShort').onclick = ()=>gOpenPos(-1);
 $('gClose').onclick = ()=>gClosePos();
 $('gDca').onclick = gDca;
-$('gMax').onclick = ()=>{ $('gAmt').value = G.eq; };
+function gSyncPct(){
+  const p = Math.max(0, Math.min(100, Math.round((+$('gAmt').value||0)/Math.max(1,G.eq)*100)));
+  $('gAmtSlide').value = p; $('gAmtPct').textContent = p+'%';
+}
+$('gAmtSlide').oninput = ()=>{
+  const p = +$('gAmtSlide').value;
+  $('gAmt').value = Math.max(0, Math.floor(G.eq*p/100/1000)*1000);
+  $('gAmtPct').textContent = p+'%';
+};
+$('gAmt').oninput = gSyncPct;
+$('gMax').onclick = ()=>{ $('gAmt').value = G.eq; gSyncPct(); };
 // 포지션 중 익절/손절 수정
 $('gTpE').onchange = ()=>{ if(G.pos){ G.pos.tp = Math.max(0,+$('gTpE').value||0)||null; gSave(); gRender(); } };
 $('gSlE').onchange = ()=>{ if(G.pos){ G.pos.sl = Math.max(0,+$('gSlE').value||0)||null; gSave(); gRender(); } };
@@ -1028,7 +1041,8 @@ $('gNickSave').onclick = ()=>{
   const n = $('gNick').value.trim().slice(0,12);
   if(!n) return;
   G.nick = n; gSave(); gSubmitRank();
-  $('gNickSave').textContent='완료!'; setTimeout(()=>$('gNickSave').textContent='등록',1500);
+  $('gNickSave').textContent='전송됨';
+  setTimeout(()=>{ $('gNickSave').textContent='등록'; gLoadRank(); }, 4000);   // 4초 뒤 랭킹 새로고침으로 확인
 };
 function gSubmitRank(){
   if(!G.nick || (G.w+G.l)===0) return;   // 닉네임 + 1판 이상이면 랭킹 등록
@@ -1051,6 +1065,14 @@ async function gLoadRank(){
 }
 gSeedSeries().then(gDrawChart);
 if(!$('gAmt').value) $('gAmt').value = Math.max(1000, Math.floor(G.eq*0.25/1000)*1000);   // 기본 베팅액: 시드 25%
+gSyncPct();
+
+// ---- 방문 집계 (익명 · 화면 표시 없음, 관리자만 조회) ----
+try{
+  let vid = localStorage.getItem('vid');
+  if(!vid){ vid = Math.random().toString(36).slice(2,12); localStorage.setItem('vid', vid); }
+  fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid})}).catch(()=>{});
+}catch(e){}
 if(G.pos){ $('gTpE').value = G.pos.tp||''; $('gSlE').value = G.pos.sl||''; }
 gTick(); gRender(); gHistRender(); gLoadRank();
 setInterval(gTick, 2000);
