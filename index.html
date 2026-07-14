@@ -387,18 +387,13 @@ function calc(){
 }
 ['cSide','cMargin','cLev','cEntry','cExit','cFee'].forEach(id=>$(id).addEventListener('input',calc));
 
-// ---- 실시간 소통방 (15초마다 · 변경 없으면 요청 횟수 안 씀) ----
-const CHAT_GIST = '8a77c26fe9ccfdd270b8d7be450db9e0';
-let chatEtag = null;
+// ---- 실시간 소통방 (10초마다 · 조회 제한 없는 경로 사용) ----
+const CHAT_RAW = 'https://gist.githubusercontent.com/btcdash/8a77c26fe9ccfdd270b8d7be450db9e0/raw/chat.json';
 async function loadChat(){
   try{
-    const r = await fetch('https://api.github.com/gists/'+CHAT_GIST,
-      { headers: chatEtag ? {'If-None-Match': chatEtag} : {} });
-    if(r.status === 304) return;              // 새 글 없음 — 무료 확인
-    if(!r.ok) throw new Error('gist http '+r.status);
-    chatEtag = r.headers.get('ETag');
-    const g = await r.json();
-    const d = JSON.parse(g.files['chat.json'].content);
+    const r = await fetch(CHAT_RAW + '?ts=' + Date.now());   // 매번 새 주소로 캐시 우회
+    if(!r.ok) throw new Error('chat http '+r.status);
+    const d = await r.json();
     const list = $('chatList');
     if(!d.messages || !d.messages.length){ list.innerHTML='<div class="err">아직 대화가 없습니다</div>'; return; }
     list.innerHTML='';
