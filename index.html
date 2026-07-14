@@ -93,6 +93,11 @@
   .g-mini:hover{border-color:var(--ink3)}
   .g-mini.gx{color:var(--ink3);padding:7px 7px}
   .g-slide-marks{display:flex;justify-content:space-between;font-size:10px;color:var(--ink3);margin-top:2px;padding:0 2px}
+  .g-suffix{position:relative;flex:1;min-width:0;display:flex}
+  .g-suffix input{width:100%;padding-right:44px !important}
+  .g-suffix i{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-style:normal;font-size:12px;color:var(--ink3);pointer-events:none}
+  .g-suffix input::-webkit-outer-spin-button,.g-suffix input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .g-suffix input{-moz-appearance:textfield;appearance:textfield}
   .g-hist-head{font-size:13px;font-weight:800;margin-top:16px;border-top:1px solid var(--border);padding-top:12px;margin-bottom:6px}
   .g-hist{max-height:340px;overflow-y:auto;overflow-x:hidden}
   .g-hrow{display:grid;grid-template-columns:32px 1fr auto;gap:5px;font-size:11px;padding:5px 1px;border-bottom:1px solid var(--border);align-items:center;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -398,7 +403,7 @@
     <div id="gOpen">
       <div class="g-in">
         <label>베팅 금액 (만원) — <b id="gAmtPct" style="color:var(--accent)">25%</b></label>
-        <div style="display:flex;gap:6px"><input type="number" id="gAmt" placeholder="예: 25 (=25만원)" step="1"><button id="gMax" type="button">최대</button></div>
+        <div style="display:flex;gap:6px"><span class="g-suffix"><input type="number" id="gAmt" placeholder="예: 25" step="1"><i>만원</i></span><button id="gMax" type="button">최대</button></div>
         <input type="range" id="gAmtSlide" min="0" max="100" step="5" value="25" style="width:100%;accent-color:var(--accent);margin-top:10px">
         <div class="g-slide-marks"><span>0%</span><span>25%</span><span>50%</span><span>75%</span><span>100%</span></div>
       </div>
@@ -438,7 +443,7 @@
       <button class="g-close" id="gClose">💰 청산하기</button>
       <div class="g-in" style="margin-top:8px">
         <label>물타기 금액 (만원)</label>
-        <div style="display:flex;gap:6px"><input type="number" id="gDcaAmt" placeholder="예: 10 (=10만원)" step="1"><button id="gDca" type="button">➕ 물타기</button></div>
+        <div style="display:flex;gap:6px"><span class="g-suffix"><input type="number" id="gDcaAmt" placeholder="예: 10" step="1"><i>만원</i></span><button id="gDca" type="button">➕ 물타기</button></div>
       </div>
     </div>
 
