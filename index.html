@@ -158,21 +158,46 @@
   }
 
   /* ===== 롤링 광고 배너 ===== */
-  .adwrap{position:relative;margin:0 0 22px;border-radius:14px;overflow:hidden;border:1px solid var(--border)}
-  .ad{display:none;align-items:center;justify-content:space-between;gap:20px;padding:30px 34px;min-height:150px;cursor:pointer}
-  .ad.on{display:flex;animation:adfade .5s ease}
+  .adwrap{position:relative;margin:0 0 22px;border-radius:16px;overflow:hidden;border:1px solid var(--border)}
+  .ad{display:none;position:relative;padding:26px 30px 22px;cursor:pointer;overflow:hidden}
+  .ad.on{display:block;animation:adfade .5s ease}
   @keyframes adfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-  .ad .ad-badge{display:inline-block;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,.18);color:#fff;margin-bottom:10px}
-  .ad .ad-title{font-size:26px;font-weight:900;color:#fff;letter-spacing:-.5px;line-height:1.25;text-shadow:0 2px 10px rgba(0,0,0,.25)}
-  .ad .ad-title em{font-style:normal;color:#ffe45c}
-  .ad .ad-sub{font-size:13px;color:rgba(255,255,255,.85);margin-top:8px}
-  .ad .ad-cta{flex-shrink:0;background:#fff;color:#111;font-weight:800;font-size:14px;padding:12px 22px;border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.3);white-space:nowrap}
-  .ad-1{background:linear-gradient(120deg,#1a1c2c 0%,#3d2c00 45%,#b8860b 130%)}
-  .ad-2{background:linear-gradient(120deg,#0b1b3a 0%,#123a6b 55%,#1e90ff 140%)}
-  .ad-dots{position:absolute;right:14px;bottom:10px;display:flex;gap:6px}
+  .ad-row{display:flex;align-items:center;justify-content:space-between;gap:24px;position:relative;z-index:2}
+  .ad .ad-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;margin-bottom:12px}
+  .ad .ad-title{font-size:34px;font-weight:900;letter-spacing:-1px;line-height:1.15;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.35)}
+  .ad .ad-title .grad{background:linear-gradient(92deg,#4be1ff 10%,#7cf5c8 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .ad .ad-title .gold{background:linear-gradient(92deg,#ffd452 10%,#ff9d2e 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .ad .ad-sub{font-size:14px;color:rgba(255,255,255,.85);margin-top:10px;font-weight:500}
+  .ad .ad-cta{flex-shrink:0;font-weight:800;font-size:15px;padding:15px 26px;border-radius:12px;white-space:nowrap;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.4)}
+  .ad-2 .ad-cta{background:linear-gradient(92deg,#2ea6ff,#4be1ff);color:#062038}
+  .ad-1 .ad-cta{background:linear-gradient(92deg,#ffd452,#ff9d2e);color:#2b1600}
+  /* 특징 4개 줄 */
+  .ad-feats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:20px;position:relative;z-index:2}
+  .ad-feats .f{display:flex;align-items:flex-start;gap:9px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:10px 12px}
+  .ad-feats .f i{font-style:normal;font-size:17px;line-height:1.2}
+  .ad-feats .f b{display:block;font-size:12.5px;color:#fff}
+  .ad-feats .f span{display:block;font-size:11px;color:rgba(255,255,255,.62);margin-top:2px;line-height:1.4}
+  /* 떠다니는 코인 */
+  .ad-coins{position:absolute;inset:0;z-index:1;pointer-events:none}
+  .ad-coins b{position:absolute;font-size:30px;opacity:.85;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45));animation:coinfloat 3.6s ease-in-out infinite}
+  .ad-coins b:nth-child(2){animation-delay:.9s}
+  .ad-coins b:nth-child(3){animation-delay:1.8s}
+  .ad-coins b:nth-child(4){animation-delay:2.7s}
+  @keyframes coinfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  /* 배경 */
+  .ad-2{background:radial-gradient(900px 300px at 85% -20%,#3d2a8f55 0%,transparent 60%),radial-gradient(700px 260px at 10% 120%,#0e4d8f66 0%,transparent 60%),linear-gradient(115deg,#070b26 0%,#0d1440 55%,#181060 100%)}
+  .ad-1{background:radial-gradient(900px 300px at 85% -20%,#8f6a2a55 0%,transparent 60%),radial-gradient(700px 260px at 10% 120%,#8f5c0e44 0%,transparent 60%),linear-gradient(115deg,#16110a 0%,#2b1e08 55%,#4a3005 100%)}
+  .ad-dots{position:absolute;right:14px;bottom:10px;display:flex;gap:6px;z-index:3}
   .ad-dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35);cursor:pointer}
   .ad-dots i.on{background:#fff}
-  @media(max-width:640px){.ad{flex-direction:column;align-items:flex-start;padding:22px}.ad .ad-cta{align-self:stretch;text-align:center}}
+  @media(max-width:760px){
+    .ad{padding:20px 18px 16px}
+    .ad-row{flex-direction:column;align-items:flex-start;gap:14px}
+    .ad .ad-title{font-size:24px}
+    .ad .ad-cta{align-self:stretch;text-align:center}
+    .ad-feats{grid-template-columns:repeat(2,1fr)}
+    .ad-coins b{font-size:22px}
+  }
 </style>
 </head>
 <body>
@@ -191,22 +216,55 @@
 
   <!-- 롤링 광고 배너 -->
   <div class="adwrap" id="adwrap">
-    <a class="ad ad-1 on" id="ad0" target="_blank" href="#">
-      <div>
-        <span class="ad-badge">💰 수수료 페이백</span>
-        <div class="ad-title">거래할 때마다 새는 수수료,<br><em>페이백으로 돌려받자!</em></div>
-        <div class="ad-sub">아래 링크로 가입하면 거래 수수료 일부가 매번 돌아옵니다</div>
+
+    <!-- 배너 1: 텔레그램 채널 -->
+    <a class="ad ad-2 on" id="ad1" target="_blank" href="#">
+      <div class="ad-coins">
+        <b style="top:12%;right:26%">🪙</b>
+        <b style="top:55%;right:8%">💎</b>
+        <b style="top:8%;right:9%">✈️</b>
+        <b style="bottom:34%;right:18%">🚀</b>
       </div>
-      <span class="ad-cta">페이백 가입하기 →</span>
-    </a>
-    <a class="ad ad-2" id="ad1" target="_blank" href="#">
-      <div>
-        <span class="ad-badge">✈️ 텔레그램 뉴스룸</span>
-        <div class="ad-title">가장 빠른 코인 소식,<br><em>텔레그램 채널</em>에서!</div>
-        <div class="ad-sub">실시간 시장 동향과 투자 인사이트를 빠르게 전달해드립니다</div>
+      <div class="ad-row">
+        <div>
+          <span class="ad-badge">✈️ 가장 빠른 코인 정보, 어디서 볼래?</span>
+          <div class="ad-title"><span class="grad">리치 트레이딩</span> 텔레그램 채널</div>
+          <div class="ad-sub">실시간 시황부터 챌린지, 지표·서적 자료까지 한 곳에서!</div>
+        </div>
+        <span class="ad-cta">✈️ 리치 채널 바로가기 →</span>
       </div>
-      <span class="ad-cta">채널 입장하기 →</span>
+      <div class="ad-feats">
+        <div class="f"><i>⚡</i><div><b>실시간 시황</b><span>시장 흐름을 가장 빠르게 브리핑</span></div></div>
+        <div class="f"><i>🏆</i><div><b>트레이딩 챌린지</b><span>함께 달리는 수익 챌린지 진행</span></div></div>
+        <div class="f"><i>📊</i><div><b>보조지표 자료</b><span>매매에 쓰는 지표 세팅 공유</span></div></div>
+        <div class="f"><i>📚</i><div><b>트레이딩 서적</b><span>도움되는 책 자료실 운영</span></div></div>
+      </div>
     </a>
+
+    <!-- 배너 2: 수수료 페이백 -->
+    <a class="ad ad-1" id="ad0" target="_blank" href="#">
+      <div class="ad-coins">
+        <b style="top:14%;right:24%">💰</b>
+        <b style="top:58%;right:9%">🪙</b>
+        <b style="top:6%;right:8%">✨</b>
+        <b style="bottom:30%;right:17%">💸</b>
+      </div>
+      <div class="ad-row">
+        <div>
+          <span class="ad-badge">💰 거래 수수료 페이백</span>
+          <div class="ad-title">새는 수수료, <span class="gold">돌려받으면서 거래하자!</span></div>
+          <div class="ad-sub">아래 링크로 가입하면 거래할 때마다 수수료 일부가 돌아옵니다</div>
+        </div>
+        <span class="ad-cta">💰 페이백 가입하기 →</span>
+      </div>
+      <div class="ad-feats">
+        <div class="f"><i>💸</i><div><b>수수료 페이백</b><span>거래마다 수수료 일부 환급</span></div></div>
+        <div class="f"><i>⚡</i><div><b>간편 가입</b><span>링크 클릭 후 1분이면 완료</span></div></div>
+        <div class="f"><i>📈</i><div><b>선물 거래 지원</b><span>BTC 등 주요 코인 선물</span></div></div>
+        <div class="f"><i>💬</i><div><b>1:1 문의 지원</b><span>궁금한 건 문의 봇으로</span></div></div>
+      </div>
+    </a>
+
     <div class="ad-dots"><i class="on" onclick="showAd(0)"></i><i onclick="showAd(1)"></i></div>
   </div>
 
