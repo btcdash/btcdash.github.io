@@ -353,10 +353,11 @@
     </div>
 
     <div class="g-record" id="gRecord">아직 전적이 없어요 — 첫 베팅 해보세요!</div>
-    <button id="gReset" class="g-reset" style="display:none">💀 파산! 시드 초기화하고 다시 시작</button>
+    <button id="gReset" class="g-reset" style="display:none">💰 파산! 시드 충전하고 다시 도전 (100만)</button>
+    <button id="gManualReset" class="g-reset" style="display:none;font-size:11px;padding:8px">🔄 시드 초기화 (100만으로 새출발)</button>
 
     <div class="g-rank">
-      <div class="g-rank-head">🏆 랭킹 TOP 10</div>
+      <div class="g-rank-head">🏆 랭킹 TOP 10 <span style="font-weight:400;font-size:10px;color:var(--ink3)">역대 최고 시드 기준</span></div>
       <div id="gRankList" class="err" style="font-size:12px">불러오는 중…</div>
       <div class="g-nick">
         <input id="gNick" maxlength="12" placeholder="랭킹용 닉네임">
@@ -833,7 +834,10 @@ function gRender(){
   $('gOpen').style.display = pos?'none':'block';
   $('gPos').style.display = pos?'block':'none';
   // 파산 판정 (포지션 없고 최소 베팅도 못 할 때)
-  $('gReset').style.display = (!pos && G.eq<10000)?'block':'none';
+  const broke = !pos && G.eq<10000;
+  $('gReset').style.display = broke?'block':'none';
+  // 평상시 초기화 버튼 (포지션 없을 때만, 파산 아닐 때)
+  $('gManualReset').style.display = (!pos && !broke && (G.w+G.l)>0)?'block':'none';
   if(pos && gP){
     const liq = gLiqPrice(pos);
     // 청산가 도달 → 강제청산
@@ -889,6 +893,10 @@ $('gShort').onclick = ()=>gOpenPos(-1);
 $('gClose').onclick = ()=>gClosePos();
 $('gDca').onclick = gDca;
 $('gReset').onclick = ()=>{ G.eq=GAME_START; G.pos=null; G.last=null; gSave(); gRender(); };
+$('gManualReset').onclick = ()=>{
+  if(!confirm('시드를 100만원으로 초기화할까요?\n(전적과 랭킹 최고기록은 유지돼요)')) return;
+  G.eq=GAME_START; G.pos=null; G.last=null; gSave(); gRender();
+};
 // 닉네임 & 랭킹
 $('gNick').value = G.nick||'';
 $('gNickSave').onclick = ()=>{
