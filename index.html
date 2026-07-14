@@ -95,6 +95,24 @@
   footer{margin-top:40px;font-size:11px;color:var(--ink3);line-height:1.7;border-top:1px solid var(--border);padding-top:16px}
   .err{color:var(--ink3);font-size:13px}
 
+  /* ===== 앱 설치 안내 배너 ===== */
+  #installBar{position:fixed;left:0;right:0;bottom:0;z-index:100000;background:#161b22;border-top:1px solid var(--border);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:none;align-items:center;gap:12px;box-shadow:0 -6px 24px rgba(0,0,0,.4)}
+  #installBar.show{display:flex}
+  #installBar img{width:42px;height:42px;border-radius:10px;flex-shrink:0}
+  #installBar .txt{flex:1;min-width:0}
+  #installBar .txt b{font-size:14px;display:block}
+  #installBar .txt span{font-size:12px;color:var(--ink2)}
+  #installBar .go{background:var(--accent);color:#111;font-weight:800;font-size:13px;padding:10px 16px;border-radius:8px;border:0;white-space:nowrap;cursor:pointer}
+  #installBar .x{background:none;border:0;color:var(--ink3);font-size:20px;cursor:pointer;padding:0 4px}
+  /* 아이폰 안내 오버레이 */
+  #iosGuide{position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:24px}
+  #iosGuide.show{display:flex}
+  #iosGuide .card{background:#161b22;border:1px solid var(--border);border-radius:16px;padding:24px;max-width:340px;text-align:center}
+  #iosGuide .card h3{font-size:17px;margin-bottom:14px}
+  #iosGuide .card ol{text-align:left;font-size:14px;line-height:2;color:var(--ink);padding-left:4px;list-style:none}
+  #iosGuide .card .em{color:var(--accent);font-weight:700}
+  #iosGuide .card button{margin-top:16px;background:var(--surface2);border:1px solid var(--border);color:var(--ink);padding:10px 20px;border-radius:8px;cursor:pointer}
+
   /* ===== 모바일 다듬기 ===== */
   @media(max-width:600px){
     .ad{min-height:120px;padding:20px}
@@ -242,6 +260,26 @@
   </aside>
 
   </div><!-- cols 끝 -->
+
+  <!-- 앱 설치 안내 배너 -->
+  <div id="installBar">
+    <img src="icon-192.png" alt="앱 아이콘">
+    <div class="txt"><b>앱으로 설치하기</b><span>홈 화면에 추가하면 앱처럼 빠르게 열려요</span></div>
+    <button class="go" id="installGo">설치</button>
+    <button class="x" id="installX">✕</button>
+  </div>
+  <!-- 아이폰 설치 안내 -->
+  <div id="iosGuide">
+    <div class="card">
+      <h3>📲 홈 화면에 추가하기</h3>
+      <ol>
+        <li>1. 하단의 <span class="em">공유 버튼 (⬆️)</span> 누르기</li>
+        <li>2. 메뉴를 올려서 <span class="em">"홈 화면에 추가"</span> 누르기</li>
+        <li>3. 오른쪽 위 <span class="em">"추가"</span> 누르기</li>
+      </ol>
+      <button id="iosClose">알겠어요</button>
+    </div>
+  </div>
 
   <footer>
     본 사이트의 모든 정보는 투자 참고용이며, 투자 권유나 매매 신호가 아닙니다. 암호화폐 선물 거래는 원금 전액 손실 위험이 있습니다.
@@ -456,6 +494,28 @@ setInterval(loadChat, 10_000);
 
 // ---- 앱(PWA) 등록 ----
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+
+// ---- 설치 안내 배너 ----
+(function(){
+  const bar=$('installBar'), isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if(isStandalone) return;                          // 이미 앱으로 실행 중이면 안내 안 함
+  if(localStorage.getItem('install_dismiss')) return; // 닫은 적 있으면 안 띄움
+  const ua = navigator.userAgent;
+  const isIOS = /iPhone|iPad|iPod/.test(ua);
+  const isAndroid = /Android/.test(ua);
+  let deferredPrompt = null;
+
+  window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; bar.classList.add('show'); });
+  if(isIOS) setTimeout(()=>bar.classList.add('show'), 1500);   // 아이폰은 이벤트가 없어 바로 표시
+
+  $('installGo').onclick = async ()=>{
+    if(deferredPrompt){ deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; bar.classList.remove('show'); }
+    else if(isIOS){ $('iosGuide').classList.add('show'); }
+    else { $('iosGuide').classList.add('show'); }
+  };
+  $('installX').onclick = ()=>{ bar.classList.remove('show'); localStorage.setItem('install_dismiss','1'); };
+  $('iosClose').onclick = ()=>$('iosGuide').classList.remove('show');
+})();
 </script>
 </body>
 </html>
