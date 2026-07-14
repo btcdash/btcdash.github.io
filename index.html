@@ -239,8 +239,18 @@
   .tf-tabs .tf.on{background:var(--ink);color:#111;border-color:var(--ink)}
   .chart-hint{font-size:11px;color:var(--ink3)}
   .tv-wrap{width:100%;height:460px;margin-top:12px;border-radius:8px;overflow:hidden}
+  .tv-wrap.tv-big{height:calc(100vh - 250px);min-height:480px}
   #tvchart{width:100%;height:100%}
-  @media(max-width:600px){.tv-wrap{height:380px}.chart-hint{display:none}}
+  @media(max-width:600px){.tv-wrap{height:380px}.tv-wrap.tv-big{height:440px;min-height:0}.chart-hint{display:none}}
+  /* 차트 탭 레이아웃 */
+  .chartpage{display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start}
+  @media(max-width:1000px){.chartpage{grid-template-columns:1fr}}
+  .cs-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+  .cs-head{font-size:13px;font-weight:800;margin-bottom:8px}
+  .cs-row{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;padding:7px 2px;border-bottom:1px solid var(--border)}
+  .cs-row:last-child{border-bottom:0}
+  .cs-row .n{color:var(--ink2)}
+  .cs-row b{font-variant-numeric:tabular-nums}
 
   /* ===== 섹션 바로가기 칩 ===== */
   .jump{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 18px}
@@ -374,6 +384,7 @@
   <!-- 상단 탭 -->
   <nav class="topnav">
     <button class="on" data-page="home"><small>시세 · 고래 · 게임 · 소통방</small>📊 대시보드</button>
+    <button data-page="chart"><small>대형차트 · 4코인 · 고래</small>📈 차트</button>
     <button data-page="news"><small>자동선별 · 쉬운해석</small>📰 주요 뉴스</button>
     <button data-page="calc"><small>계산기 · 물타기 · 펀딩</small>🛠️ 매매 도구</button>
   </nav>
@@ -602,22 +613,6 @@
     </div>
   </div>
 
-  <!-- 코인 차트 (트레이딩뷰 전문차트) -->
-  <section id="secChart">
-    <div class="chart-card">
-      <div class="chart-top">
-        <div class="coin-tabs" id="coinTabs">
-          <button class="ct on" data-sym="BINANCE:BTCUSDT">BTC</button>
-          <button class="ct" data-sym="BINANCE:ETHUSDT">ETH</button>
-          <button class="ct" data-sym="BINANCE:SOLUSDT">SOL</button>
-          <button class="ct" data-sym="BINANCE:XRPUSDT">XRP</button>
-        </div>
-        <div class="chart-hint">차트 위에서 지표 추가·그림·시간대 변경 가능 📊</div>
-      </div>
-      <div class="tv-wrap"><div id="tvchart"></div></div>
-    </div>
-  </section>
-
   </div><!-- 왼쪽 열 끝 -->
 
   <!-- 실시간 소통방 패널 -->
@@ -628,6 +623,34 @@
   </aside>
 
   </div><!-- cols 끝 -->
+
+  <!-- 📈 차트 페이지 (탭) -->
+  <div id="pageChart" style="display:none">
+    <div class="chartpage">
+      <div class="chart-card">
+        <div class="chart-top">
+          <div class="coin-tabs" id="coinTabs">
+            <button class="ct on" data-sym="BINANCE:BTCUSDT">BTC</button>
+            <button class="ct" data-sym="BINANCE:ETHUSDT">ETH</button>
+            <button class="ct" data-sym="BINANCE:SOLUSDT">SOL</button>
+            <button class="ct" data-sym="BINANCE:XRPUSDT">XRP</button>
+          </div>
+          <div class="chart-hint">차트 위에서 지표 추가·그림 그리기·시간대 변경 가능 📊</div>
+        </div>
+        <div class="tv-wrap tv-big"><div id="tvchart"></div></div>
+      </div>
+      <aside class="chart-side">
+        <div class="cs-card">
+          <div class="cs-head">📊 실시간 핵심 지표</div>
+          <div id="csInd"><div class="err" style="font-size:12px;padding:8px 2px">수집 중…</div></div>
+        </div>
+        <div class="cs-card">
+          <div class="cs-head">🐋 실시간 고래 체결</div>
+          <div id="whaleList2" class="whale-list" style="max-height:400px"><div class="err">수집 중…</div></div>
+        </div>
+      </aside>
+    </div>
+  </div>
 
   <!-- 📰 뉴스 페이지 (탭) -->
   <div id="pageNews" style="display:none;max-width:820px;margin:0 auto">
@@ -1119,6 +1142,8 @@ function renderWhales(){
       `<span class="wa ${buy?'up':'down'}">${amt}</span>`+
       `<span class="wp">${fmt(w.price,1)}</span></div>`;
   }).join('');
+  const list2 = $('whaleList2');
+  if(list2) list2.innerHTML = list.innerHTML;   // 차트 탭 사이드에도 동일 표시
   // 최근 15분 흐름 해석
   const cut = Date.now()-15*60*1000;
   const recent = whales.filter(w=>w.time>=cut);
@@ -1534,7 +1559,7 @@ setInterval(gTick, 2000);
 setInterval(gLoadRank, 60_000);
 
 // ---- 시작 & 주기 ----
-loadPrices(); buildChart(); loadKimchi(); loadFng(); loadRsi(); loadLs(); loadFunding(); loadChat();
+loadPrices(); loadKimchi(); loadFng(); loadRsi(); loadLs(); loadFunding(); loadChat();   // 차트는 차트 탭 첫 진입 시 생성
 setInterval(loadPrices, 10_000);
 setInterval(loadKimchi, 60_000);
 setInterval(loadFng, 600_000);
@@ -1737,24 +1762,25 @@ $('vBtn').onclick = ()=>{
   else clearInterval(vTimer);
 };
 
-// ---- 섹션 바로가기 칩 ----
-document.querySelectorAll('.jump a').forEach(a=>{
-  a.onclick = ()=>{
-    const el = document.getElementById(a.dataset.to);
-    if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
-  };
-});
+// ---- 차트 바로가기 (차트 탭으로 이동) ----
+document.querySelectorAll('.jump a').forEach(a=>{ a.onclick = ()=>showPage('chart'); });
 
-// ---- 상단 탭 전환 (대시보드 / 뉴스 / 계산기) ----
+// ---- 상단 탭 전환 (대시보드 / 차트 / 뉴스 / 매매도구) ----
+let chartBuilt = false;
 function showPage(p){
   const home = p==='home';
   $('adwrap').style.display = home?'':'none';
   document.querySelector('.cols').style.display = home?'':'none';
+  $('pageChart').style.display = p==='chart'?'':'none';
   $('pageNews').style.display = p==='news'?'':'none';
   $('pageCalc').style.display = p==='calc'?'':'none';
   document.querySelectorAll('.topnav button').forEach(b=>b.classList.toggle('on', b.dataset.page===p));
   if(location.hash !== '#'+p) history.replaceState(null,'','#'+p);
   if(p==='calc'){ if(!$('dEntry').value && window.__btc) $('dEntry').value = Math.round(window.__btc); dcalc(); fcalc(); }
+  if(p==='chart'){
+    if(!chartBuilt){ chartBuilt = true; buildChart(); }   // 처음 열 때 차트 생성 (숨김 상태 생성 방지)
+    csRender();
+  }
   window.scrollTo(0,0);
 }
 document.querySelector('.topnav').addEventListener('click', e=>{
@@ -1763,6 +1789,23 @@ document.querySelector('.topnav').addEventListener('click', e=>{
 });
 if(location.hash === '#calc') showPage('calc');
 else if(location.hash === '#news') showPage('news');
+else if(location.hash === '#chart') showPage('chart');
+
+// ---- 차트 탭 사이드: 실시간 핵심 지표 스트립 ----
+function csRender(){
+  const el = $('csInd'); if(!el) return;
+  const rows = [];
+  const add = (n,v,c)=>rows.push(`<div class="cs-row"><span class="n">${n}</span><b class="${c||'neutral'}">${v}</b></div>`);
+  if(window.__btc) add('BTC 현재가', '$'+fmt(window.__btc,1));
+  if(window.__rsi!==undefined) add('RSI (1시간)', fmt(window.__rsi,1), window.__rsi>=70?'up':window.__rsi<=30?'down':'neutral');
+  if(window.__funding!==undefined) add('펀딩비', (window.__funding>=0?'+':'')+fmt(window.__funding,4)+'%', cls(window.__funding));
+  if(window.__kimp!==undefined) add('김치 프리미엄', pct(window.__kimp), cls(window.__kimp));
+  if(window.__fng!==undefined) add('공포/탐욕', window.__fng, window.__fng<=45?'down':window.__fng>=55?'up':'neutral');
+  if(window.__whaleBr!==undefined) add('고래 매수비중(15분)', fmt(window.__whaleBr,0)+'%', window.__whaleBr>=63?'up':window.__whaleBr<=37?'down':'neutral');
+  if(window.__lsr!==undefined) add('개미 롱/숏', fmt(window.__lsr,2));
+  if(rows.length) el.innerHTML = rows.join('');
+}
+setInterval(()=>{ if($('pageChart').style.display!=='none') csRender(); }, 5000);
 
 // ---- 📰 뉴스 (5분마다 갱신) ----
 const NEWS_RAW = 'https://gist.githubusercontent.com/btcdash/2dbcf6ec8074b85380d3cf119f6f1091/raw/news.json';
