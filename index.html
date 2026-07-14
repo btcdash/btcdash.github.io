@@ -20,6 +20,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script src="https://s3.tradingview.com/tv.js"></script>
 <style>
   :root{
     --bg:#0d1117; --surface:#161b22; --surface2:#1c2330; --border:#2a3140;
@@ -128,12 +129,10 @@
   .tf-tabs .tf{font-size:12px;padding:6px 11px}
   .coin-tabs .ct.on{background:var(--accent);color:#111;border-color:var(--accent)}
   .tf-tabs .tf.on{background:var(--ink);color:#111;border-color:var(--ink)}
-  .chart-price{display:flex;align-items:baseline;gap:10px;margin:14px 2px 8px}
-  .chart-price #chSym{font-size:13px;color:var(--ink2);font-weight:600}
-  .chart-price #chLast{font-size:26px;font-weight:800;letter-spacing:-.5px}
-  .chart-wrap{position:relative;width:100%;height:340px}
-  #chart{width:100%;height:100%;display:block}
-  @media(max-width:600px){.chart-wrap{height:260px}.chart-price #chLast{font-size:22px}}
+  .chart-hint{font-size:11px;color:var(--ink3)}
+  .tv-wrap{width:100%;height:460px;margin-top:12px;border-radius:8px;overflow:hidden}
+  #tvchart{width:100%;height:100%}
+  @media(max-width:600px){.tv-wrap{height:380px}.chart-hint{display:none}}
 
   /* ===== PC 앱 안내 (작은 배너) ===== */
   #pcApp{position:fixed;right:18px;bottom:18px;z-index:99999;background:#161b22;border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:none;align-items:center;gap:11px;box-shadow:0 8px 28px rgba(0,0,0,.45);max-width:270px}
@@ -246,32 +245,19 @@
     </div>
   </div>
 
-  <!-- 코인 차트 -->
+  <!-- 코인 차트 (트레이딩뷰 전문차트) -->
   <section>
     <div class="chart-card">
       <div class="chart-top">
         <div class="coin-tabs" id="coinTabs">
-          <button class="ct on" data-sym="BTCUSDT">BTC</button>
-          <button class="ct" data-sym="ETHUSDT">ETH</button>
-          <button class="ct" data-sym="SOLUSDT">SOL</button>
-          <button class="ct" data-sym="XRPUSDT">XRP</button>
+          <button class="ct on" data-sym="BINANCE:BTCUSDT">BTC</button>
+          <button class="ct" data-sym="BINANCE:ETHUSDT">ETH</button>
+          <button class="ct" data-sym="BINANCE:SOLUSDT">SOL</button>
+          <button class="ct" data-sym="BINANCE:XRPUSDT">XRP</button>
         </div>
-        <div class="tf-tabs" id="tfTabs">
-          <button class="tf" data-tf="15m">15분</button>
-          <button class="tf on" data-tf="1h">1시간</button>
-          <button class="tf" data-tf="4h">4시간</button>
-          <button class="tf" data-tf="1d">1일</button>
-        </div>
+        <div class="chart-hint">차트 위에서 지표 추가·그림·시간대 변경 가능 📊</div>
       </div>
-      <div class="chart-price">
-        <span id="chSym">BTC/USDT</span>
-        <span id="chLast">—</span>
-        <span id="chChg" class="sub"></span>
-      </div>
-      <div class="chart-wrap">
-        <svg id="chart" preserveAspectRatio="none"></svg>
-        <div id="chartMsg" class="err" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">불러오는 중…</div>
-      </div>
+      <div class="tv-wrap"><div id="tvchart"></div></div>
     </div>
   </section>
 
@@ -384,64 +370,33 @@ async function loadPrices(){
   }catch(e){ /* 헤더 가격 실패는 조용히 넘어감 */ }
 }
 
-// ---- 코인 캔들차트 (탭 전환 + 시간대 전환) ----
-let chSym = 'BTCUSDT', chTf = '1h';
-const SVGNS = 'http://www.w3.org/2000/svg';
-async function loadChart(){
-  const svg = $('chart'), msg = $('chartMsg');
-  try{
-    const k = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${chSym}&interval=${chTf}&limit=90`).then(r=>r.json());
-    if(!Array.isArray(k) || !k.length) throw new Error('empty');
-    msg.style.display='none';
-    const candles = k.map(c=>({t:c[0],o:+c[1],h:+c[2],l:+c[3],c:+c[4]}));
-    const last = candles[candles.length-1].c, first = candles[0].o;
-    const chg = (last/first-1)*100;
-    $('chSym').textContent = chSym.replace('USDT','')+'/USDT';
-    $('chLast').textContent = fmt(last, last>100?2:4);
-    $('chChg').textContent = pct(chg); $('chChg').className='sub '+cls(chg);
-
-    const W=svg.clientWidth||900, H=svg.clientHeight||340, padR=58, padB=20, padT=10;
-    const plotW=W-padR, plotH=H-padB-padT;
-    let hi=Math.max(...candles.map(c=>c.h)), lo=Math.min(...candles.map(c=>c.l));
-    const pad=(hi-lo)*0.08; hi+=pad; lo-=pad;
-    const x=i=>i/(candles.length)*plotW + plotW/candles.length*0.5;
-    const y=v=>padT + (hi-v)/(hi-lo)*plotH;
-    const cw=Math.max(2, plotW/candles.length*0.6);
-    svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
-    let s='';
-    // 가로 눈금 + 오른쪽 가격 라벨
-    for(let g=0; g<=4; g++){
-      const v=lo+(hi-lo)*g/4, yy=y(v);
-      s+=`<line x1="0" y1="${yy}" x2="${plotW}" y2="${yy}" stroke="#2a3140" stroke-width="1"/>`;
-      s+=`<text x="${plotW+6}" y="${yy+4}" fill="#6b7683" font-size="11">${fmt(v, v>100?0:4)}</text>`;
+// ---- 트레이딩뷰 전문 차트 ----
+let chSym = 'BINANCE:BTCUSDT';
+function buildChart(){
+  if(typeof TradingView === 'undefined'){ setTimeout(buildChart, 400); return; }
+  $('tvchart').innerHTML='';
+  new TradingView.widget({
+    container_id:'tvchart', symbol:chSym, interval:'60', autosize:true,
+    timezone:'Asia/Seoul', theme:'dark', style:'1', locale:'kr',
+    hide_side_toolbar:false, allow_symbol_change:false, withdateranges:true,
+    studies:[], toolbar_bg:'#161b22',
+    overrides:{
+      'paneProperties.background':'#0d1117',
+      'paneProperties.backgroundType':'solid',
+      'mainSeriesProperties.candleStyle.upColor':'#f6465d',
+      'mainSeriesProperties.candleStyle.downColor':'#3b82f6',
+      'mainSeriesProperties.candleStyle.borderUpColor':'#f6465d',
+      'mainSeriesProperties.candleStyle.borderDownColor':'#3b82f6',
+      'mainSeriesProperties.candleStyle.wickUpColor':'#f6465d',
+      'mainSeriesProperties.candleStyle.wickDownColor':'#3b82f6'
     }
-    // 캔들
-    candles.forEach((c,i)=>{
-      const up=c.c>=c.o, col=up?'#f6465d':'#3b82f6', cx=x(i);
-      s+=`<line x1="${cx}" y1="${y(c.h)}" x2="${cx}" y2="${y(c.l)}" stroke="${col}" stroke-width="1"/>`;
-      const yo=y(c.o), yc=y(c.c), top=Math.min(yo,yc), hgt=Math.max(1,Math.abs(yc-yo));
-      s+=`<rect x="${cx-cw/2}" y="${top}" width="${cw}" height="${hgt}" fill="${col}"/>`;
-    });
-    // 현재가 점선
-    const yl=y(last);
-    s+=`<line x1="0" y1="${yl}" x2="${plotW}" y2="${yl}" stroke="#f0b90b" stroke-width="1" stroke-dasharray="4 3"/>`;
-    s+=`<rect x="${plotW}" y="${yl-9}" width="${padR}" height="18" fill="#f0b90b"/>`;
-    s+=`<text x="${plotW+5}" y="${yl+4}" fill="#111" font-size="11" font-weight="700">${fmt(last,last>100?1:4)}</text>`;
-    svg.innerHTML=s;
-  }catch(e){ msg.style.display='flex'; msg.textContent='차트 로드 실패 — 잠시 후 재시도'; }
+  });
 }
-// 탭 이벤트
 $('coinTabs').addEventListener('click',e=>{
   const b=e.target.closest('.ct'); if(!b) return;
   document.querySelectorAll('#coinTabs .ct').forEach(x=>x.classList.toggle('on',x===b));
-  chSym=b.dataset.sym; loadChart();
+  chSym=b.dataset.sym; buildChart();
 });
-$('tfTabs').addEventListener('click',e=>{
-  const b=e.target.closest('.tf'); if(!b) return;
-  document.querySelectorAll('#tfTabs .tf').forEach(x=>x.classList.toggle('on',x===b));
-  chTf=b.dataset.tf; loadChart();
-});
-window.addEventListener('resize', ()=>{ clearTimeout(window.__rz); window.__rz=setTimeout(loadChart,200); });
 
 // ---- 김치 프리미엄 (60초마다) — 코인게코 경유 업비트 시세 (직접 호출 시 업비트가 차단해서 우회) ----
 async function loadKimchi(){
@@ -590,9 +545,8 @@ async function loadChat(){
 }
 
 // ---- 시작 & 주기 ----
-loadPrices(); loadChart(); loadKimchi(); loadFng(); loadRsi(); loadLs(); loadFunding(); loadChat();
+loadPrices(); buildChart(); loadKimchi(); loadFng(); loadRsi(); loadLs(); loadFunding(); loadChat();
 setInterval(loadPrices, 10_000);
-setInterval(loadChart, 20_000);
 setInterval(loadKimchi, 60_000);
 setInterval(loadFng, 600_000);
 setInterval(loadRsi, 300_000);
