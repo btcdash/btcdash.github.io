@@ -57,6 +57,21 @@
   .g-close{width:100%;margin-top:12px;border:0;border-radius:10px;padding:13px;font-size:14px;font-weight:800;background:var(--accent);color:#111;cursor:pointer}
   .g-record{font-size:12px;color:var(--ink2);text-align:center;margin-top:12px;line-height:1.7}
   .g-reset{width:100%;margin-top:8px;border:1px solid var(--border);border-radius:10px;padding:11px;font-size:13px;font-weight:700;background:var(--surface2);color:var(--ink);cursor:pointer}
+  .g-chart-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .g-tf{display:flex;gap:4px}
+  .g-tf button{background:var(--surface2);border:1px solid var(--border);color:var(--ink2);font-size:11px;font-weight:700;padding:4px 9px;border-radius:6px;cursor:pointer}
+  .g-tf button.on{background:var(--ink);color:#111;border-color:var(--ink)}
+  .g-zoom{background:var(--surface2);border:1px solid var(--border);color:var(--ink2);font-size:11px;font-weight:700;padding:4px 9px;border-radius:6px;cursor:pointer}
+  .g-zoom:hover{color:var(--ink);border-color:var(--ink3)}
+  .g-chart-wrap{border:1px solid var(--border);border-radius:10px;background:#0a0e15;padding:6px 4px;margin-bottom:8px}
+  #gChart{width:100%;height:110px;display:block}
+  /* 차트 확대 모달 */
+  #gChartModal{position:fixed;inset:0;z-index:100003;background:rgba(0,0,0,.85);display:none;flex-direction:column;padding:16px}
+  #gChartModal.show{display:flex}
+  #gChartModal .mtop{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  #gChartModal .mtitle{font-weight:800;font-size:15px}
+  #gChartModal .mclose{background:var(--surface2);border:1px solid var(--border);color:var(--ink);font-size:14px;font-weight:700;padding:8px 16px;border-radius:8px;cursor:pointer}
+  #gChartBig{flex:1;width:100%;background:#0a0e15;border:1px solid var(--border);border-radius:10px}
   .g-in{margin-bottom:8px}
   .g-in label,.g-in2 label{display:block;font-size:11px;color:var(--ink2);margin-bottom:4px}
   .g-in input,.g-in2 input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--ink);padding:9px 10px;font-size:13px;outline:none}
@@ -336,8 +351,15 @@
   <aside class="gamebox">
     <div class="game-head">🎮 모의 트레이딩 <span class="help">?<span class="tip">가상 시드 100만원으로 진짜 BTC 시세에 베팅하는 연습 게임이에요. 실제 돈이 아니니 부담 없이 연습해보세요. 기록은 이 브라우저에 저장돼요.</span></span></div>
     <div class="g-price"><b id="gPrice">—</b><span>BTC/USDT 실시간</span></div>
-    <svg id="gChart" style="width:100%;height:110px;display:block;margin-bottom:2px" preserveAspectRatio="none"></svg>
-    <div style="font-size:10px;color:var(--ink3);text-align:right;margin-bottom:8px">1분봉 · 최근 42분</div>
+    <div class="g-chart-top">
+      <div class="g-tf" id="gTfTabs">
+        <button data-tf="1m" class="on">1분</button>
+        <button data-tf="5m">5분</button>
+        <button data-tf="15m">15분</button>
+      </div>
+      <button class="g-zoom" id="gZoom" title="크게 보기">⛶ 확대</button>
+    </div>
+    <div class="g-chart-wrap"><svg id="gChart" preserveAspectRatio="none"></svg></div>
     <div class="g-eq"><span>내 시드</span><b id="gEquity">—</b></div>
 
     <div id="gOpen">
@@ -371,6 +393,7 @@
         <div><label>익절 ROE%</label><input type="number" id="gTpE" placeholder="없음"></div>
         <div><label>손절 ROE%</label><input type="number" id="gSlE" placeholder="없음"></div>
       </div>
+      <button class="g-reset" id="gTpslApply" style="display:block;margin-bottom:8px">✅ 익절/손절 적용</button>
       <button class="g-close" id="gClose">💰 청산하기</button>
       <div class="g-in" style="margin-top:8px">
         <label>물타기 금액 (원)</label>
@@ -510,6 +533,15 @@
     <button class="x" id="pcAppX">✕</button>
     <img src="qr.png" alt="QR코드">
     <div class="txt"><b>📱 폰에서 앱으로 쓰기</b><span>QR을 폰 카메라로 찍으면 사이트로 이동해요. 홈 화면에 추가하면 앱처럼 열려요.</span></div>
+  </div>
+
+  <!-- 게임 차트 확대 모달 -->
+  <div id="gChartModal">
+    <div class="mtop">
+      <div class="mtitle">🎮 BTC/USDT <span id="gBigTf" style="color:var(--accent)">1분봉</span></div>
+      <button class="mclose" id="gChartModalClose">✕ 닫기</button>
+    </div>
+    <svg id="gChartBig" preserveAspectRatio="none"></svg>
   </div>
 
   <!-- 앱 설치 안내 배너 (모바일) -->
@@ -877,56 +909,59 @@ const krwFmt = v=>{
   return a>=1e8 ? (v/1e8).toFixed(2)+'억' : a>=1e4 ? Math.round(v/1e4).toLocaleString()+'만' : Math.round(v).toLocaleString()+'원';
 };
 let gP = null;
-let gCandles = [];                    // 미니 캔들차트용 1분봉
+let gCandles = [];                    // 게임 캔들차트
+let gTf = '1m';
+const gTfMs = {'1m':60000, '5m':300000, '15m':900000};
 async function gSeedSeries(){
   try{
-    const k = await fetch('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1m&limit=42').then(r=>r.json());
+    const k = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=${gTf}&limit=48`).then(r=>r.json());
     if(Array.isArray(k)) gCandles = k.map(c=>({t:+c[0], o:+c[1], h:+c[2], l:+c[3], c:+c[4]}));
   }catch(e){}
 }
 function gPushTick(p){
   if(!gCandles.length) return;
-  const m = Math.floor(Date.now()/60000)*60000;
+  const step = gTfMs[gTf];
+  const m = Math.floor(Date.now()/step)*step;
   const last = gCandles[gCandles.length-1];
   if(last.t >= m){ last.c=p; if(p>last.h)last.h=p; if(p<last.l)last.l=p; }
-  else { gCandles.push({t:m, o:last.c, h:p, l:p, c:p}); if(gCandles.length>42) gCandles.shift(); }
+  else { gCandles.push({t:m, o:last.c, h:p, l:p, c:p}); if(gCandles.length>48) gCandles.shift(); }
 }
-function gDrawChart(){
-  const svg = $('gChart');
+function gDrawTo(svg, big){
   if(!gCandles.length || !svg) return;
-  const W = svg.clientWidth||258, H = 110, padR = 42, plotW = W-padR;
+  const W = svg.clientWidth||258, H = svg.clientHeight||110, padR = big?60:42, plotW = W-padR;
+  const fs = big?13:8.5;
   let hi = Math.max(...gCandles.map(c=>c.h)), lo = Math.min(...gCandles.map(c=>c.l));
   if(G.pos){ hi = Math.max(hi, G.pos.entry); lo = Math.min(lo, G.pos.entry); }
   const pad = (hi-lo)*0.08 || 1; hi += pad; lo -= pad;
   const x = i => (i+0.5)/gCandles.length*plotW, y = v => (hi-v)/(hi-lo)*H;
   const cw = Math.max(2, plotW/gCandles.length*0.62);
   let s = '';
-  // 눈금선 + 가격 라벨
-  for(let g2=0; g2<=3; g2++){
-    const v = lo+(hi-lo)*g2/3, yy = y(v);
+  for(let g2=0; g2<=4; g2++){
+    const v = lo+(hi-lo)*g2/4, yy = y(v);
     s += `<line x1="0" y1="${yy}" x2="${plotW}" y2="${yy}" stroke="#242b38" stroke-width="0.7"/>`;
-    s += `<text x="${plotW+3}" y="${yy+3.5}" fill="#6b7683" font-size="8.5">${Math.round(v).toLocaleString()}</text>`;
+    s += `<text x="${plotW+3}" y="${yy+fs*0.4}" fill="#6b7683" font-size="${fs}">${Math.round(v).toLocaleString()}</text>`;
   }
-  // 1분봉 캔들 (한국식: 상승 빨강 / 하락 파랑)
   gCandles.forEach((c,i)=>{
     const up = c.c>=c.o, col = up?'#f6465d':'#3b82f6', cx = x(i);
-    s += `<line x1="${cx}" y1="${y(c.h)}" x2="${cx}" y2="${y(c.l)}" stroke="${col}" stroke-width="0.8"/>`;
+    s += `<line x1="${cx}" y1="${y(c.h)}" x2="${cx}" y2="${y(c.l)}" stroke="${col}" stroke-width="${big?1.2:0.8}"/>`;
     const yo = y(c.o), yc = y(c.c), top = Math.min(yo,yc), hh = Math.max(0.8, Math.abs(yc-yo));
     s += `<rect x="${(cx-cw/2).toFixed(1)}" y="${top.toFixed(1)}" width="${cw.toFixed(1)}" height="${hh.toFixed(1)}" fill="${col}"/>`;
   });
-  // 현재가 라인 + 라벨
   const lastP = gCandles[gCandles.length-1].c, yl = y(lastP);
   s += `<line x1="0" y1="${yl}" x2="${plotW}" y2="${yl}" stroke="#f0b90b" stroke-width="0.7" stroke-dasharray="3 2"/>`;
-  s += `<rect x="${plotW}" y="${yl-6.5}" width="${padR}" height="13" rx="2" fill="#f0b90b"/>`;
-  s += `<text x="${plotW+3}" y="${yl+3.5}" fill="#111" font-size="8.5" font-weight="700">${Math.round(lastP).toLocaleString()}</text>`;
-  // 내 평단 라인
+  s += `<rect x="${plotW}" y="${yl-fs}" width="${padR}" height="${fs*2}" rx="2" fill="#f0b90b"/>`;
+  s += `<text x="${plotW+3}" y="${yl+fs*0.4}" fill="#111" font-size="${fs}" font-weight="700">${Math.round(lastP).toLocaleString()}</text>`;
   if(G.pos){
     const ye = y(G.pos.entry), col = G.pos.side>0?'#f6465d':'#3b82f6';
     s += `<line x1="0" y1="${ye}" x2="${plotW}" y2="${ye}" stroke="${col}" stroke-dasharray="4 3" stroke-width="1"/>`;
-    s += `<text x="3" y="${Math.max(9, ye-3)}" fill="${col}" font-size="8.5" font-weight="700">평단</text>`;
+    s += `<text x="3" y="${Math.max(fs, ye-3)}" fill="${col}" font-size="${fs}" font-weight="700">평단 ${fmt(G.pos.entry,0)}</text>`;
   }
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.innerHTML = s;
+}
+function gDrawChart(){
+  gDrawTo($('gChart'), false);
+  if($('gChartModal').classList.contains('show')) gDrawTo($('gChartBig'), true);
 }
 async function gTick(){
   try{
@@ -937,6 +972,19 @@ async function gTick(){
     gRender();
   }catch(e){}
 }
+// 시간대 전환
+$('gTfTabs').addEventListener('click', e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  document.querySelectorAll('#gTfTabs button').forEach(x=>x.classList.toggle('on', x===b));
+  gTf = b.dataset.tf;
+  $('gBigTf').textContent = b.textContent+'봉';
+  gSeedSeries().then(gDrawChart);
+});
+// 확대
+$('gZoom').onclick = ()=>{ $('gChartModal').classList.add('show'); setTimeout(gDrawChart, 30); };
+$('gChartModalClose').onclick = ()=>$('gChartModal').classList.remove('show');
+$('gChart').style.cursor = 'zoom-in';
+$('gChart').onclick = ()=>$('gZoom').click();
 const gLiqPrice = p => p.side>0 ? p.entry*(1-0.98/p.lev) : p.entry*(1+0.98/p.lev);
 const gPriceAtRoe = (p, roe) => p.entry*(1 + p.side*roe/100/p.lev);   // 목표 ROE가 되는 가격
 function gRender(){
@@ -1051,9 +1099,15 @@ $('gAmtSlide').oninput = ()=>{
 };
 $('gAmt').oninput = gSyncPct;
 $('gMax').onclick = ()=>{ $('gAmt').value = G.eq; gSyncPct(); };
-// 포지션 중 익절/손절 수정
-$('gTpE').onchange = ()=>{ if(G.pos){ G.pos.tp = Math.max(0,+$('gTpE').value||0)||null; gSave(); gRender(); } };
-$('gSlE').onchange = ()=>{ if(G.pos){ G.pos.sl = Math.max(0,+$('gSlE').value||0)||null; gSave(); gRender(); } };
+// 포지션 중 익절/손절 적용 버튼
+$('gTpslApply').onclick = ()=>{
+  if(!G.pos) return;
+  G.pos.tp = Math.max(0, +$('gTpE').value||0) || null;
+  G.pos.sl = Math.max(0, +$('gSlE').value||0) || null;
+  gSave(); gRender();
+  $('gTpslApply').textContent = '✅ 적용됨!';
+  setTimeout(()=>$('gTpslApply').textContent='✅ 익절/손절 적용', 1500);
+};
 $('gReset').onclick = ()=>{ G.eq=GAME_START; G.pos=null; G.last=null; gSave(); gRender(); };
 $('gManualReset').onclick = ()=>{
   if(!confirm('시드를 100만원으로 초기화할까요?\n(전적과 랭킹 최고기록은 유지돼요)')) return;
