@@ -255,6 +255,10 @@
   .cs-row:last-child{border-bottom:0}
   .cs-row .n{color:var(--ink2)}
   .cs-row b{font-variant-numeric:tabular-nums}
+  .cs-guide{font-size:12px;color:var(--ink2);line-height:1.65}
+  .cs-guide b{color:var(--accent);display:block;margin-top:9px}
+  .cs-guide b:first-child{margin-top:0}
+  .cs-guide .tip2{margin-top:10px;padding:8px 10px;background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;color:var(--ink)}
 
   /* ===== 섹션 바로가기 칩 ===== */
   .jump{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 18px}
@@ -388,7 +392,7 @@
   <!-- 상단 탭 -->
   <nav class="topnav">
     <button class="on" data-page="home"><small>시세 · 고래 · 게임 · 소통방</small>📊 대시보드</button>
-    <button data-page="chart"><small>트레이딩뷰 · 보조지표 원클릭</small>📈 차트</button>
+    <button data-page="chart"><small>트레이딩뷰 · 보조지표 원클릭설정</small>📈 차트</button>
     <button data-page="news"><small>자동선별 · 쉬운해석</small>📰 주요 뉴스</button>
     <button data-page="calc"><small>계산기 · 물타기 · 펀딩</small>🛠️ 매매 도구</button>
   </nav>
@@ -659,6 +663,10 @@
           <div class="cs-head">🐋 실시간 고래 체결</div>
           <div id="whaleList2" class="whale-list" style="max-height:400px"><div class="err">수집 중…</div></div>
         </div>
+        <div class="cs-card">
+          <div class="cs-head">📖 지금 켜진 지표 보는 법</div>
+          <div id="csGuide" class="cs-guide"></div>
+        </div>
       </aside>
     </div>
   </div>
@@ -877,13 +885,35 @@ $('coinTabs').addEventListener('click',e=>{
   document.querySelectorAll('#coinTabs .ct').forEach(x=>x.classList.toggle('on',x===b));
   chSym=b.dataset.sym; buildChart();
 });
+// 프리셋별 "지표 보는 법" 가이드
+const TV_GUIDES = {
+  clean: `<b>🕯️ 캔들 기본</b>빨간 캔들은 그 시간에 오른 것, 파란 캔들은 내린 거예요. 위아래 꼬리가 길면 그 방향으로 갔다가 되돌아왔다는 뜻이에요.
+<b>📊 거래량 (아래 막대)</b>막대가 클수록 그 구간에서 매수·매도 싸움이 치열했다는 뜻 — 큰 캔들 + 큰 거래량이 "진짜 움직임"이에요.
+<div class="tip2">💡 지표가 어려우면 위의 ⭐ 리치 추천 버튼을 눌러보세요 — 보는 법도 여기 같이 바뀌어요.</div>`,
+  rich: `<b>📉 이동평균선 (차트 위 곡선)</b>가격이 선 위에 있으면 상승 흐름, 아래면 하락 흐름. 가격이 떨어지다 이 선 근처에서 자주 튕겨요(지지선 역할).
+<b>🎈 볼린저밴드 (띠 모양)</b>가격이 위쪽 띠에 닿으면 과열(추격 매수 조심), 아래쪽 띠에 닿으면 과매도(반등 노릴 자리). 띠가 좁아지면 곧 크게 움직일 준비 신호예요.
+<b>📟 RSI (아래 창)</b>70 위면 과매수, 30 아래면 과매도예요.
+<div class="tip2">💡 조합 팁: 가격이 볼린저 <b style="display:inline">아래 띠</b>에 닿고 + RSI가 30 아래면 → 반등 노려볼 자리로 봐요. 반대로 위 띠 + RSI 70이면 추격 매수 금지 구간.</div>`,
+  momentum: `<b>📟 RSI</b>70 위 과매수, 30 아래 과매도. 힘이 얼마나 쏠렸는지 보는 지표예요.
+<b>📐 MACD</b>파란 선이 주황 선을 <b style="display:inline">위로</b> 뚫으면 상승 신호(골든크로스), 아래로 뚫으면 하락 신호예요. 0선 위에 있으면 상승 힘이 우세.
+<b>🎲 스토캐스틱</b>80 위 과매수, 20 아래 과매도. RSI보다 예민하게 움직여서 단타 타이밍에 많이 써요.
+<div class="tip2">💡 조합 팁: 지표 하나만 믿지 말고 — <b style="display:inline">셋이 같은 방향</b>을 가리킬 때(예: 셋 다 과매도) 신뢰도가 확 올라가요.</div>`,
+  trend: `<b>📈 EMA (지수이동평균)</b>최근 가격에 민감한 이동평균이에요. 가격이 선 위면 상승 추세 유지 중.
+<b>☁️ 일목균형표 (구름)</b>가격이 구름 <b style="display:inline">위</b>면 상승장, 구름 <b style="display:inline">아래</b>면 하락장, 구름 안이면 방향 다툼 중. 구름이 두꺼울수록 뚫기 어려운 벽이에요.
+<div class="tip2">💡 조합 팁: 가격이 구름 위 + EMA 위로 정렬됐으면 상승 추세 — 떨어질 때마다(눌림목) 매수 관점으로 보는 그림이에요. 구름을 아래로 뚫리면 추세 붕괴 신호.</div>`
+};
+function csGuideRender(set){
+  const el = $('csGuide'); if(el) el.innerHTML = TV_GUIDES[set] || TV_GUIDES.clean;
+}
 // 보조지표 프리셋 버튼
 document.querySelector('.tv-preset').addEventListener('click', e=>{
   const b = e.target.closest('.tp'); if(!b) return;
   document.querySelectorAll('.tv-preset .tp').forEach(x=>x.classList.toggle('on', x===b));
   chStudies = TV_PRESETS[b.dataset.set] || [];
   buildChart();
+  csGuideRender(b.dataset.set);
 });
+csGuideRender('clean');
 
 // ---- 김치 프리미엄 (60초마다) — 코인게코 경유 업비트 시세 (직접 호출 시 업비트가 차단해서 우회) ----
 async function loadKimchi(){
