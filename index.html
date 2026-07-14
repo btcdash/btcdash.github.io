@@ -944,7 +944,11 @@ function gDrawTo(svg, big){
   const W = svg.clientWidth||258, H = svg.clientHeight||175, padR = big?62:46, plotW = W-padR;
   const fs = big?13:10;
   let hi = Math.max(...view.map(c=>c.h)), lo = Math.min(...view.map(c=>c.l));
-  if(G.pos){ hi = Math.max(hi, G.pos.entry); lo = Math.min(lo, G.pos.entry); }
+  if(G.pos){
+    hi = Math.max(hi, G.pos.entry); lo = Math.min(lo, G.pos.entry);
+    if(G.pos.tp){ const p = gPriceAtRoe(G.pos, G.pos.tp); hi = Math.max(hi, p); lo = Math.min(lo, p); }
+    if(G.pos.sl){ const p = gPriceAtRoe(G.pos, -G.pos.sl); hi = Math.max(hi, p); lo = Math.min(lo, p); }
+  }
   const pad = (hi-lo)*0.08 || 1; hi += pad; lo -= pad;
   const x = i => (i+0.5)/view.length*plotW, y = v => (hi-v)/(hi-lo)*H;
   const cw = Math.max(1.5, plotW/view.length*0.62);
