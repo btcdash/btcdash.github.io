@@ -249,22 +249,38 @@ async function loadPrices(){
   }catch(e){ $('coinRows').innerHTML = '<tr><td colspan="6" class="err">시세 로드 실패 — 잠시 후 재시도</td></tr>'; }
 }
 
-// ---- 김치 프리미엄 (60초마다) ----
+// ---- 김치 프리미엄 (60초마다, 실패 시 15초 뒤 재시도) ----
 async function loadKimchi(){
   try{
-    const [ub, fx] = await Promise.all([
-      fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC').then(r=>r.json()),
-      fetch('https://open.er-api.com/v6/latest/USD').then(r=>r.json())
-    ]);
+    // 1) 업비트 BTC 원화 시세 (필수)
+    const ub = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC').then(r=>r.json());
     const krw = ub[0].trade_price;
-    const rate = fx.rates.KRW;
+
+    // 2) 환율: 환율API 실패 시 업비트 테더(KRW-USDT) 시세로 대체
+    let rate = null, rateSrc = '환율';
+    try{
+      const fx = await fetch('https://open.er-api.com/v6/latest/USD').then(r=>r.json());
+      rate = fx && fx.rates && fx.rates.KRW;
+    }catch(e){ console.warn('[김프] 환율API 실패, 테더 시세로 대체:', e); }
+    if(!rate){
+      const t = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-USDT').then(r=>r.json());
+      rate = t[0].trade_price; rateSrc = '테더';
+    }
+
+    // 3) 바이낸스 달러 시세 (loadPrices가 채움, 아직이면 잠시 후 재시도)
     const usd = window.__btc || null;
     if(!usd){ setTimeout(loadKimchi, 3000); return; }
+
     const prem = (krw / (usd*rate) - 1) * 100;
     $('kimchi').textContent = pct(prem);
     $('kimchi').className = 'value ' + cls(prem);
-    $('kimchiSub').textContent = `업비트 ₩${fmt(krw,0)} · 환율 ${fmt(rate,0)}원`;
-  }catch(e){ $('kimchi').textContent = '—'; $('kimchiSub').textContent = '로드 실패'; }
+    $('kimchiSub').textContent = `업비트 ₩${fmt(krw,0)} · ${rateSrc} ${fmt(rate,0)}원`;
+  }catch(e){
+    console.error('[김프] 로드 실패:', e);
+    $('kimchi').textContent = '—';
+    $('kimchiSub').textContent = '일시 오류 — 재시도 중';
+    setTimeout(loadKimchi, 15000);
+  }
 }
 
 // ---- 공포/탐욕 (10분마다) ----
