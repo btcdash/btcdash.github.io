@@ -336,7 +336,8 @@
   <aside class="gamebox">
     <div class="game-head">🎮 모의 트레이딩 <span class="help">?<span class="tip">가상 시드 100만원으로 진짜 BTC 시세에 베팅하는 연습 게임이에요. 실제 돈이 아니니 부담 없이 연습해보세요. 기록은 이 브라우저에 저장돼요.</span></span></div>
     <div class="g-price"><b id="gPrice">—</b><span>BTC/USDT 실시간</span></div>
-    <svg id="gChart" style="width:100%;height:88px;display:block;margin-bottom:10px" preserveAspectRatio="none"></svg>
+    <svg id="gChart" style="width:100%;height:110px;display:block;margin-bottom:2px" preserveAspectRatio="none"></svg>
+    <div style="font-size:10px;color:var(--ink3);text-align:right;margin-bottom:8px">1분봉 · 최근 42분</div>
     <div class="g-eq"><span>내 시드</span><b id="gEquity">—</b></div>
 
     <div id="gOpen">
@@ -876,30 +877,53 @@ const krwFmt = v=>{
   return a>=1e8 ? (v/1e8).toFixed(2)+'억' : a>=1e4 ? Math.round(v/1e4).toLocaleString()+'만' : Math.round(v).toLocaleString()+'원';
 };
 let gP = null;
-let gSeries = [];                     // 미니 차트용 가격 흐름
+let gCandles = [];                    // 미니 캔들차트용 1분봉
 async function gSeedSeries(){
   try{
-    const k = await fetch('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1m&limit=45').then(r=>r.json());
-    if(Array.isArray(k)) gSeries = k.map(c=>parseFloat(c[4]));
+    const k = await fetch('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1m&limit=42').then(r=>r.json());
+    if(Array.isArray(k)) gCandles = k.map(c=>({t:+c[0], o:+c[1], h:+c[2], l:+c[3], c:+c[4]}));
   }catch(e){}
+}
+function gPushTick(p){
+  if(!gCandles.length) return;
+  const m = Math.floor(Date.now()/60000)*60000;
+  const last = gCandles[gCandles.length-1];
+  if(last.t >= m){ last.c=p; if(p>last.h)last.h=p; if(p<last.l)last.l=p; }
+  else { gCandles.push({t:m, o:last.c, h:p, l:p, c:p}); if(gCandles.length>42) gCandles.shift(); }
 }
 function gDrawChart(){
   const svg = $('gChart');
-  if(!gSeries.length) return;
-  const W = svg.clientWidth||258, H = 88;
-  let hi = Math.max(...gSeries), lo = Math.min(...gSeries);
+  if(!gCandles.length || !svg) return;
+  const W = svg.clientWidth||258, H = 110, padR = 42, plotW = W-padR;
+  let hi = Math.max(...gCandles.map(c=>c.h)), lo = Math.min(...gCandles.map(c=>c.l));
   if(G.pos){ hi = Math.max(hi, G.pos.entry); lo = Math.min(lo, G.pos.entry); }
-  const pad = (hi-lo)*0.06 || 1; hi += pad; lo -= pad;
-  const x = i => i/(gSeries.length-1)*W, y = v => (hi-v)/(hi-lo)*H;
+  const pad = (hi-lo)*0.08 || 1; hi += pad; lo -= pad;
+  const x = i => (i+0.5)/gCandles.length*plotW, y = v => (hi-v)/(hi-lo)*H;
+  const cw = Math.max(2, plotW/gCandles.length*0.62);
   let s = '';
-  // 영역 채움 + 선
-  const line = gSeries.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(' ');
-  s += `<path d="${line} L ${W} ${H} L 0 ${H} Z" fill="rgba(240,185,11,.08)" stroke="none"/>`;
-  s += `<path d="${line}" fill="none" stroke="#f0b90b" stroke-width="1.5"/>`;
+  // 눈금선 + 가격 라벨
+  for(let g2=0; g2<=3; g2++){
+    const v = lo+(hi-lo)*g2/3, yy = y(v);
+    s += `<line x1="0" y1="${yy}" x2="${plotW}" y2="${yy}" stroke="#242b38" stroke-width="0.7"/>`;
+    s += `<text x="${plotW+3}" y="${yy+3.5}" fill="#6b7683" font-size="8.5">${Math.round(v).toLocaleString()}</text>`;
+  }
+  // 1분봉 캔들 (한국식: 상승 빨강 / 하락 파랑)
+  gCandles.forEach((c,i)=>{
+    const up = c.c>=c.o, col = up?'#f6465d':'#3b82f6', cx = x(i);
+    s += `<line x1="${cx}" y1="${y(c.h)}" x2="${cx}" y2="${y(c.l)}" stroke="${col}" stroke-width="0.8"/>`;
+    const yo = y(c.o), yc = y(c.c), top = Math.min(yo,yc), hh = Math.max(0.8, Math.abs(yc-yo));
+    s += `<rect x="${(cx-cw/2).toFixed(1)}" y="${top.toFixed(1)}" width="${cw.toFixed(1)}" height="${hh.toFixed(1)}" fill="${col}"/>`;
+  });
+  // 현재가 라인 + 라벨
+  const lastP = gCandles[gCandles.length-1].c, yl = y(lastP);
+  s += `<line x1="0" y1="${yl}" x2="${plotW}" y2="${yl}" stroke="#f0b90b" stroke-width="0.7" stroke-dasharray="3 2"/>`;
+  s += `<rect x="${plotW}" y="${yl-6.5}" width="${padR}" height="13" rx="2" fill="#f0b90b"/>`;
+  s += `<text x="${plotW+3}" y="${yl+3.5}" fill="#111" font-size="8.5" font-weight="700">${Math.round(lastP).toLocaleString()}</text>`;
+  // 내 평단 라인
   if(G.pos){
-    const ye = y(G.pos.entry), col = G.pos.side>0 ? '#f6465d' : '#3b82f6';
-    s += `<line x1="0" y1="${ye}" x2="${W}" y2="${ye}" stroke="${col}" stroke-width="1" stroke-dasharray="4 3"/>`;
-    s += `<text x="3" y="${Math.max(10,ye-4)}" fill="${col}" font-size="9">평단</text>`;
+    const ye = y(G.pos.entry), col = G.pos.side>0?'#f6465d':'#3b82f6';
+    s += `<line x1="0" y1="${ye}" x2="${plotW}" y2="${ye}" stroke="${col}" stroke-dasharray="4 3" stroke-width="1"/>`;
+    s += `<text x="3" y="${Math.max(9, ye-3)}" fill="${col}" font-size="8.5" font-weight="700">평단</text>`;
   }
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   svg.innerHTML = s;
@@ -908,7 +932,7 @@ async function gTick(){
   try{
     const j = await fetch('https://fapi.binance.com/fapi/v1/ticker/price?symbol=BTCUSDT').then(r=>r.json());
     gP = parseFloat(j.price);
-    if(gSeries.length){ gSeries.push(gP); if(gSeries.length>60) gSeries.shift(); }
+    gPushTick(gP);
     gDrawChart();
     gRender();
   }catch(e){}
