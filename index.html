@@ -278,6 +278,16 @@
   .wrow .wp{color:var(--ink2);text-align:right;font-size:12px}
   .whale-note{font-size:11px;color:var(--ink3);margin-top:10px}
 
+  /* ===== 급변 감지 배너 ===== */
+  #mvBanner{position:fixed;top:0;left:0;right:0;z-index:100005;display:none;align-items:center;gap:12px;padding:11px 16px;box-shadow:0 4px 24px rgba(0,0,0,.5);animation:adfade .4s ease}
+  #mvBanner.show{display:flex}
+  #mvBanner.up{background:linear-gradient(92deg,#3d0912,#7a1024)}
+  #mvBanner.down{background:linear-gradient(92deg,#081c3d,#0f3f8a)}
+  #mvBanner .mv-in{flex:1;min-width:0}
+  #mvBanner b{display:block;font-size:15px;color:#fff}
+  #mvBanner span{display:block;font-size:12px;color:rgba(255,255,255,.85);margin-top:3px;line-height:1.5}
+  #mvBanner .mv-x, #mvBanner button{background:rgba(255,255,255,.15);border:0;color:#fff;font-size:14px;font-weight:700;padding:6px 11px;border-radius:8px;cursor:pointer;flex-shrink:0}
+
   /* ===== PC 앱 안내 (작은 배너) ===== */
   #pcApp{position:fixed;right:18px;bottom:18px;z-index:99999;background:#161b22;border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:none;align-items:center;gap:11px;box-shadow:0 8px 28px rgba(0,0,0,.45);max-width:270px}
   #pcApp.show{display:flex}
@@ -710,6 +720,15 @@
       <button class="mclose" id="gChartModalClose">✕ 닫기</button>
     </div>
     <svg id="gChartBig" preserveAspectRatio="none"></svg>
+  </div>
+
+  <!-- 🚨 급변 감지 배너 -->
+  <div id="mvBanner">
+    <div class="mv-in">
+      <b id="mvTitle">—</b>
+      <span id="mvWhy">원인 추적 중…</span>
+    </div>
+    <button id="mvX">✕</button>
   </div>
 
   <!-- 앱 설치 안내 배너 (모바일) -->
@@ -1238,8 +1257,70 @@ async function gTick(){
     gPushTick(gP);
     gDrawChart();
     gRender();
+    mvTick();
   }catch(e){}
 }
+
+// ---- 🚨 급변 감지 & 원인 자동 추적 ----
+let gPx = [], mvShownAt = 0, mvCoolUntil = 0, mvEvCache = null, mvEvAt = 0;
+function mvChg(){
+  const now = Date.now();
+  gPx.push({t:now, p:gP});
+  while(gPx.length && now-gPx[0].t > 900_000) gPx.shift();
+  const past = gPx.filter(x=>x.t <= now-290_000);          // 약 5분 전 가격
+  if(!past.length) return null;
+  return (gP/past[past.length-1].p - 1)*100;
+}
+async function mvReasons(dir){
+  const parts = [];
+  // 📅 발표 임박/직후
+  try{
+    if(!mvEvCache || Date.now()-mvEvAt > 600_000){
+      mvEvCache = await fetch(EVENTS_RAW+'?ts='+Date.now()).then(r=>r.json()); mvEvAt = Date.now();
+    }
+    const now = Date.now()/1000;
+    const near = (mvEvCache.events||[]).find(e=>Math.abs(e.ts-now) <= 45*60);
+    if(near) parts.push(`📅 "${near.t}" 발표 ${near.ts<=now?'직후':'임박'}`);
+  }catch(e){}
+  // 📰 직전 뉴스
+  const nCut = Date.now()/1000 - 25*60;
+  ((window.__newsAll)||[]).filter(n=>n.ts>=nCut).slice(0,2)
+    .forEach(n=>parts.push(`📰 ${tAgo(n.ts)} "${n.t.slice(0,34)}${n.t.length>34?'…':''}"`));
+  // 🐋 고래 흐름
+  const wCut = Date.now()-8*60*1000;
+  const rec = whales.filter(w=>w.time>=wCut);
+  const buy = rec.filter(w=>w.side==='buy').reduce((s,w)=>s+w.usd,0);
+  const sell = rec.filter(w=>w.side==='sell').reduce((s,w)=>s+w.usd,0);
+  if(buy+sell > 200_000){
+    const side = buy>sell?'매수':'매도';
+    parts.push(`🐋 고래 ${side} 우위 ${rec.length}건 (${krwFmt((buy>sell?buy:sell)*(window.__usdkrw||1480))})`);
+  }
+  if(!parts.length) parts.push('뚜렷한 단일 원인 없이 수급으로 밀리는 흐름이에요');
+  parts.push(dir>0 ? '→ 급등 뒤엔 되돌림도 잦으니 추격 매수 주의' : '→ 연쇄 청산 구간일 수 있어 변동성 주의');
+  return parts.join('  ·  ');
+}
+async function mvTick(){
+  if(!gP) return;
+  const chg = mvChg();
+  if(chg===null) return;
+  const banner = $('mvBanner');
+  const now = Date.now();
+  if(banner.classList.contains('show')){
+    // 표시 중: 수치 갱신 + 잠잠해지면 자동 닫기
+    $('mvTitle').textContent = `🚨 BTC ${chg>0?'급등':'급락'} ${chg>0?'+':''}${chg.toFixed(2)}% (최근 5분)`;
+    if(now-mvShownAt > 120_000 && Math.abs(chg) < 0.3) banner.classList.remove('show');
+    return;
+  }
+  if(Math.abs(chg) >= 0.7 && now > mvCoolUntil){
+    mvShownAt = now; mvCoolUntil = now + 10*60*1000;
+    banner.className = chg>0 ? 'up show' : 'down show';
+    $('mvTitle').textContent = `🚨 BTC ${chg>0?'급등':'급락'} ${chg>0?'+':''}${chg.toFixed(2)}% (최근 5분)`;
+    $('mvWhy').textContent = '원인 추적 중…';
+    beep(chg>0 ? [660,880,1320] : [440,330,220], 0.16, 0.3);
+    mvReasons(chg>0?1:-1).then(t=>{ $('mvWhy').textContent = t; });
+  }
+}
+$('mvX').onclick = ()=>{ $('mvBanner').classList.remove('show'); mvCoolUntil = Date.now()+10*60*1000; };
 // 시간대 전환
 $('gTfTabs').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
@@ -1662,6 +1743,7 @@ async function loadNews(){
   try{
     const d = await fetch(NEWS_RAW+'?ts='+Date.now()).then(r=>r.json());
     const items = d.items || [];
+    window.__newsAll = items;   // 급변 원인 추적에서 사용
     const el = $('newsHot');
     const arr = items.filter(n=>n.hot).slice(0,15);
     newsCache = arr;
