@@ -1317,12 +1317,21 @@ function tAgo(ts){
   if(h < 24) return h+'시간 전';
   return Math.floor(h/24)+'일 전';
 }
+let newsCache = [];
+function renderNewsTimes(){
+  // 기사 목록은 그대로 두고 "몇 분 전" 표시만 실시간 갱신
+  document.querySelectorAll('#newsHot .nrow').forEach((a,i)=>{
+    const n = newsCache[i]; if(!n) return;
+    const m = a.querySelector('.nm'); if(m) m.textContent = n.s+' · '+tAgo(n.ts);
+  });
+}
 async function loadNews(){
   try{
     const d = await fetch(NEWS_RAW+'?ts='+Date.now()).then(r=>r.json());
     const items = d.items || [];
     const el = $('newsHot');
     const arr = items.filter(n=>n.hot).slice(0,15);
+    newsCache = arr;
     if(!arr.length){ el.innerHTML = '<div class="err" style="padding:12px 2px">지금은 큰 뉴스가 없어요 — 10분마다 자동 확인 중</div>'; return; }
     el.innerHTML = '';
     arr.forEach(n=>{
@@ -1344,7 +1353,8 @@ async function loadNews(){
   }catch(e){ console.error('[뉴스]', e); }
 }
 loadNews();
-setInterval(loadNews, 300_000);
+setInterval(loadNews, 120_000);        // 2분마다 새 기사 확인
+setInterval(renderNewsTimes, 60_000);  // "몇 분 전" 표시는 1분마다 실시간 갱신
 
 // ---- ? 도움말: 폰에서 탭하면 열림 ----
 document.querySelectorAll('.help').forEach(h=>{
