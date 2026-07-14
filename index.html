@@ -249,26 +249,27 @@ async function loadPrices(){
   }catch(e){ $('coinRows').innerHTML = '<tr><td colspan="6" class="err">시세 로드 실패 — 잠시 후 재시도</td></tr>'; }
 }
 
-// ---- 김치 프리미엄 (60초마다) — 업비트 1회 호출로 즉시 계산 ----
+// ---- 김치 프리미엄 (60초마다) — 코인게코 경유 업비트 시세 (직접 호출 시 업비트가 차단해서 우회) ----
 async function loadKimchi(){
   try{
-    // BTC 원화가격 + 테더 환율을 한 번에 (외부 환율API 의존 제거)
-    const ub = await fetch('https://api.upbit.com/v1/ticker?markets=KRW-BTC,KRW-USDT')
-      .then(r=>{ if(!r.ok) throw new Error('upbit http '+r.status); return r.json(); });
-    const krw  = ub.find(t=>t.market==='KRW-BTC').trade_price;
-    const rate = ub.find(t=>t.market==='KRW-USDT').trade_price;
+    const j = await fetch('https://api.coingecko.com/api/v3/exchanges/upbit/tickers?coin_ids=bitcoin')
+      .then(r=>{ if(!r.ok) throw new Error('coingecko http '+r.status); return r.json(); });
+    const t = j.tickers.find(x=>x.base==='BTC' && x.target==='KRW');
+    if(!t) throw new Error('KRW 티커 없음');
+    const krw = t.last;                       // 업비트 원화 가격
+    const usdEq = t.converted_last.usd;       // 달러 환산 (코인게코 환율 기준)
 
     // 바이낸스 달러 시세: 이미 받아둔 게 있으면 재사용, 없으면 바로 1회 조회
     let usd = window.__btc;
     if(!usd){
-      const j = await fetch('https://fapi.binance.com/fapi/v1/ticker/price?symbol=BTCUSDT').then(r=>r.json());
-      usd = parseFloat(j.price);
+      const p = await fetch('https://fapi.binance.com/fapi/v1/ticker/price?symbol=BTCUSDT').then(r=>r.json());
+      usd = parseFloat(p.price);
     }
 
-    const prem = (krw / (usd*rate) - 1) * 100;
+    const prem = (usdEq / usd - 1) * 100;
     $('kimchi').textContent = pct(prem);
     $('kimchi').className = 'value ' + cls(prem);
-    $('kimchiSub').textContent = `업비트 ₩${fmt(krw,0)} · 테더 ${fmt(rate,0)}원`;
+    $('kimchiSub').textContent = `업비트 ₩${fmt(krw,0)}`;
   }catch(e){
     console.error('[김프] 로드 실패:', e);   // 화면 문구는 건드리지 않고 조용히 재시도
     setTimeout(loadKimchi, kimchiRetry);
