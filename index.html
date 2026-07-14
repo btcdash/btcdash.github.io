@@ -256,6 +256,7 @@
       <div class="updated" id="updated">불러오는 중…</div>
     </div>
     <div class="cta-group">
+      <button class="cta ask" id="sndBtn" title="고래체결·소통방·게임 효과음">🔇 소리</button>
       <a class="cta ask" href="https://telegram.me/richtrading_support_bot" target="_blank">💬 문의·건의</a>
       <a class="cta" id="refLink" href="https://telegram.me/richtrading_support_bot" target="_blank">💰 페이백 가입 문의 →</a>
     </div>
@@ -704,6 +705,7 @@ async function loadChat(){
     if(!r.ok) throw new Error('chat http '+r.status);
     const d = await r.json();
     if(d.updated === chatLastUpd) return;   // 새 글 없으면 화면 안 건드림 (스크롤 유지)
+    if(chatLastUpd) beep([1320], 0.1, 0.15);   // 새 소통방 글 알림음 (첫 로드는 제외)
     chatLastUpd = d.updated;
     const list = $('chatList');
     if(!d.messages || !d.messages.length){ list.innerHTML='<div class="err">아직 대화가 없습니다</div>'; return; }
@@ -735,6 +737,31 @@ async function loadChat(){
   }catch(e){ console.error('[소통방]', e); }
 }
 
+// ---- 효과음 (버튼으로 켜고 끔) ----
+let SND = localStorage.getItem('snd')==='1';
+let sndCtx = null;
+function beep(freqs, dur=0.14, vol=0.22){
+  if(!SND) return;
+  try{
+    sndCtx = sndCtx || new (window.AudioContext||window.webkitAudioContext)();
+    freqs.forEach((f,i)=>{
+      const o=sndCtx.createOscillator(), g=sndCtx.createGain();
+      o.type='sine'; o.frequency.value=f; o.connect(g); g.connect(sndCtx.destination);
+      const t=sndCtx.currentTime + i*dur*1.1;
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(vol,t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+      o.start(t); o.stop(t+dur+0.02);
+    });
+  }catch(e){}
+}
+function sndUpdate(){ $('sndBtn').textContent = SND ? '🔊 소리 켜짐' : '🔇 소리'; }
+$('sndBtn').onclick = ()=>{
+  SND=!SND; localStorage.setItem('snd', SND?'1':'0'); sndUpdate();
+  if(SND) beep([880,1320]);   // 켜질 때 확인음
+};
+sndUpdate();
+
 // ---- 실시간 고래 체결 (바이낸스 웹소켓) ----
 const WHALE_MIN = 50_000;   // 표시 기준: $50K 이상
 let whales = [];
@@ -743,6 +770,7 @@ function handleWhaleTrade(t){
   if(usd < WHALE_MIN) return;
   whales.unshift({time: t.T||Date.now(), side: t.m?'sell':'buy', usd, price:parseFloat(t.p)});
   if(whales.length>30) whales.length = 30;
+  if(usd >= 300_000) beep(t.m ? [440,300] : [660,990]);   // 초대형(약 4억+)만 소리: 매수↗ 매도↘
   renderWhales();
 }
 // 실시간 연결이 막힌 환경(일부 회사망 등)을 대비해 3단계 자동 전환:
@@ -882,6 +910,7 @@ function gClosePos(atPrice, forced){
   G.eq = Math.max(0, G.eq + pnl);
   pnl>0 ? G.w++ : G.l++;
   G.last = pnl; G.pos = null;
+  beep(pnl>0 ? [660,880,1320] : [330,220], 0.13);   // 수익↗ 손실↘
   gSave(); gSubmitRank(); gRender();
 }
 function gDcaAmount(){
