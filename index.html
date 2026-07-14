@@ -147,6 +147,12 @@
   .nrow:hover .nt{color:var(--accent)}
   .nrow .nm{font-size:11.5px;color:var(--ink3);margin-top:4px}
   .nrow .nx{font-size:12.5px;color:var(--ink2);margin-top:7px;line-height:1.55;background:var(--surface2);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:8px 11px}
+  .nrow .nx.up{border-left-color:var(--up)}
+  .nrow .nx.down{border-left-color:var(--down)}
+  .nbadge{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:10px;margin-right:6px;vertical-align:1px}
+  .nbadge.up{background:rgba(246,70,93,.15);color:var(--up);border:1px solid rgba(246,70,93,.4)}
+  .nbadge.down{background:rgba(59,130,246,.15);color:var(--down);border:1px solid rgba(59,130,246,.4)}
+  .nbadge.neutral{background:var(--surface2);color:var(--ink3);border:1px solid var(--border)}
 
   /* ===== 상단 탭 ===== */
   .topnav{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:20px}
@@ -1321,11 +1327,16 @@ async function loadNews(){
     el.innerHTML = '';
     arr.forEach(n=>{
       const a = document.createElement('a'); a.className='nrow'; a.href=n.u; a.target='_blank'; a.rel='noopener';
-      const t = document.createElement('div'); t.className='nt'; t.textContent = '🔥 '+n.t;
+      const dir = n.b || 'neutral';
+      const t = document.createElement('div'); t.className='nt';
+      const badge = document.createElement('span'); badge.className = 'nbadge '+dir;
+      badge.textContent = dir==='up' ? '▲ 호재성' : dir==='down' ? '▼ 악재성' : '● 중립';
+      t.appendChild(badge);
+      t.appendChild(document.createTextNode(n.t));
       const m = document.createElement('div'); m.className='nm'; m.textContent = n.s+' · '+tAgo(n.ts);
       a.appendChild(t); a.appendChild(m);
       if(n.x){
-        const x = document.createElement('div'); x.className='nx'; x.textContent = '💡 '+n.x;
+        const x = document.createElement('div'); x.className='nx '+dir; x.textContent = '💡 '+n.x;
         a.appendChild(x);
       }
       el.appendChild(a);
