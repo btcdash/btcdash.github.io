@@ -349,7 +349,14 @@
       <div class="g-pnl" id="gPnl">—</div>
       <div class="g-liq" id="gLiq">—</div>
       <button class="g-close" id="gClose">💰 청산하기</button>
-      <button class="g-reset" id="gDca" style="display:block;margin-top:8px">➕ 물타기 <small style="color:var(--ink3)">(같은 방향 추가 베팅 · 평단 이동)</small></button>
+      <div class="g-opts" style="margin-top:10px;grid-template-columns:1fr">
+        <select id="gDcaStake">
+          <option value="0.1">물타기 금액: 시드 10%</option>
+          <option value="0.25" selected>물타기 금액: 시드 25%</option>
+          <option value="0.5">물타기 금액: 시드 50%</option>
+        </select>
+      </div>
+      <button class="g-reset" id="gDca" style="display:block;margin-top:6px">➕ 물타기</button>
     </div>
 
     <div class="g-record" id="gRecord">아직 전적이 없어요 — 첫 베팅 해보세요!</div>
@@ -850,6 +857,9 @@ function gRender(){
     $('gPnl').textContent = (pnl>=0?'+':'')+krwFmt(pnl);
     $('gPnl').className = 'g-pnl '+cls(pnl);
     $('gLiq').textContent = `⚠️ 청산가 ${fmt(liq,1)} (여기 닿으면 베팅금 전액 날아감)`;
+    // 물타기 버튼에 실제 추가 금액 표시
+    const add = gDcaAmount();
+    $('gDca').textContent = add>=1000 ? `➕ 물타기 (+${krwFmt(add)} 추가진입 · 평단 이동)` : '➕ 물타기 — 남은 시드 부족';
   }
   const tot = G.w+G.l;
   let rec = tot ? `${G.w}승 ${G.l}패 · 승률 ${(G.w/tot*100).toFixed(0)}%` : '아직 전적이 없어요 — 첫 베팅 해보세요!';
@@ -874,15 +884,15 @@ function gClosePos(atPrice, forced){
   G.last = pnl; G.pos = null;
   gSave(); gSubmitRank(); gRender();
 }
+function gDcaAmount(){
+  // 추가 베팅 가능액: 선택 비중만큼, 단 총 베팅이 시드를 넘지 않게
+  if(!G.pos) return 0;
+  return Math.max(0, Math.min(Math.floor(G.eq * +$('gDcaStake').value), G.eq - G.pos.margin));
+}
 function gDca(){
   const pos = G.pos; if(!pos || !gP) return;
-  // 추가 베팅: 선택한 비중만큼, 단 총 베팅이 시드를 넘지 않게
-  const add = Math.min(Math.floor(G.eq * +$('gStake').value), G.eq - pos.margin);
-  if(add < 1000){
-    $('gDca').textContent = '➕ 물타기 — 남은 시드가 부족해요';
-    setTimeout(()=>{ $('gDca').innerHTML = '➕ 물타기 <small style="color:var(--ink3)">(같은 방향 추가 베팅 · 평단 이동)</small>'; }, 1500);
-    return;
-  }
+  const add = gDcaAmount();
+  if(add < 1000) return;
   const q1 = pos.margin*pos.lev/pos.entry, q2 = add*pos.lev/gP;
   pos.entry = (pos.margin+add)*pos.lev/(q1+q2);   // 새 평단
   pos.margin += add;
@@ -892,6 +902,7 @@ $('gLong').onclick = ()=>gOpenPos(1);
 $('gShort').onclick = ()=>gOpenPos(-1);
 $('gClose').onclick = ()=>gClosePos();
 $('gDca').onclick = gDca;
+$('gDcaStake').onchange = gRender;
 $('gReset').onclick = ()=>{ G.eq=GAME_START; G.pos=null; G.last=null; gSave(); gRender(); };
 $('gManualReset').onclick = ()=>{
   if(!confirm('시드를 100만원으로 초기화할까요?\n(전적과 랭킹 최고기록은 유지돼요)')) return;
