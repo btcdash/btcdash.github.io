@@ -1321,6 +1321,18 @@ async function mvTick(){
   }
 }
 $('mvX').onclick = ()=>{ $('mvBanner').classList.remove('show'); mvCoolUntil = Date.now()+10*60*1000; };
+// 테스트 모드: 주소 뒤에 #mvtest 붙이면 배너 미리보기 (원인은 실제 현재 데이터로 채움)
+if(location.hash === '#mvtest'){
+  setTimeout(()=>{
+    const demo = -1.24;
+    const banner = $('mvBanner');
+    banner.className = demo>0 ? 'up show' : 'down show';
+    $('mvTitle').textContent = `🚨 BTC ${demo>0?'급등':'급락'} ${demo>0?'+':''}${demo.toFixed(2)}% (최근 5분) — 테스트 미리보기`;
+    $('mvWhy').textContent = '원인 추적 중…';
+    mvCoolUntil = Date.now()+3600_000;   // 테스트 중 실제 감지 억제
+    mvReasons(demo>0?1:-1).then(t=>{ $('mvWhy').textContent = t; });
+  }, 2500);
+}
 // 시간대 전환
 $('gTfTabs').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
