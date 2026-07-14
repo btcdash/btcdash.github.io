@@ -986,7 +986,7 @@ async function loadChat(){
     // 과거 글 읽는 중(위로 많이 올림)이 아니면 항상 최신글로 내려감
     const stick = !list.dataset.init || (list.scrollHeight - list.scrollTop - list.clientHeight < 150);
     list.innerHTML='';
-    const toBottom = ()=>{ list.scrollTop = list.scrollHeight; };
+    const toBottom = ()=>{ if(stick) list.scrollTop = list.scrollHeight; };
     d.messages.forEach(m=>{
       const w=document.createElement('div'); w.className='chat-msg';
       const n=document.createElement('div'); n.className='chat-name';
@@ -997,7 +997,7 @@ async function loadChat(){
         const im=document.createElement('img'); im.className='chat-img';
         im.src=m.img; im.alt='소통방 사진';
         im.onclick=()=>window.open(m.img,'_blank');
-        if(stick) im.onload=toBottom;   // 사진 로딩 끝나면 다시 맨 아래로(밀림 방지)
+        im.addEventListener('load', toBottom);   // 사진 하나 뜰 때마다 다시 맨 아래로 (밀림 방지)
         w.appendChild(im);
       }
       if(m.text){
@@ -1007,7 +1007,9 @@ async function loadChat(){
       list.appendChild(w);
     });
     list.dataset.init='1';
-    if(stick){ toBottom(); requestAnimationFrame(toBottom); setTimeout(toBottom,300); }
+    // 사진 로딩이 늦어도 확실히 바닥에 붙도록 여러 번 보정
+    toBottom(); requestAnimationFrame(toBottom);
+    [200, 600, 1200, 2500].forEach(ms=>setTimeout(toBottom, ms));
   }catch(e){ console.error('[소통방]', e); }
 }
 
