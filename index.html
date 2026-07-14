@@ -271,9 +271,13 @@ async function loadKimchi(){
     $('kimchiSub').textContent = `업비트 ₩${fmt(krw,0)} · 테더 ${fmt(rate,0)}원`;
   }catch(e){
     console.error('[김프] 로드 실패:', e);   // 화면 문구는 건드리지 않고 조용히 재시도
-    setTimeout(loadKimchi, 5000);
+    setTimeout(loadKimchi, kimchiRetry);
+    kimchiRetry = Math.min(kimchiRetry*2, 8000);   // 다음 실패 땐 더 길게
+    return;
   }
+  kimchiRetry = 1500;   // 성공하면 재시도 간격 초기화
 }
+let kimchiRetry = 1500;
 
 // ---- 공포/탐욕 (10분마다) ----
 async function loadFng(){
