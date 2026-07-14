@@ -113,6 +113,14 @@
   #iosGuide .card .em{color:var(--accent);font-weight:700}
   #iosGuide .card button{margin-top:16px;background:var(--surface2);border:1px solid var(--border);color:var(--ink);padding:10px 20px;border-radius:8px;cursor:pointer}
 
+  /* ===== PC 앱 안내 (작은 배너) ===== */
+  #pcApp{position:fixed;right:18px;bottom:18px;z-index:99999;background:#161b22;border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:none;align-items:center;gap:11px;box-shadow:0 8px 28px rgba(0,0,0,.45);max-width:270px}
+  #pcApp.show{display:flex}
+  #pcApp img{width:70px;height:70px;border-radius:8px;background:#fff;padding:4px;flex-shrink:0}
+  #pcApp .txt b{font-size:13px;display:block;margin-bottom:3px}
+  #pcApp .txt span{font-size:11px;color:var(--ink2);line-height:1.5}
+  #pcApp .x{position:absolute;top:6px;right:8px;background:none;border:0;color:var(--ink3);font-size:15px;cursor:pointer}
+
   /* ===== 모바일 다듬기 ===== */
   @media(max-width:600px){
     .ad{min-height:120px;padding:20px}
@@ -261,22 +269,33 @@
 
   </div><!-- cols 끝 -->
 
-  <!-- 앱 설치 안내 배너 -->
+  <!-- PC 앱 안내 (작은 배너) -->
+  <div id="pcApp">
+    <button class="x" id="pcAppX">✕</button>
+    <img src="qr.png" alt="QR코드">
+    <div class="txt"><b>📱 폰에서 앱으로 쓰기</b><span>QR을 폰 카메라로 찍으면 사이트로 이동해요. 홈 화면에 추가하면 앱처럼 열려요.</span></div>
+  </div>
+
+  <!-- 앱 설치 안내 배너 (모바일) -->
   <div id="installBar">
     <img src="icon-192.png" alt="앱 아이콘">
-    <div class="txt"><b>앱으로 설치하기</b><span>홈 화면에 추가하면 앱처럼 빠르게 열려요</span></div>
+    <div class="txt"><b>앱으로 설치하기</b><span id="installSub">홈 화면에 추가하면 앱처럼 빠르게 열려요</span></div>
     <button class="go" id="installGo">설치</button>
     <button class="x" id="installX">✕</button>
   </div>
   <!-- 아이폰 설치 안내 -->
   <div id="iosGuide">
     <div class="card">
-      <h3>📲 홈 화면에 추가하기</h3>
+      <h3>📲 홈 화면에 앱 추가하기</h3>
       <ol>
-        <li>1. 하단의 <span class="em">공유 버튼 (⬆️)</span> 누르기</li>
-        <li>2. 메뉴를 올려서 <span class="em">"홈 화면에 추가"</span> 누르기</li>
-        <li>3. 오른쪽 위 <span class="em">"추가"</span> 누르기</li>
+        <li>1. 하단 <span class="em">···</span> 또는 <span class="em">공유 버튼(⬆️)</span> 누르기</li>
+        <li>2. 메뉴 아래로 내려 <span class="em">"더보기"</span> 누르기 (있으면)</li>
+        <li>3. <span class="em">"홈 화면에 추가"</span> 누르기</li>
+        <li>4. 오른쪽 위 <span class="em">"추가"</span> 누르기</li>
       </ol>
+      <div style="font-size:12px;color:var(--ink3);margin-top:12px;line-height:1.6">
+        ⚠️ 이 메뉴는 <b style="color:var(--ink2)">사파리(Safari)</b>에서만 나와요.<br>크롬·네이버 앱이면 사파리로 다시 열어주세요.
+      </div>
       <button id="iosClose">알겠어요</button>
     </div>
   </div>
@@ -503,18 +522,27 @@ if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catc
   const ua = navigator.userAgent;
   const isIOS = /iPhone|iPad|iPod/.test(ua);
   const isAndroid = /Android/.test(ua);
+  // 아이폰인데 사파리가 아닌 경우(크롬/네이버 등) 감지
+  const iosNotSafari = isIOS && !(/Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|NAVER|KAKAO|Line/.test(ua));
   let deferredPrompt = null;
+
+  if(iosNotSafari) $('installSub').textContent = '사파리(Safari)에서 열면 앱으로 추가할 수 있어요';
 
   window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); deferredPrompt=e; bar.classList.add('show'); });
   if(isIOS) setTimeout(()=>bar.classList.add('show'), 1500);   // 아이폰은 이벤트가 없어 바로 표시
 
   $('installGo').onclick = async ()=>{
     if(deferredPrompt){ deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; bar.classList.remove('show'); }
-    else if(isIOS){ $('iosGuide').classList.add('show'); }
-    else { $('iosGuide').classList.add('show'); }
+    else { $('iosGuide').classList.add('show'); }   // 아이폰 등: 방법 안내 표시
   };
   $('installX').onclick = ()=>{ bar.classList.remove('show'); localStorage.setItem('install_dismiss','1'); };
   $('iosClose').onclick = ()=>$('iosGuide').classList.remove('show');
+
+  // PC(모바일 아님)면 우하단에 QR 안내
+  if(!isIOS && !isAndroid && !localStorage.getItem('pcapp_dismiss')){
+    setTimeout(()=>$('pcApp').classList.add('show'), 2000);
+  }
+  $('pcAppX').onclick = ()=>{ $('pcApp').classList.remove('show'); localStorage.setItem('pcapp_dismiss','1'); };
 })();
 </script>
 </body>
