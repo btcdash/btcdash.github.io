@@ -137,6 +137,21 @@
   #tvchart{width:100%;height:100%}
   @media(max-width:600px){.tv-wrap{height:380px}.chart-hint{display:none}}
 
+  /* ===== 고래 체결 ===== */
+  .whale-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .whale-verdict{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+  .wv-emoji{font-size:34px;line-height:1}
+  .wv-title{font-size:17px;font-weight:800}
+  .wv-sub{font-size:12.5px;color:var(--ink2);margin-top:3px;line-height:1.5}
+  .whale-list{margin-top:12px;max-height:250px;overflow-y:auto}
+  .wrow{display:grid;grid-template-columns:76px 48px 1fr 92px;gap:8px;padding:7px 4px;border-bottom:1px solid var(--border);font-size:13px;font-variant-numeric:tabular-nums;animation:adfade .4s ease;align-items:center}
+  .wrow:last-child{border-bottom:0}
+  .wrow .wt{color:var(--ink3);font-size:12px}
+  .wrow .ws{font-weight:700}
+  .wrow .wa{font-weight:800;text-align:right}
+  .wrow .wp{color:var(--ink2);text-align:right;font-size:12px}
+  .whale-note{font-size:11px;color:var(--ink3);margin-top:10px}
+
   /* ===== PC 앱 안내 (작은 배너) ===== */
   #pcApp{position:fixed;right:18px;bottom:18px;z-index:99999;background:#161b22;border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:none;align-items:center;gap:11px;box-shadow:0 8px 28px rgba(0,0,0,.45);max-width:270px}
   #pcApp.show{display:flex}
@@ -322,6 +337,25 @@
         <div class="chart-hint">차트 위에서 지표 추가·그림·시간대 변경 가능 📊</div>
       </div>
       <div class="tv-wrap"><div id="tvchart"></div></div>
+    </div>
+  </section>
+
+  <!-- 실시간 고래 체결 -->
+  <section>
+    <h2>🐋 실시간 고래 체결 <span class="help">?<span class="tip">한 번에 10만 달러(약 1.5억원) 이상 체결된 대형 거래만 골라 보여줘요. 큰손(고래)들의 매수·매도 흐름은 단기 방향을 가늠하는 참고 지표로 쓰여요.</span></span></h2>
+    <div class="whale-card">
+      <div class="whale-verdict">
+        <div class="wv-emoji" id="wvEmoji">🐋</div>
+        <div>
+          <div class="wv-title" id="wvTitle">고래 체결 수집 중…</div>
+          <div class="wv-sub" id="wvSub">대형 체결이 쌓이면 지금 흐름을 쉽게 해석해드려요</div>
+        </div>
+      </div>
+      <div class="lsbar" id="whaleBar" style="display:none">
+        <div class="l" id="wbL">매수</div><div class="s" id="wbS">매도</div>
+      </div>
+      <div class="whale-list" id="whaleList"><div class="err">실시간 연결 중… $100K 이상 대형 체결이 나오면 바로 표시돼요</div></div>
+      <div class="whale-note">* 참고용 해석이며, 실제 가격은 다르게 움직일 수 있습니다.</div>
     </div>
   </section>
 
@@ -611,6 +645,63 @@ async function loadChat(){
     if(stick){ toBottom(); requestAnimationFrame(toBottom); setTimeout(toBottom,300); }
   }catch(e){ console.error('[소통방]', e); }
 }
+
+// ---- 실시간 고래 체결 (바이낸스 웹소켓) ----
+const WHALE_MIN = 100_000;   // 표시 기준: $100K 이상
+let whales = [];
+function whaleConnect(){
+  try{
+    const ws = new WebSocket('wss://fstream.binance.com/ws/btcusdt@aggTrade');
+    ws.onmessage = ev=>{
+      const t = JSON.parse(ev.data);
+      const usd = parseFloat(t.p)*parseFloat(t.q);
+      if(usd < WHALE_MIN) return;
+      whales.unshift({time:Date.now(), side: t.m?'sell':'buy', usd, price:parseFloat(t.p)});
+      if(whales.length>30) whales.length = 30;
+      renderWhales();
+    };
+    ws.onclose = ()=>setTimeout(whaleConnect, 3000);   // 끊기면 자동 재연결
+    ws.onerror = ()=>{ try{ws.close();}catch(e){} };
+  }catch(e){ setTimeout(whaleConnect, 5000); }
+}
+function renderWhales(){
+  const list=$('whaleList');
+  list.innerHTML = whales.map(w=>{
+    const d=new Date(w.time);
+    const tm=[d.getHours(),d.getMinutes(),d.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
+    const amt = w.usd>=1e6 ? '$'+(w.usd/1e6).toFixed(2)+'M' : '$'+Math.round(w.usd/1e3)+'K';
+    const buy = w.side==='buy';
+    return `<div class="wrow"><span class="wt">${tm}</span>`+
+      `<span class="ws ${buy?'up':'down'}">${buy?'매수':'매도'}</span>`+
+      `<span class="wa ${buy?'up':'down'}">${amt}</span>`+
+      `<span class="wp">${fmt(w.price,1)}</span></div>`;
+  }).join('');
+  // 최근 15분 흐름 해석
+  const cut = Date.now()-15*60*1000;
+  const recent = whales.filter(w=>w.time>=cut);
+  const buy = recent.filter(w=>w.side==='buy').reduce((s,w)=>s+w.usd,0);
+  const sell = recent.filter(w=>w.side==='sell').reduce((s,w)=>s+w.usd,0);
+  const tot = buy+sell;
+  if(tot < WHALE_MIN*3) return;   // 표본이 적을 땐 판정 보류
+  const br = buy/tot*100;
+  $('whaleBar').style.display='flex';
+  $('wbL').style.width=br+'%';        $('wbL').textContent='매수 '+fmt(br,0)+'%';
+  $('wbS').style.width=(100-br)+'%';  $('wbS').textContent='매도 '+fmt(100-br,0)+'%';
+  if(br>=63){
+    $('wvEmoji').textContent='🟢';
+    $('wvTitle').textContent='지금 고래들이 사고 있어요';
+    $('wvSub').textContent='최근 15분 대형 체결이 매수 우위예요 — 보통 단기 상승 압력으로 해석되곤 해요';
+  } else if(br<=37){
+    $('wvEmoji').textContent='🔴';
+    $('wvTitle').textContent='지금 고래들이 팔고 있어요';
+    $('wvSub').textContent='최근 15분 대형 체결이 매도 우위예요 — 보통 단기 하락 압력으로 해석되곤 해요';
+  } else {
+    $('wvEmoji').textContent='⚖️';
+    $('wvTitle').textContent='고래 매수·매도가 팽팽해요';
+    $('wvSub').textContent='뚜렷한 방향성이 없어요 — 큰손들도 아직 눈치싸움 중이에요';
+  }
+}
+whaleConnect();
 
 // ---- 시작 & 주기 ----
 loadPrices(); buildChart(); loadKimchi(); loadFng(); loadRsi(); loadLs(); loadFunding(); loadChat();
