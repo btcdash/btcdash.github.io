@@ -31,10 +31,12 @@
   *{margin:0;padding:0;box-sizing:border-box}
   body{background:var(--bg);color:var(--ink);font-family:'Segoe UI','Malgun Gothic',sans-serif;min-height:100vh}
   a{color:inherit;text-decoration:none}
-  .wrap{max-width:1560px;margin:0 auto;padding:20px 16px 60px}
-  .cols{display:grid;grid-template-columns:290px 1fr 310px;gap:18px;align-items:start}
-  @media(max-width:1250px){.cols{grid-template-columns:1fr 310px}.gamebox{grid-column:1/-1;order:3;position:static!important;max-height:none!important}}
+  .wrap{max-width:1620px;margin:0 auto;padding:20px 16px 60px}
+  .cols{display:grid;grid-template-columns:475px 1fr 300px;gap:18px;align-items:start}
+  .g-grid{display:grid;grid-template-columns:172px 1fr;gap:14px;align-items:start}
+  @media(max-width:1400px){.cols{grid-template-columns:1fr 300px}.gamebox{grid-column:1/-1;order:3}}
   @media(max-width:1000px){.cols{grid-template-columns:1fr}.cols>div{order:1}.gamebox{grid-column:auto;order:2}.chatbox{order:3}}
+  @media(max-width:560px){.g-grid{grid-template-columns:1fr}}
 
   /* ===== 모의 트레이딩 게임 ===== */
   .gamebox{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
@@ -85,8 +87,8 @@
   .g-tpsl-state{font-size:11px;text-align:center;margin:8px 0 6px;padding:6px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);color:var(--ink2)}
   .g-tpsl-state.on{color:#22c55e;border-color:#22c55e55}
   .g-slide-marks{display:flex;justify-content:space-between;font-size:10px;color:var(--ink3);margin-top:2px;padding:0 2px}
-  .g-hist-head{font-size:13px;font-weight:800;margin-top:14px;border-top:1px solid var(--border);padding-top:12px;margin-bottom:6px}
-  .g-hist{max-height:150px;overflow-y:auto}
+  .g-hist-head{font-size:13px;font-weight:800;margin-top:16px;border-top:1px solid var(--border);padding-top:12px;margin-bottom:6px}
+  .g-hist{max-height:340px;overflow-y:auto}
   .g-hrow{display:grid;grid-template-columns:40px 52px 1fr 74px;gap:6px;font-size:11.5px;padding:5px 2px;border-bottom:1px solid var(--border);align-items:center;font-variant-numeric:tabular-nums}
   .g-hrow:last-child{border-bottom:0}
   .g-hrow span:first-child{color:var(--ink3)}
@@ -355,6 +357,22 @@
   <!-- 모의 트레이딩 게임 (왼쪽) -->
   <aside class="gamebox">
     <div class="game-head">🎮 모의 트레이딩 <span class="help">?<span class="tip">가상 시드 100만원으로 진짜 BTC 시세에 베팅하는 연습 게임이에요. 실제 돈이 아니니 부담 없이 연습해보세요. 기록은 이 브라우저에 저장돼요.</span></span></div>
+    <div class="g-grid">
+    <!-- 왼쪽: 랭킹 + 거래내역 -->
+    <div class="g-col-left">
+      <div class="g-rank" style="margin-top:0;border-top:0;padding-top:0">
+        <div class="g-rank-head">🏆 랭킹 TOP 10 <span style="font-weight:400;font-size:10px;color:var(--ink3)">역대 최고 시드</span></div>
+        <div id="gRankList" class="err" style="font-size:12px">불러오는 중…</div>
+        <div class="g-nick">
+          <input id="gNick" maxlength="12" placeholder="랭킹용 닉네임">
+          <button id="gNickSave">등록</button>
+        </div>
+      </div>
+      <div class="g-hist-head">📒 내 거래 내역</div>
+      <div id="gHist" class="g-hist"><div class="err" style="font-size:11px">아직 거래 내역이 없어요</div></div>
+    </div>
+    <!-- 오른쪽: 차트 + 베팅 -->
+    <div class="g-col-right">
     <div class="g-chart-top">
       <div class="g-tf" id="gTfTabs">
         <button data-tf="1m" class="on">1분</button>
@@ -415,18 +433,8 @@
     <div class="g-record" id="gRecord">아직 전적이 없어요 — 첫 베팅 해보세요!</div>
     <button id="gReset" class="g-reset" style="display:none">💰 파산! 시드 충전하고 다시 도전 (100만)</button>
     <button id="gManualReset" class="g-reset" style="display:none;font-size:11px;padding:8px">🔄 시드 초기화 (100만으로 새출발)</button>
-
-    <div class="g-rank">
-      <div class="g-rank-head">🏆 랭킹 TOP 10 <span style="font-weight:400;font-size:10px;color:var(--ink3)">역대 최고 시드 기준</span></div>
-      <div id="gRankList" class="err" style="font-size:12px">불러오는 중…</div>
-      <div class="g-nick">
-        <input id="gNick" maxlength="12" placeholder="랭킹용 닉네임">
-        <button id="gNickSave">등록</button>
-      </div>
-    </div>
-
-    <div class="g-hist-head">📒 내 거래 내역</div>
-    <div id="gHist" class="g-hist"><div class="err" style="font-size:11px">아직 거래 내역이 없어요</div></div>
+    </div><!-- g-col-right 끝 -->
+    </div><!-- g-grid 끝 -->
   </aside>
 
   <div>
