@@ -300,7 +300,7 @@
       <div class="lsbar" id="whaleBar" style="display:none">
         <div class="l" id="wbL">매수</div><div class="s" id="wbS">매도</div>
       </div>
-      <div class="whale-list" id="whaleList"><div class="err">실시간 연결 중… $50K 이상 대형 체결이 나오면 바로 표시돼요</div></div>
+      <div class="whale-list" id="whaleList"><div class="err">실시간 연결 중… 약 7천만원($50K) 이상 대형 체결이 나오면 바로 표시돼요</div></div>
     </div>
   </section>
 
@@ -513,6 +513,7 @@ async function loadKimchi(){
       usd = parseFloat(p.price);
     }
 
+    window.__usdkrw = krw / usdEq;   // 실시간 환율 (고래체결 원화 표시에 사용)
     const prem = (usdEq / usd - 1) * 100;
     $('kimchi').textContent = pct(prem);
     $('kimchi').className = 'value ' + cls(prem);
@@ -668,7 +669,8 @@ function renderWhales(){
   list.innerHTML = whales.map(w=>{
     const d=new Date(w.time);
     const tm=[d.getHours(),d.getMinutes(),d.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
-    const amt = w.usd>=1e6 ? '$'+(w.usd/1e6).toFixed(2)+'M' : '$'+Math.round(w.usd/1e3)+'K';
+    const krw = w.usd * (window.__usdkrw || 1480);
+    const amt = krw>=1e8 ? (krw/1e8).toFixed(1)+'억' : Math.round(krw/1e4).toLocaleString()+'만';
     const buy = w.side==='buy';
     return `<div class="wrow"><span class="wt">${tm}</span>`+
       `<span class="ws ${buy?'up':'down'}">${buy?'매수':'매도'}</span>`+
