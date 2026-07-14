@@ -255,6 +255,9 @@
   .v-row .vj{font-weight:700;text-align:right;white-space:nowrap}
   .v-row .vj.up{color:var(--up)} .v-row .vj.down{color:var(--down)} .v-row .vj.neutral{color:var(--ink3)} .v-row .vj.warn{color:#f59e0b}
   .v-note{font-size:11px;color:var(--ink3);margin-top:10px;line-height:1.5}
+  .v-upd{font-size:11.5px;color:#22c55e;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:5px;animation:chatpulse 2s infinite}
+  .v-more{width:100%;margin-top:10px;border:1px solid var(--border);border-radius:9px;padding:9px;font-size:12px;font-weight:700;background:var(--surface2);color:var(--ink2);cursor:pointer}
+  .v-more:hover{color:var(--ink);border-color:var(--ink3)}
   @media(max-width:600px){.v-row{grid-template-columns:105px 1fr auto;font-size:11.5px}}
 
   /* ===== 고래 체결 ===== */
@@ -504,8 +507,9 @@
 
   <!-- 🤔 지금 들어가도 돼? -->
   <section style="margin-top:0;margin-bottom:22px">
-    <button id="vBtn" class="v-btn">🤔 지금 들어가도 돼? <small>클릭 한 번으로 지표 12종 종합 진단</small></button>
+    <button id="vBtn" class="v-btn">🤔 지금 들어가도 돼? <small>고래·추세·심리·발표일정까지 — 실시간 시장 데이터를 총동원해 답해드려요</small></button>
     <div id="vCard" class="v-card" style="display:none">
+      <div class="v-upd" id="vUpd">🔄 15초마다 실시간 상황에 맞춰 자동 갱신됩니다</div>
       <div class="v-verdict">
         <span class="v-emoji" id="vEmoji">⏳</span>
         <div>
@@ -514,7 +518,8 @@
         </div>
       </div>
       <div id="vList" class="v-list"></div>
-      <div class="v-note">* 자동 종합 분석 참고용이에요 — 투자 판단과 책임은 본인에게 있어요 · 30초마다 자동 갱신</div>
+      <button id="vMore" class="v-more">근거 전부 보기 ▾</button>
+      <div class="v-note">* 자동 종합 분석 참고용이에요 — 투자 판단과 책임은 본인에게 있어요</div>
     </div>
   </section>
 
@@ -1349,32 +1354,60 @@ async function vCompute(){
     } else R('📅 주요 발표','이번 주 남은 대형 발표 없음','여유','neutral');
   }catch(e){ R('📅 주요 발표','일정 로딩 실패','—','neutral'); }
 
-  // ② 1시간봉 기반: 이동평균 배열 · 볼린저 · 거래량
+  // ② 1시간봉 기반 지표 다수
   try{
     const k = await fetch('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1h&limit=210').then(r=>r.json());
-    const closes = k.map(c=>+c[4]), vols = k.map(c=>+c[5]);
+    const closes = k.map(c=>+c[4]), highs = k.map(c=>+c[2]), lows = k.map(c=>+c[3]), vols = k.map(c=>+c[5]);
     const last = closes[closes.length-1];
     const ma = n => closes.slice(-n).reduce((a,b)=>a+b,0)/n;
     const ma20=ma(20), ma50=ma(50), ma200=ma(200);
-    if(ma20>ma50 && ma50>ma200){ bull++; R('📊 이동평균 배열', `20>50>200 (현재가 ${fmt(last,0)})`, '정배열 · 상승 추세','up'); }
-    else if(ma20<ma50 && ma50<ma200){ bear++; R('📊 이동평균 배열', `20<50<200 (현재가 ${fmt(last,0)})`, '역배열 · 하락 추세','down'); }
+    // 이동평균 배열
+    if(ma20>ma50 && ma50>ma200){ bull++; R('📊 이동평균 배열', `20>50>200`, '정배열 · 상승 추세','up'); }
+    else if(ma20<ma50 && ma50<ma200){ bear++; R('📊 이동평균 배열', `20<50<200`, '역배열 · 하락 추세','down'); }
     else R('📊 이동평균 배열','MA 혼조','추세 전환 다툼 중','neutral');
+    // 현재가 vs MA200 (장기 추세)
+    if(last>ma200){ bull++; R('📈 장기추세(MA200)', `${fmt(last,0)} > ${fmt(ma200,0)}`, '장기 상승 우위','up'); }
+    else { bear++; R('📈 장기추세(MA200)', `${fmt(last,0)} < ${fmt(ma200,0)}`, '장기 하락 우위','down'); }
+    // EMA 골든/데드크로스 (12·26)
+    const ema=(n)=>{ const kk=2/(n+1); let e=closes[0]; for(let i=1;i<closes.length;i++) e=closes[i]*kk+e*(1-kk); return e; };
+    const e12=ema(12), e26=ema(26);
+    if(e12>e26){ bull++; R('✨ 단기 골든크로스','EMA12 > EMA26','단기 상승 신호','up'); }
+    else { bear++; R('✨ 단기 데드크로스','EMA12 < EMA26','단기 하락 신호','down'); }
+    // MACD 부호
+    const macd = e12 - e26;
+    R('📐 MACD', (macd>=0?'+':'')+fmt(macd,1), macd>=0?'0 위 · 상승 모멘텀':'0 아래 · 하락 모멘텀', macd>=0?'up':'down');
+    if(macd>=0) bull++; else bear++;
     // 볼린저 (20, 2σ)
     const sd = Math.sqrt(closes.slice(-20).reduce((a,b)=>a+(b-ma20)**2,0)/20);
     const bbPos = (last-(ma20-2*sd))/((ma20+2*sd)-(ma20-2*sd))*100;
-    if(bbPos>=90){ risk++; R('🎈 볼린저밴드','상단 '+fmt(bbPos,0)+'% 위치','과열 — 추격 매수 주의','warn'); }
-    else if(bbPos<=10){ bull++; R('🎈 볼린저밴드','하단 '+fmt(bbPos,0)+'% 위치','과매도 — 반등 나올 자리','up'); }
-    else R('🎈 볼린저밴드','밴드 내 '+fmt(bbPos,0)+'% 위치','정상 범위','neutral');
+    if(bbPos>=90){ risk++; R('🎈 볼린저밴드','상단 '+fmt(bbPos,0)+'%','과열 — 추격 매수 주의','warn'); }
+    else if(bbPos<=10){ bull++; R('🎈 볼린저밴드','하단 '+fmt(bbPos,0)+'%','과매도 — 반등 자리','up'); }
+    else R('🎈 볼린저밴드','밴드 내 '+fmt(bbPos,0)+'%','정상 범위','neutral');
+    // 스토캐스틱 (14)
+    const win = 14, hh=Math.max(...highs.slice(-win)), ll=Math.min(...lows.slice(-win));
+    const stoch = (last-ll)/((hh-ll)||1)*100;
+    if(stoch>=80){ risk++; R('🎲 스토캐스틱',fmt(stoch,0),'과매수권','warn'); }
+    else if(stoch<=20){ bull++; R('🎲 스토캐스틱',fmt(stoch,0),'과매도권 — 반등 가능','up'); }
+    else R('🎲 스토캐스틱',fmt(stoch,0),'중립','neutral');
     // 거래량
     const va = vols.slice(-21,-1).reduce((a,b)=>a+b,0)/20, vr = vols[vols.length-1]/va;
-    if(vr>=2){ risk++; R('📢 거래량','평소의 '+fmt(vr,1)+'배','급증 — 큰 움직임 진행 중','warn'); }
+    if(vr>=2){ risk++; R('📢 거래량','평소의 '+fmt(vr,1)+'배','급증 — 큰 움직임 중','warn'); }
     else R('📢 거래량','평소의 '+fmt(vr,1)+'배','평온','neutral');
+    // 24시간 변동률
+    const c24 = closes[closes.length-25] || closes[0];
+    const ch24 = (last/c24-1)*100;
+    R('🕐 24시간 변동', pct(ch24), Math.abs(ch24)>=3?'큰 움직임':'무난', Math.abs(ch24)<1?'neutral':(ch24>0?'up':'down'));
     // 전일 고저 위치
-    const d2 = await fetch('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1d&limit=2').then(r=>r.json());
-    const yH=+d2[0][2], yL=+d2[0][3];
-    if(last>yH){ bull++; R('🧭 전일 고저 대비','전일 고가 '+fmt(yH,0)+' 돌파','상방 돌파','up'); }
-    else if(last<yL){ bear++; R('🧭 전일 고저 대비','전일 저가 '+fmt(yL,0)+' 이탈','하방 이탈','down'); }
-    else R('🧭 전일 고저 대비',`${fmt(yL,0)} ~ ${fmt(yH,0)} 사이`,'박스권','neutral');
+    const d2 = await fetch('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1d&limit=8').then(r=>r.json());
+    const yH=+d2[d2.length-2][2], yL=+d2[d2.length-2][3];
+    if(last>yH){ bull++; R('🧭 전일 고저','전일고가 '+fmt(yH,0)+' 돌파','상방 돌파','up'); }
+    else if(last<yL){ bear++; R('🧭 전일 고저','전일저가 '+fmt(yL,0)+' 이탈','하방 이탈','down'); }
+    else R('🧭 전일 고저',`${fmt(yL,0)}~${fmt(yH,0)}`,'박스권','neutral');
+    // 주간(7일) 고저 위치
+    const wH=Math.max(...d2.slice(-7).map(c=>+c[2])), wL=Math.min(...d2.slice(-7).map(c=>+c[3]));
+    const wPos=(last-wL)/((wH-wL)||1)*100;
+    R('🗓️ 주간 고저 위치', fmt(wPos,0)+'%', wPos>=80?'주간 고점권':wPos<=20?'주간 저점권':'주간 중단', wPos>=80?'warn':wPos<=20?'up':'neutral');
+    if(wPos<=20) bull++;
   }catch(e){}
 
   // ③ 미결제약정 (OI) 변화
@@ -1455,19 +1488,34 @@ async function vCompute(){
   $('vEmoji').textContent = verdict.e;
   $('vTitle').textContent = verdict.t;
   $('vSub').textContent = verdict.s;
+  // 핵심 근거 우선(방향성 뚜렷한 것 먼저), 나머지는 접기
+  const order = {up:0, down:0, warn:1, neutral:2};
+  rows.sort((a,b)=>(order[a.d]-order[b.d]));
   const list = $('vList'); list.innerHTML='';
-  rows.forEach(r=>{
-    const d = document.createElement('div'); d.className='v-row';
+  rows.forEach((r,i)=>{
+    const d = document.createElement('div'); d.className='v-row'+(i>=5?' v-extra':'');
+    if(i>=5 && !vMoreOpen) d.style.display='none';
     const n = document.createElement('span'); n.className='vn'; n.textContent=r.n;
     const v = document.createElement('span'); v.className='vv'; v.textContent=r.v;
     const j = document.createElement('span'); j.className='vj '+r.d; j.textContent=r.j;
     d.appendChild(n); d.appendChild(v); d.appendChild(j); list.appendChild(d);
   });
+  const extra = rows.length-5;
+  $('vMore').style.display = extra>0 ? '' : 'none';
+  $('vMore').textContent = vMoreOpen ? '핵심만 보기 ▴' : `나머지 근거 ${extra}개 더 보기 ▾`;
+  $('vSub').textContent = verdict.s + `  (상승 근거 ${bull} · 하락 ${bear} · 주의 ${risk})`;
 }
+let vMoreOpen = false;
+$('vMore').onclick = ()=>{
+  vMoreOpen = !vMoreOpen;
+  document.querySelectorAll('#vList .v-extra').forEach(el=>el.style.display = vMoreOpen?'':'none');
+  const extra = document.querySelectorAll('#vList .v-extra').length;
+  $('vMore').textContent = vMoreOpen ? '핵심만 보기 ▴' : `나머지 근거 ${extra}개 더 보기 ▾`;
+};
 $('vBtn').onclick = ()=>{
   vOpen = !vOpen;
   $('vCard').style.display = vOpen ? '' : 'none';
-  if(vOpen){ vCompute(); vTimer = setInterval(vCompute, 30_000); }
+  if(vOpen){ vCompute(); vTimer = setInterval(vCompute, 15_000); }
   else clearInterval(vTimer);
 };
 
