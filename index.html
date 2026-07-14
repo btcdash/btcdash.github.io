@@ -288,7 +288,7 @@
 
   <!-- 실시간 고래 체결 -->
   <section style="margin-top:0;margin-bottom:22px">
-    <h2>🐋 실시간 고래 체결 <span class="help">?<span class="tip">한 번에 10만 달러(약 1.5억원) 이상 체결된 대형 거래만 골라 보여줘요. 큰손(고래)들의 매수·매도 흐름은 단기 방향을 가늠하는 참고 지표로 쓰여요.</span></span></h2>
+    <h2>🐋 실시간 고래 체결 <span class="help">?<span class="tip">한 번에 5만 달러(약 7천만원) 이상 체결된 대형 거래만 골라 보여줘요. 큰손(고래)들의 매수·매도 흐름은 단기 방향을 가늠하는 참고 지표로 쓰여요.</span></span></h2>
     <div class="whale-card">
       <div class="whale-verdict">
         <div class="wv-emoji" id="wvEmoji">🐋</div>
@@ -300,7 +300,7 @@
       <div class="lsbar" id="whaleBar" style="display:none">
         <div class="l" id="wbL">매수</div><div class="s" id="wbS">매도</div>
       </div>
-      <div class="whale-list" id="whaleList"><div class="err">실시간 연결 중… $100K 이상 대형 체결이 나오면 바로 표시돼요</div></div>
+      <div class="whale-list" id="whaleList"><div class="err">실시간 연결 중… $50K 이상 대형 체결이 나오면 바로 표시돼요</div></div>
     </div>
   </section>
 
@@ -646,7 +646,7 @@ async function loadChat(){
 }
 
 // ---- 실시간 고래 체결 (바이낸스 웹소켓) ----
-const WHALE_MIN = 100_000;   // 표시 기준: $100K 이상
+const WHALE_MIN = 50_000;   // 표시 기준: $50K 이상
 let whales = [];
 function whaleConnect(){
   try{
