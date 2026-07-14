@@ -1306,9 +1306,10 @@ async function mvTick(){
   const banner = $('mvBanner');
   const now = Date.now();
   if(banner.classList.contains('show')){
-    // 표시 중: 수치 갱신 + 잠잠해지면 자동 닫기
+    if(mvTest) return;                       // 테스트 미리보기 중엔 건드리지 않음
+    // 표시 중: 수치 갱신, 60초 지나면 자동으로 사라짐
     $('mvTitle').textContent = `🚨 BTC ${chg>0?'급등':'급락'} ${chg>0?'+':''}${chg.toFixed(2)}% (최근 5분)`;
-    if(now-mvShownAt > 120_000 && Math.abs(chg) < 0.3) banner.classList.remove('show');
+    if(now-mvShownAt > 60_000) banner.classList.remove('show');
     return;
   }
   if(Math.abs(chg) >= 0.7 && now > mvCoolUntil){
@@ -1322,7 +1323,9 @@ async function mvTick(){
 }
 $('mvX').onclick = ()=>{ $('mvBanner').classList.remove('show'); mvCoolUntil = Date.now()+10*60*1000; };
 // 테스트 모드: 주소 뒤에 #mvtest 붙이면 배너 미리보기 (원인은 실제 현재 데이터로 채움)
+let mvTest = false;
 if(location.hash === '#mvtest'){
+  mvTest = true;
   setTimeout(()=>{
     const demo = -1.24;
     const banner = $('mvBanner');
@@ -1331,6 +1334,7 @@ if(location.hash === '#mvtest'){
     $('mvWhy').textContent = '원인 추적 중…';
     mvCoolUntil = Date.now()+3600_000;   // 테스트 중 실제 감지 억제
     mvReasons(demo>0?1:-1).then(t=>{ $('mvWhy').textContent = t; });
+    setTimeout(()=>banner.classList.remove('show'), 60_000);   // 60초 뒤 자동 종료
   }, 2500);
 }
 // 시간대 전환
