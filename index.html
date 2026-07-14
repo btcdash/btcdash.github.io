@@ -53,8 +53,11 @@
   .logo{font-size:22px;font-weight:800;letter-spacing:-.5px}
   .logo span{color:var(--accent)}
   .updated{font-size:12px;color:var(--ink3)}
-  .cta{background:var(--accent);color:#111;font-weight:700;font-size:14px;padding:10px 18px;border-radius:8px;transition:opacity .15s}
+  .cta-group{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .cta{background:var(--accent);color:#111;font-weight:700;font-size:14px;padding:10px 18px;border-radius:8px;transition:opacity .15s;white-space:nowrap}
   .cta:hover{opacity:.85}
+  .cta.ask{background:var(--surface2);color:var(--ink);border:1px solid var(--border)}
+  .cta.ask:hover{border-color:var(--ink3);opacity:1}
 
   .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
   @media(max-width:800px){.tiles{grid-template-columns:repeat(2,1fr)}}
@@ -180,7 +183,10 @@
       <div class="logo"><span>[리치]</span> BTC 마켓 대시보드</div>
       <div class="updated" id="updated">불러오는 중…</div>
     </div>
-    <a class="cta" id="refLink" href="#" target="_blank">거래소 수수료 페이백 받기 →</a>
+    <div class="cta-group">
+      <a class="cta ask" href="https://t.me/richtrading_support_bot" target="_blank">💬 문의·건의</a>
+      <a class="cta" id="refLink" href="#" target="_blank">거래소 수수료 페이백 받기 →</a>
+    </div>
   </header>
 
   <!-- 롤링 광고 배너 -->
@@ -519,9 +525,10 @@ async function loadChat(){
     chatLastUpd = d.updated;
     const list = $('chatList');
     if(!d.messages || !d.messages.length){ list.innerHTML='<div class="err">아직 대화가 없습니다</div>'; return; }
-    // 과거 글 읽는 중이면(위로 스크롤) 새 글이 와도 화면을 안 끌어내림
-    const nearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 80;
+    // 과거 글 읽는 중(위로 많이 올림)이 아니면 항상 최신글로 내려감
+    const stick = !list.dataset.init || (list.scrollHeight - list.scrollTop - list.clientHeight < 150);
     list.innerHTML='';
+    const toBottom = ()=>{ list.scrollTop = list.scrollHeight; };
     d.messages.forEach(m=>{
       const w=document.createElement('div'); w.className='chat-msg';
       const n=document.createElement('div'); n.className='chat-name';
@@ -530,8 +537,9 @@ async function loadChat(){
       n.appendChild(t); w.appendChild(n);
       if(m.img){                       // 텔레그램처럼 사진 먼저, 글은 그 아래
         const im=document.createElement('img'); im.className='chat-img';
-        im.src=m.img; im.loading='lazy'; im.alt='소통방 사진';
+        im.src=m.img; im.alt='소통방 사진';
         im.onclick=()=>window.open(m.img,'_blank');
+        if(stick) im.onload=toBottom;   // 사진 로딩 끝나면 다시 맨 아래로(밀림 방지)
         w.appendChild(im);
       }
       if(m.text){
@@ -540,7 +548,8 @@ async function loadChat(){
       }
       list.appendChild(w);
     });
-    if(nearBottom || !list.dataset.init){ list.scrollTop = list.scrollHeight; list.dataset.init='1'; }
+    list.dataset.init='1';
+    if(stick){ toBottom(); requestAnimationFrame(toBottom); setTimeout(toBottom,300); }
   }catch(e){ console.error('[소통방]', e); }
 }
 
