@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>물타기 계산기 — 코인 평단가 자동 계산 (무료)</title>
+<meta name="description" content="물타기 계산기: 평단가와 금액만 입력하면 물타기 후 새 평단·본전까지 필요한 상승률을 바로 계산해드려요. 비트코인·알트코인·주식 모두 사용 가능, 무료·가입 없음.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="물타기 계산기 — 평단가 자동 계산">
+<meta property="og:description" content="평단가·금액만 넣으면 물타기 후 새 평단과 본전 상승률을 즉시 계산. 무료, 가입 없음.">
+<meta property="og:url" content="https://btcdash.github.io/물타기계산기.html">
+<meta property="og:image" content="https://btcdash.github.io/icon-512.png">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" type="image/png" href="icon-192.png">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"물타기 계산기","url":"https://btcdash.github.io/물타기계산기.html","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"},"description":"코인·주식 물타기 후 평단가와 본전 상승률을 계산하는 무료 도구"}
+</script>
+<style>
+  :root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2330;--border:#2a3140;--ink:#e6edf3;--ink2:#9aa7b4;--ink3:#6b7683;--up:#f6465d;--down:#3b82f6;--accent:#f0b90b}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Segoe UI','Malgun Gothic',sans-serif;line-height:1.6}
+  .wrap{max-width:720px;margin:0 auto;padding:28px 16px 60px}
+  h1{font-size:26px;margin-bottom:6px}
+  h1 span{color:var(--accent)}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:24px}
+  h2{font-size:18px;margin:34px 0 10px;color:var(--accent)}
+  p{font-size:14px;color:var(--ink2);margin-bottom:10px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:520px){.grid{grid-template-columns:1fr}}
+  label{display:block;font-size:12px;color:var(--ink3);margin-bottom:5px}
+  input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--ink);font-size:15px}
+  input:focus{border-color:var(--accent);outline:none}
+  .sect{font-size:13px;font-weight:700;color:var(--ink2);margin:14px 0 8px}
+  .sect:first-child{margin-top:0}
+  .res{margin-top:18px;background:var(--surface2);border-radius:12px;padding:16px;display:none}
+  .res.on{display:block}
+  .r-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:14px}
+  .r-row:last-child{border-bottom:0}
+  .r-row b{font-variant-numeric:tabular-nums}
+  .r-row b.hl{color:var(--accent);font-size:17px}
+  .r-row b.up{color:var(--up)}
+  ul{margin:0 0 10px 18px}
+  li{font-size:14px;color:var(--ink2);margin-bottom:7px}
+  .cta{display:block;text-align:center;background:linear-gradient(92deg,#ffd452,#f0b90b);color:#111;font-weight:800;font-size:15px;padding:15px;border-radius:12px;text-decoration:none;margin-top:26px}
+  .cta small{display:block;font-size:12px;font-weight:600;color:#3a2c00;margin-top:2px}
+  a{color:var(--accent)}
+  .note{font-size:12px;color:var(--ink3);margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>💧 물타기 <span>계산기</span></h1>
+  <div class="sub">평단가와 금액만 입력하면 물타기 후 <b>새 평단</b>과 <b>본전까지 필요한 상승률</b>을 바로 계산해드려요 — 코인·주식 모두 OK, 무료·가입 없음</div>
+
+  <div class="card">
+    <div class="sect">① 지금 들고 있는 포지션</div>
+    <div class="grid">
+      <div><label>현재 평단가</label><input type="number" id="p1" placeholder="예: 64500"></div>
+      <div><label>투자 금액</label><input type="number" id="a1" placeholder="예: 100 (만원이든 달러든 OK)"></div>
+    </div>
+    <div class="sect">② 물타기 (추가 매수)</div>
+    <div class="grid">
+      <div><label>물타기 가격 (지금 가격)</label><input type="number" id="p2" placeholder="예: 60000"></div>
+      <div><label>물타기 금액</label><input type="number" id="a2" placeholder="예: 100 (①과 같은 단위)"></div>
+    </div>
+    <div class="res" id="res">
+      <div class="r-row"><span>물타기 후 새 평단</span><b class="hl" id="rAvg">—</b></div>
+      <div class="r-row"><span>평단이 내려온 폭</span><b id="rDrop">—</b></div>
+      <div class="r-row"><span>총 투자 금액</span><b id="rTotal">—</b></div>
+      <div class="r-row"><span>본전(새 평단)까지 필요한 상승률</span><b class="up" id="rNeed">—</b></div>
+    </div>
+    <div class="note">* 가격 단위는 원·달러 아무거나 괜찮아요 — ①과 ②만 같은 단위면 됩니다. 수수료는 미반영 근사치예요.</div>
+  </div>
+
+  <h2>물타기 계산 공식</h2>
+  <p>새 평단 = (기존 금액 + 추가 금액) ÷ (기존 수량 + 추가 수량). 같은 금액으로 물타면 평단은 두 가격의 중간 근처로 내려오고, 추가 금액이 클수록 물탄 가격 쪽으로 더 가까워져요.</p>
+
+  <h2>물타기 전에 꼭 확인할 3가지</h2>
+  <ul>
+    <li><b>지금이 물탈 자리인가?</b> — 떨어지는 칼날에 물타면 평단만 높은 채로 더 떨어져요. 시장 방향·과열 여부를 먼저 확인하세요.</li>
+    <li><b>물타고 나서 여유가 남는가?</b> — 마지막 총알까지 쓰는 물타기는 물타기가 아니라 올인이에요.</li>
+    <li><b>선물이라면 청산가는?</b> — 레버리지 포지션은 물타기로 평단과 함께 청산가도 움직여요. 반드시 다시 계산하세요.</li>
+  </ul>
+
+  <a class="cta" href="https://btcdash.github.io/">📊 지금 물탈 자리인지 실시간 판정 받기<small>비트코인 실시간 대시보드 — 김프 · 고래 체결 · 지표 20종 종합 판정 · 무료</small></a>
+  <p class="note">리치 트레이딩 라운지 — 실시간 김프, 고래 체결, 발표 일정, 모의 트레이딩까지 전부 무료로 제공해요.</p>
+</div>
+<script>
+  const $ = id => document.getElementById(id);
+  function calc(){
+    const p1=+$('p1').value, a1=+$('a1').value, p2=+$('p2').value, a2=+$('a2').value;
+    if(!(p1>0&&a1>0&&p2>0&&a2>0)){ $('res').classList.remove('on'); return; }
+    const q1=a1/p1, q2=a2/p2;
+    const avg=(a1+a2)/(q1+q2);
+    const drop=(1-avg/p1)*100;
+    const need=(avg/p2-1)*100;
+    const f=n=>n>=100?n.toLocaleString(undefined,{maximumFractionDigits:1}):n.toLocaleString(undefined,{maximumFractionDigits:4});
+    $('rAvg').textContent=f(avg);
+    $('rDrop').textContent='-'+drop.toFixed(2)+'%';
+    $('rTotal').textContent=f(a1+a2);
+    $('rNeed').textContent='+'+need.toFixed(2)+'%';
+    $('res').classList.add('on');
+  }
+  ['p1','a1','p2','a2'].forEach(id=>$(id).addEventListener('input',calc));
+</script>
+</body>
+</html>
