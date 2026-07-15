@@ -1174,7 +1174,21 @@ let kpRows = [], kpSortKey = 'vol', kpSortDir = -1, kpLoaded = false;
 let kpEx = 'upbit';                    // 기준 거래소: upbit | bithumb
 const kpMajors = {};                   // 거래소별 메이저 코인 캐시
 const KP_MAJOR_IDS = 'bitcoin,tether,ethereum,ripple,solana,dogecoin,cardano,tron,chainlink,avalanche-2,stellar,polkadot,bitcoin-cash,near,aptos,arbitrum,sui,shiba-inu,pepe,ethereum-classic,hedera-hashgraph,ondo-finance,worldcoin-wld,uniswap,aave';
+const KIMP_RAW = 'https://gist.githubusercontent.com/btcdash/2dbcf6ec8074b85380d3cf119f6f1091/raw/kimp.json';
 async function loadKimpTable(){
+  // 1순위: 회사 중계기가 10분마다 만들어둔 데이터 (호출 제한 없음 · 빠름)
+  try{
+    const d = await fetch(KIMP_RAW + '?ts=' + Date.now()).then(r=>r.json());
+    const list = d[kpEx] || [];
+    if(list.length && Date.now()/1000 - (d.ts||0) < 1800){
+      kpRows = list.map(r=>({sym:r.s, krw:r.k, usd:r.u, kimp:r.p, chg:r.c, vol:r.v}));
+      kpTableRender();
+      return;
+    }
+  }catch(e){}
+  loadKimpTableDirect();   // 중계 데이터가 없거나 30분 이상 오래됐으면 직접 수집
+}
+async function loadKimpTableDirect(){
   try{
     const ex = kpEx;
     const bn = await fetch('https://api.binance.com/api/v3/ticker/24hr').then(r=>r.json());
