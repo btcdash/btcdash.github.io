@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>실시간 김프 — 김치프리미엄·테더김프 확인 (무료)</title>
+<meta name="description" content="김프(김치프리미엄) 실시간 확인: 업비트와 바이낸스 가격 차이를 자동 계산해 비트코인 김프와 테더 김프를 보여드려요. 새로고침 없이 자동 갱신, 무료·가입 없음.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="실시간 김프 — 김치프리미엄 확인">
+<meta property="og:description" content="비트코인 김프·테더김프를 실시간으로. 업비트 vs 바이낸스 자동 계산, 무료.">
+<meta property="og:url" content="https://btcdash.github.io/김프.html">
+<meta property="og:image" content="https://btcdash.github.io/icon-512.png">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" type="image/png" href="icon-192.png">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"실시간 김프 확인","url":"https://btcdash.github.io/김프.html","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"},"description":"비트코인 김치프리미엄과 테더 김프를 실시간으로 보여주는 무료 도구"}
+</script>
+<style>
+  :root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2330;--border:#2a3140;--ink:#e6edf3;--ink2:#9aa7b4;--ink3:#6b7683;--up:#f6465d;--down:#3b82f6;--accent:#f0b90b}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Segoe UI','Malgun Gothic',sans-serif;line-height:1.6}
+  .wrap{max-width:720px;margin:0 auto;padding:28px 16px 60px}
+  h1{font-size:26px;margin-bottom:6px}
+  h1 span{color:var(--accent)}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:24px}
+  h2{font-size:18px;margin:34px 0 10px;color:var(--accent)}
+  p{font-size:14px;color:var(--ink2);margin-bottom:10px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center}
+  .k-label{font-size:14px;color:var(--ink2)}
+  .k-num{font-size:56px;font-weight:900;letter-spacing:-2px;margin:6px 0;font-variant-numeric:tabular-nums}
+  .k-num.up{color:var(--up)} .k-num.down{color:var(--down)} .k-num.neutral{color:var(--ink)}
+  .k-desc{font-size:13px;color:var(--ink3)}
+  .k-word{display:inline-block;margin-top:10px;padding:6px 14px;border-radius:20px;background:var(--surface2);font-size:13px;font-weight:700}
+  .k-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  @media(max-width:520px){.k-grid{grid-template-columns:1fr}}
+  .k-mini{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
+  .k-mini .t{font-size:12px;color:var(--ink3)}
+  .k-mini b{display:block;font-size:20px;margin-top:4px;font-variant-numeric:tabular-nums}
+  .k-mini b.up{color:var(--up)} .k-mini b.down{color:var(--down)}
+  ul{margin:0 0 10px 18px}
+  li{font-size:14px;color:var(--ink2);margin-bottom:7px}
+  .cta{display:block;text-align:center;background:linear-gradient(92deg,#ffd452,#f0b90b);color:#111;font-weight:800;font-size:15px;padding:15px;border-radius:12px;text-decoration:none;margin-top:26px}
+  .cta small{display:block;font-size:12px;font-weight:600;color:#3a2c00;margin-top:2px}
+  a{color:var(--accent)}
+  .note{font-size:12px;color:var(--ink3);margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🇰🇷 실시간 <span>김프</span> (김치프리미엄)</h1>
+  <div class="sub">업비트(원화)와 바이낸스(달러) 가격 차이를 자동 계산 — 60초마다 갱신, 무료·가입 없음</div>
+
+  <div class="card">
+    <div class="k-label">비트코인 김프</div>
+    <div class="k-num neutral" id="kimp">—</div>
+    <div class="k-desc" id="kimpDesc">불러오는 중…</div>
+    <div class="k-word" id="kimpWord">계산 중</div>
+  </div>
+
+  <div class="k-grid">
+    <div class="k-mini"><span class="t">테더 김프 (USDT)</span><b id="tether">—</b></div>
+    <div class="k-mini"><span class="t">실시간 환율 (코인 시장 기준)</span><b id="fx">—</b></div>
+  </div>
+
+  <h2>김프가 뭔가요?</h2>
+  <p>김치프리미엄(김프)은 같은 코인이 한국 거래소(업비트 등)에서 해외 거래소(바이낸스 등)보다 얼마나 비싸게 거래되는지를 나타내는 수치예요. 한국 매수세가 강할수록 김프가 올라가요.</p>
+
+  <h2>어떻게 읽으면 되나요?</h2>
+  <ul>
+    <li><b>+3% 이상</b> — 국내 과열 신호. 역사적으로 단기 고점 부근에서 자주 나타났어요.</li>
+    <li><b>0 ~ +2%</b> — 평범한 수준. 김프만으로 판단할 구간은 아니에요.</li>
+    <li><b>마이너스(역프)</b> — 국내 투자 심리 침체. 바닥권에서 자주 보여서 역발상 신호로 참고하기도 해요.</li>
+  </ul>
+  <p>테더 김프는 달러 스테이블코인(USDT)의 국내 프리미엄이라 "원화 자금이 코인판에 들어오는 압력"을 더 순수하게 보여줘요.</p>
+
+  <a class="cta" href="https://btcdash.github.io/">📊 김프 포함 지표 20종으로 "지금 들어가도 돼?" 판정 받기<small>비트코인 실시간 대시보드 — 고래 체결 · 발표 일정 · 모의 트레이딩 · 무료</small></a>
+  <p class="note">리치 트레이딩 라운지 — 김프는 참고 지표 중 하나예요. 투자 판단과 책임은 본인에게 있습니다.</p>
+</div>
+<script>
+  const $ = id => document.getElementById(id);
+  const pct = v => (v>=0?'+':'')+v.toFixed(2)+'%';
+  async function load(){
+    try{
+      const j = await fetch('https://api.coingecko.com/api/v3/exchanges/upbit/tickers?coin_ids=bitcoin,tether')
+        .then(r=>{ if(!r.ok) throw 0; return r.json(); });
+      const b = j.tickers.find(x=>x.base==='BTC' && x.target==='KRW');
+      const u = j.tickers.find(x=>x.base==='USDT' && x.target==='KRW');
+      const p = await fetch('https://fapi.binance.com/fapi/v1/ticker/price?symbol=BTCUSDT').then(r=>r.json());
+      const usd = parseFloat(p.price);
+      const prem = (b.converted_last.usd / usd - 1) * 100;
+      const el = $('kimp');
+      el.textContent = pct(prem);
+      el.className = 'k-num ' + (prem>=0.5?'up':prem<=-0.5?'down':'neutral');
+      $('kimpDesc').textContent = `업비트 ₩${Math.round(b.last).toLocaleString()} · 바이낸스 $${Math.round(usd).toLocaleString()}`;
+      $('kimpWord').textContent = prem>=3?'🔥 국내 과열 구간 — 추격 매수 주의':prem>=1.5?'국내 매수세 강함':prem<=-2?'🧊 역프 — 침체 (바닥권 참고 신호)':prem<0?'역프리미엄 — 국내 심리 위축':'평범한 수준';
+      if(u){
+        const tp = (u.converted_last.usd - 1) * 100;
+        const t = $('tether'); t.textContent = pct(tp); t.className = tp>=0.5?'up':tp<=-0.5?'down':'';
+        $('fx').textContent = '₩' + Math.round(u.last).toLocaleString() + '/USDT';
+      }
+    }catch(e){ setTimeout(load, 4000); }
+  }
+  load();
+  setInterval(load, 60_000);
+  // 방문·검색 유입 집계 (익명, 관리자 기기 제외 — 메인과 동일 방식)
+  try{
+    if(localStorage.getItem('owner')!=='1'){
+      let vid = localStorage.getItem('vid');
+      if(!vid){ vid = Math.random().toString(36).slice(2,12); localStorage.setItem('vid', vid); }
+      fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid})}).catch(()=>{});
+      const r = document.referrer || '';
+      const eng = /google\./.test(r) ? 's_g' : /search\.naver|naver\.com\/search/.test(r) ? 's_n' : /daum\.net/.test(r) ? 's_d' : '';
+      if(eng) fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid, c:eng})}).catch(()=>{});
+    }
+  }catch(e){}
+</script>
+</body>
+</html>
