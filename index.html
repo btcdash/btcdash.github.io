@@ -1171,6 +1171,13 @@ async function loadKimpTable(){
         await new Promise(s=>setTimeout(s, 900));
       }catch(e){ break; }
     }
+    // 메이저 목록이 아직 없으면(호출 제한 등) 직접 한 번 확보
+    if(!(window.__cgMajors||[]).length){
+      try{
+        const r = await fetch('https://api.coingecko.com/api/v3/exchanges/upbit/tickers?coin_ids=bitcoin,tether,ethereum,ripple,solana,dogecoin,cardano,tron,chainlink,avalanche-2,stellar,polkadot,bitcoin-cash,near,aptos,arbitrum,sui,shiba-inu,pepe,ethereum-classic,hedera-hashgraph,ondo-finance,worldcoin-wld,uniswap,aave');
+        if(r.ok) window.__cgMajors = (await r.json()).tickers || [];
+      }catch(e){}
+    }
     const merged = [...(window.__cgMajors||[]), ...tickers];   // 메이저 먼저(보장) + 페이지 수집분
     if(!merged.length) throw 0;
     const px = {}; bn.forEach(x=>px[x.symbol]=+x.price);
@@ -1186,6 +1193,8 @@ async function loadKimpTable(){
     });
     if(rows.length) kpRows = rows;
     kpTableRender();
+    // BTC가 빠졌으면(호출 제한 순간) 90초 뒤 자동 보강
+    if(!kpRows.some(r=>r.sym==='BTC')) setTimeout(loadKimpTable, 90_000);
   }catch(e){ if(!kpRows.length){ const el=$('kpCoins'); if(el) el.innerHTML='<div class="err">일시 오류 — 잠시 후 자동 재시도</div>'; } }
 }
 function kpTableRender(){
