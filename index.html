@@ -285,12 +285,20 @@
   .kp-row{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-top:1px solid var(--border);color:var(--ink2);line-height:1.55}
   .kp-row .g{flex:none;min-width:96px;font-weight:700;color:var(--ink)}
   .kp-row .g.up2{color:var(--up)} .kp-row .g.dn2{color:var(--down)}
-  .kp-crow{display:grid;grid-template-columns:64px 1fr 1fr 76px;gap:8px;padding:8px 0;border-top:1px solid var(--border);font-size:13px;align-items:center}
+  .kp-crow{display:grid;grid-template-columns:70px 1fr 1fr 80px 72px;gap:8px;padding:8px 0;border-top:1px solid var(--border);font-size:13px;align-items:center}
   .kp-crow .c{font-weight:700}
   .kp-crow .p{color:var(--ink3);font-size:12px;font-variant-numeric:tabular-nums}
   .kp-crow .v{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
   .kp-crow .v.up{color:var(--up)} .kp-crow .v.down{color:var(--down)}
+  .kp-crow .vol{text-align:right;color:var(--ink3);font-size:12px;font-variant-numeric:tabular-nums}
   .kp-chead{border-top:0;padding:2px 0 6px;font-size:11px;color:var(--ink3)}
+  .kp-sort{text-align:right;cursor:pointer;user-select:none}
+  .kp-sort:hover{color:var(--accent)}
+  .kp-sort.on{color:var(--accent);font-weight:700}
+  .kp-list{max-height:480px;overflow-y:auto}
+  .kp-search{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--ink);font-size:13px;margin-bottom:8px}
+  .kp-search:focus{border-color:var(--accent);outline:none}
+  @media(max-width:520px){.kp-crow{grid-template-columns:56px 1fr 76px 64px;font-size:12px}.kp-crow .p:nth-child(3),.kp-chead span:nth-child(3){display:none}}
   .kp-alt{margin-top:10px;padding:9px 12px;border-radius:8px;background:var(--surface2);font-size:12.5px;color:var(--ink2);line-height:1.55}
   .brief{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 16px;margin-bottom:14px}
   .brief-head{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;margin-bottom:8px}
@@ -812,9 +820,10 @@
         <div class="kp-mini"><span>실시간 환율 (코인 시장 기준)</span><b id="kpFx">—</b></div>
       </div>
       <div class="kp-guide">
-        <b>🪙 코인별 김프</b>
-        <div class="kp-crow kp-chead"><span>코인</span><span>업비트</span><span>바이낸스</span><span style="text-align:right">김프</span></div>
-        <div id="kpCoins"><div class="err">불러오는 중…</div></div>
+        <b>🪙 코인별 김프 <span class="help">?<span class="tip">업비트 원화마켓 코인 중 바이낸스에도 상장된 코인의 김프예요. "김프"나 "거래액"을 누르면 정렬 기준이 바뀌고, 2분마다 자동 갱신됩니다.</span></span></b>
+        <input id="kpSearch" class="kp-search" placeholder="🔍 코인 검색 (예: BTC, XRP, DOGE)">
+        <div class="kp-crow kp-chead"><span>코인</span><span>업비트</span><span>바이낸스</span><span class="kp-sort" id="kpSortKimp">김프 ▾</span><span class="kp-sort" id="kpSortVol">거래액</span></div>
+        <div id="kpCoins" class="kp-list"><div class="err">불러오는 중…</div></div>
         <div class="kp-alt" id="kpAlt"></div>
       </div>
       <div class="kp-guide">
@@ -1112,34 +1121,6 @@ async function loadKimchi(){
         const te = $('kpTether'); te.textContent = pct(tp); te.className = tp>=0.5?'up':tp<=-0.5?'down':'';
         $('kpFx').textContent = '₩'+fmt(ut.last,0)+'/USDT';
       }
-      // 코인별 김프 표 + 알트 과열 진단
-      try{
-        const fut = await fetch('https://fapi.binance.com/fapi/v1/ticker/price').then(r=>r.json());
-        const px = {}; fut.forEach(x=>px[x.symbol]=+x.price);
-        const list = $('kpCoins'); list.innerHTML='';
-        let altSum=0, altN=0, btcPrem=null;
-        [['BTC','bitcoin'],['ETH','ethereum'],['XRP','ripple'],['SOL','solana'],['DOGE','dogecoin']].forEach(([sym])=>{
-          const tk = j.tickers.find(x=>x.base===sym && x.target==='KRW');
-          const bp = px[sym+'USDT'];
-          if(!tk || !bp) return;
-          const pr = (tk.converted_last.usd/bp - 1)*100;
-          if(sym==='BTC') btcPrem=pr; else { altSum+=pr; altN++; }
-          const d = document.createElement('div'); d.className='kp-crow';
-          const c1=document.createElement('span'); c1.className='c'; c1.textContent=sym;
-          const c2=document.createElement('span'); c2.className='p'; c2.textContent='₩'+fmt(tk.last, tk.last<1000?1:0);
-          const c3=document.createElement('span'); c3.className='p'; c3.textContent='$'+fmt(bp, bp<10?4:bp<1000?2:0);
-          const c4=document.createElement('span'); c4.className='v '+(pr>=0.5?'up':pr<=-0.5?'down':''); c4.textContent=pct(pr);
-          d.append(c1,c2,c3,c4); list.appendChild(d);
-        });
-        if(btcPrem!==null && altN){
-          const avg = altSum/altN, gap = avg - btcPrem;
-          $('kpAlt').textContent = gap>=0.7
-            ? `🔥 알트 김프 평균(${pct(avg)})이 비트코인(${pct(btcPrem)})보다 ${gap.toFixed(2)}%p 높아요 — 국내 자금이 알트에 몰리는 과열 신호. 알트 추격 매수는 특히 조심할 자리예요`
-            : gap<=-0.7
-            ? `🧊 알트 김프 평균(${pct(avg)})이 비트코인(${pct(btcPrem)})보다 ${(-gap).toFixed(2)}%p 낮아요 — 국내가 알트를 외면하는 위축 구간이에요`
-            : `알트 김프 평균 ${pct(avg)} · 비트코인 ${pct(btcPrem)} — 비슷한 수준이라 특이 신호는 없어요`;
-        }
-      }catch(e){}
     }
   }catch(e){
     console.error('[김프] 로드 실패:', e);   // 화면 문구는 건드리지 않고 조용히 재시도
@@ -1172,6 +1153,74 @@ async function loadKimpChart(){
 }
 loadKimpChart();
 setInterval(loadKimpChart, 600_000);
+
+// ---- 🪙 코인별 김프 테이블 (업비트 원화마켓 × 바이낸스 상장 코인 전체) ----
+let kpRows = [], kpSortKey = 'vol', kpSortDir = -1, kpLoaded = false;
+async function loadKimpTable(){
+  try{
+    const [cg, bn] = await Promise.all([
+      fetch('https://api.coingecko.com/api/v3/exchanges/upbit/tickers?page=1').then(r=>{ if(!r.ok) throw 0; return r.json(); }),
+      fetch('https://api.binance.com/api/v3/ticker/price').then(r=>r.json())
+    ]);
+    const px = {}; bn.forEach(x=>px[x.symbol]=+x.price);
+    const rows = [];
+    (cg.tickers||[]).forEach(t=>{
+      if(t.target!=='KRW' || t.base==='USDT') return;
+      const bp = px[t.base+'USDT'];
+      if(!bp) return;
+      const prem = (t.converted_last.usd/bp - 1)*100;
+      if(!isFinite(prem) || Math.abs(prem)>30) return;   // 이상치 제외
+      rows.push({sym:t.base, krw:t.last, usd:bp, kimp:prem, vol:(t.converted_volume&&t.converted_volume.usd)||0});
+    });
+    if(rows.length) kpRows = rows;
+    kpTableRender();
+  }catch(e){ if(!kpRows.length){ const el=$('kpCoins'); if(el) el.innerHTML='<div class="err">일시 오류 — 잠시 후 자동 재시도</div>'; } }
+}
+function kpTableRender(){
+  const list = $('kpCoins'); if(!list || !kpRows.length) return;
+  const q = (($('kpSearch')||{}).value||'').trim().toUpperCase();
+  const rows = kpRows.filter(r=>!q || r.sym.includes(q))
+                     .sort((a,b)=>(a[kpSortKey]-b[kpSortKey])*kpSortDir);
+  list.innerHTML = '';
+  if(!rows.length){ list.innerHTML = '<div class="err">검색 결과가 없어요</div>'; return; }
+  const fx = window.__usdkrw || 1400;
+  rows.forEach(r=>{
+    const d = document.createElement('div'); d.className='kp-crow';
+    const c1=document.createElement('span'); c1.className='c'; c1.textContent=r.sym;
+    const c2=document.createElement('span'); c2.className='p'; c2.textContent='₩'+fmt(r.krw, r.krw<1000?(r.krw<1?4:1):0);
+    const c3=document.createElement('span'); c3.className='p'; c3.textContent='$'+fmt(r.usd, r.usd<10?4:r.usd<1000?2:0);
+    const c4=document.createElement('span'); c4.className='v '+(r.kimp>=0.5?'up':r.kimp<=-0.5?'down':''); c4.textContent=pct(r.kimp);
+    const vKrw = r.vol*fx;
+    const c5=document.createElement('span'); c5.className='vol';
+    c5.textContent = vKrw>=1e12 ? fmt(vKrw/1e12,1)+'조' : vKrw>=1e8 ? fmt(vKrw/1e8,0)+'억' : fmt(vKrw/1e4,0)+'만';
+    d.append(c1,c2,c3,c4,c5); list.appendChild(d);
+  });
+  // 정렬 표시
+  const sk=$('kpSortKimp'), sv=$('kpSortVol');
+  if(sk){ sk.textContent = '김프'+(kpSortKey==='kimp'?(kpSortDir<0?' ▾':' ▴'):''); sk.classList.toggle('on', kpSortKey==='kimp'); }
+  if(sv){ sv.textContent = '거래액'+(kpSortKey==='vol'?(kpSortDir<0?' ▾':' ▴'):''); sv.classList.toggle('on', kpSortKey==='vol'); }
+  // 알트 과열 진단 — BTC vs 거래액 상위 10개 알트
+  const btc = kpRows.find(r=>r.sym==='BTC');
+  const alts = kpRows.filter(r=>r.sym!=='BTC').sort((a,b)=>b.vol-a.vol).slice(0,10);
+  if(btc && alts.length>=5){
+    const avg = alts.reduce((s,r)=>s+r.kimp,0)/alts.length, gap = avg - btc.kimp;
+    $('kpAlt').textContent = gap>=0.7
+      ? `🔥 주요 알트 김프 평균(${pct(avg)})이 비트코인(${pct(btc.kimp)})보다 ${gap.toFixed(2)}%p 높아요 — 국내 자금이 알트에 몰리는 과열 신호. 알트 추격 매수는 특히 조심할 자리예요`
+      : gap<=-0.7
+      ? `🧊 주요 알트 김프 평균(${pct(avg)})이 비트코인(${pct(btc.kimp)})보다 ${(-gap).toFixed(2)}%p 낮아요 — 국내가 알트를 외면하는 위축 구간이에요`
+      : `주요 알트 김프 평균 ${pct(avg)} · 비트코인 ${pct(btc.kimp)} — 비슷한 수준이라 특이 신호는 없어요`;
+  }
+}
+function kpSortBy(key){
+  if(kpSortKey===key) kpSortDir*=-1; else { kpSortKey=key; kpSortDir=-1; }
+  kpTableRender();
+}
+try{
+  $('kpSortKimp').onclick = ()=>kpSortBy('kimp');
+  $('kpSortVol').onclick = ()=>kpSortBy('vol');
+  $('kpSearch').addEventListener('input', kpTableRender);
+}catch(e){}
+setInterval(()=>{ if($('pageKimp') && $('pageKimp').style.display!=='none') loadKimpTable(); }, 120_000);
 
 // ---- 공포/탐욕 (10분마다) ----
 async function loadFng(){
@@ -2249,6 +2298,7 @@ function showPage(p){
   document.querySelector('.cols').style.display = home?'':'none';
   $('pageChart').style.display = p==='chart'?'':'none';
   $('pageKimp').style.display = p==='kimp'?'':'none';
+  if(p==='kimp' && !kpLoaded){ kpLoaded = true; loadKimpTable(); }
   $('pageNews').style.display = p==='news'?'':'none';
   $('pageCalc').style.display = p==='calc'?'':'none';
   document.querySelectorAll('.topnav button').forEach(b=>b.classList.toggle('on', b.dataset.page===p));
