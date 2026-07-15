@@ -1680,6 +1680,15 @@ try{
   if(!vid){ vid = Math.random().toString(36).slice(2,12); localStorage.setItem('vid', vid); }
   if(!IS_OWNER) fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid})}).catch(()=>{});
 }catch(e){}
+// 실시간 접속자 하트비트 — 화면이 켜져 있는 동안 60초마다 (관리자 /방문 으로만 조회)
+try{
+  if(!IS_OWNER){
+    const hb = ()=>{ if(document.visibilityState==='visible')
+      fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST',
+        body: JSON.stringify({v: localStorage.getItem('vid')||'anon', hb:1})}).catch(()=>{}); };
+    hb(); setInterval(hb, 60_000);
+  }
+}catch(e){}
 // ---- 배너 클릭 집계 (익명 · 화면 표시 없음, 관리자 /방문 으로 조회) ----
 function trackClick(tag){
   try{
