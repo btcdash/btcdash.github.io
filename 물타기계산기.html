@@ -103,6 +103,17 @@
     $('res').classList.add('on');
   }
   ['p1','a1','p2','a2'].forEach(id=>$(id).addEventListener('input',calc));
+  // 방문·검색 유입 집계 (익명, 관리자 기기 제외 — 메인과 동일 방식)
+  try{
+    if(localStorage.getItem('owner')!=='1'){
+      let vid = localStorage.getItem('vid');
+      if(!vid){ vid = Math.random().toString(36).slice(2,12); localStorage.setItem('vid', vid); }
+      fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid})}).catch(()=>{});
+      const r = document.referrer || '';
+      const eng = /google\./.test(r) ? 's_g' : /search\.naver|naver\.com\/search/.test(r) ? 's_n' : /daum\.net/.test(r) ? 's_d' : '';
+      if(eng) fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid, c:eng})}).catch(()=>{});
+    }
+  }catch(e){}
 </script>
 </body>
 </html>
