@@ -1088,8 +1088,9 @@ csGuideRender('clean');
 // ---- 김치 프리미엄 (60초마다) — 코인게코 경유 업비트 시세 (직접 호출 시 업비트가 차단해서 우회) ----
 async function loadKimchi(){
   try{
-    const j = await fetch('https://api.coingecko.com/api/v3/exchanges/upbit/tickers?coin_ids=bitcoin,tether,ethereum,ripple,solana,dogecoin')
+    const j = await fetch('https://api.coingecko.com/api/v3/exchanges/upbit/tickers?coin_ids=bitcoin,tether,ethereum,ripple,solana,dogecoin,cardano,tron,chainlink,avalanche-2,stellar,polkadot,bitcoin-cash,near,aptos,arbitrum,sui,shiba-inu,pepe,ethereum-classic,hedera-hashgraph,ondo-finance,worldcoin-wld,uniswap,aave')
       .then(r=>{ if(!r.ok) throw new Error('coingecko http '+r.status); return r.json(); });
+    window.__cgMajors = j.tickers || [];   // 김프 테이블에서 메이저 코인 보장용으로 재사용
     const t = j.tickers.find(x=>x.base==='BTC' && x.target==='KRW');
     if(!t) throw new Error('KRW 티커 없음');
     const krw = t.last;                       // 업비트 원화 가격
@@ -1170,10 +1171,11 @@ async function loadKimpTable(){
         await new Promise(s=>setTimeout(s, 900));
       }catch(e){ break; }
     }
-    if(!tickers.length) throw 0;
+    const merged = [...(window.__cgMajors||[]), ...tickers];   // 메이저 먼저(보장) + 페이지 수집분
+    if(!merged.length) throw 0;
     const px = {}; bn.forEach(x=>px[x.symbol]=+x.price);
     const rows = []; const seen = new Set();
-    tickers.forEach(t=>{
+    merged.forEach(t=>{
       if(seen.has(t.base)) return; seen.add(t.base);
       if(t.target!=='KRW' || t.base==='USDT') return;
       const bp = px[t.base+'USDT'];
