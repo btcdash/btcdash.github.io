@@ -298,6 +298,19 @@
   .v-more{width:100%;margin-top:10px;border:1px solid var(--border);border-radius:9px;padding:9px;font-size:12px;font-weight:700;background:var(--surface2);color:var(--ink2);cursor:pointer}
   .v-more:hover{color:var(--ink);border-color:var(--ink3)}
   @media(max-width:600px){.v-row{grid-template-columns:105px 1fr auto;font-size:11.5px}}
+  /* 포지션 주치의 */
+  .pd-btn{background:linear-gradient(92deg,#3ddc97,#22c55e);box-shadow:0 6px 22px rgba(34,197,94,.22)}
+  .pd-btn small{color:#03301a}
+  .pd-form{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+  .pd-seg{display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden}
+  .pd-seg button{border:0;background:var(--surface2);color:var(--ink2);padding:10px 14px;font-size:13px;font-weight:700;cursor:pointer}
+  .pd-seg button.on{background:var(--accent);color:#111}
+  .pd-in{display:flex;flex-direction:column;gap:4px}
+  .pd-in label{font-size:11px;color:var(--ink3)}
+  .pd-in input{width:150px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 10px;color:var(--ink);font-size:13px}
+  .pd-in input:focus{border-color:var(--accent);outline:none}
+  #pdGo{border:0;border-radius:10px;padding:10px 18px;font-weight:800;background:var(--accent);color:#111;cursor:pointer;font-size:13px}
+  #pdOut{margin-top:14px}
 
   /* ===== 고래 체결 ===== */
   .whale-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
@@ -586,6 +599,28 @@
       <div id="vList" class="v-list"></div>
       <button id="vMore" class="v-more">근거 전부 보기 ▾</button>
       <div class="v-note">* 자동 종합 분석 참고용이에요 — 투자 판단과 책임은 본인에게 있어요</div>
+    </div>
+  </section>
+
+  <!-- 🩺 내 포지션 주치의 -->
+  <section style="margin:-8px 0 22px">
+    <button id="pdBtn" class="v-btn pd-btn">🩺 내 포지션 어떡해? <small>롱/숏·진입가·레버리지만 입력하면 — 지금 시장 기준으로 홀딩·익절·정리를 확실하게 답해드려요</small></button>
+    <div id="pdCard" class="v-card" style="display:none">
+      <div class="pd-form">
+        <div class="pd-seg"><button id="pdLong" class="on" type="button">📈 롱</button><button id="pdShort" type="button">📉 숏</button></div>
+        <div class="pd-in"><label>진입가 (물타기했으면 평단)</label><input id="pdEntry" type="number" placeholder="예: 64500"></div>
+        <div class="pd-in"><label>레버리지</label><input id="pdLev" type="number" placeholder="10" value="10"></div>
+        <button id="pdGo" type="button">진단하기</button>
+      </div>
+      <div id="pdOut" style="display:none">
+        <div class="v-upd">🔄 20초마다 실시간 갱신 — 입력한 포지션은 이 브라우저에만 저장돼요</div>
+        <div class="v-verdict">
+          <span class="v-emoji" id="pdEmoji">⏳</span>
+          <div><div class="v-title" id="pdTitle">분석 중…</div><div class="v-sub" id="pdSub"></div></div>
+        </div>
+        <div id="pdList" class="v-list"></div>
+        <div class="v-note">* 자동 분석 참고용이에요 — 투자 판단과 책임은 본인에게 있어요</div>
+      </div>
     </div>
   </section>
 
@@ -1666,6 +1701,43 @@ setInterval(loadLs, 300_000);
 setInterval(loadFunding, 300_000);
 setInterval(loadChat, 10_000);
 
+// ---- 📜 과거 닮은꼴 통계 (4시간봉 8개월치에서 지금과 비슷한 자리를 찾아 12시간 뒤 결과 집계) ----
+let __analog = null, __analogAt = 0;
+async function analogStats(){
+  if(__analog && Date.now()-__analogAt < 600_000) return __analog;
+  try{
+    const k = await fetch('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=4h&limit=1500').then(r=>r.json());
+    const c = k.map(x=>+x[4]), v = k.map(x=>+x[5]);
+    const feat = i => {   // 그 시점의 특징: RSI14 · MA50 대비 위치 · 최근 12시간 기세
+      let g=0,l=0;
+      for(let j=i-13;j<=i;j++){ const d=c[j]-c[j-1]; if(d>0)g+=d; else l-=d; }
+      const rsi = l===0?100:100-100/(1+g/l);
+      let ma=0; for(let j=i-49;j<=i;j++) ma+=c[j]; ma/=50;
+      return [rsi, (c[i]/ma-1)*100, (c[i]/c[i-3]-1)*100];
+    };
+    const now = feat(c.length-1);
+    const scan = (tR,tD,tM) => {
+      const h = {n:0, up:0, down:0, sum:0};
+      for(let i=60;i<c.length-4;i++){
+        const f = feat(i);
+        if(Math.abs(f[0]-now[0])<=tR && Math.abs(f[1]-now[1])<=tD && Math.abs(f[2]-now[2])<=tM){
+          const mv = (c[i+3]/c[i]-1)*100;
+          h.n++; h.sum+=mv;
+          if(mv>0.15) h.up++; else if(mv<-0.15) h.down++;
+        }
+      }
+      return h;
+    };
+    let h = scan(7, 1.2, 1.2);
+    if(h.n < 8) h = scan(10, 1.8, 1.8);   // 닮은꼴이 너무 적으면 기준을 조금 넓힘
+    __analog = h.n>=8
+      ? {n:h.n, up:h.up, down:h.down, upPct:Math.round(h.up/h.n*100), downPct:Math.round(h.down/h.n*100), avg:h.sum/h.n}
+      : {n:h.n};
+    __analogAt = Date.now();
+  }catch(e){ __analog = null; }
+  return __analog;
+}
+
 // ---- 🤔 지금 들어가도 돼? (지표 12종 종합 진단) ----
 const EVENTS_RAW = 'https://gist.githubusercontent.com/btcdash/2dbcf6ec8074b85380d3cf119f6f1091/raw/events.json';
 let vOpen = false, vTimer = null;
@@ -1808,9 +1880,23 @@ async function vCompute(){
     else R('⚡ 최근 15분',pct(mv),'안정','neutral');
   }
 
+  // 과거 닮은꼴 통계
+  try{
+    const an = await analogStats();
+    if(an && an.n>=8){
+      const domUp = an.up>=an.down;
+      const p = domUp?an.upPct:an.downPct, word = domUp?'상승':'하락';
+      if(p>=62){
+        if(domUp) bull++; else bear++;
+        R('📜 과거 닮은꼴', `${an.n}번 중 ${domUp?an.up:an.down}번 ${word}`, `12시간 내 ${word} ${p}% — 통계 우위`, domUp?'up':'down');
+      } else R('📜 과거 닮은꼴', `${an.n}번 중 상승 ${an.up}·하락 ${an.down}`, '통계상 방향 반반', 'neutral');
+    }
+  }catch(e){}
+
   // 종합 판정 — 방향은 항상 헤드라인으로 선언, 과열은 "진입 방법"만 바꾼다 (방향 추천을 뭉개지 않게)
   let verdict;
   const net = bull - bear;
+  window.__vSum = {bull, bear, risk, evNear, net, at: Date.now()};
   if(evNear)
     verdict = {e:'🚫', t:'지금은 쉬어갈 때예요', s:'주요 발표 직전·직후예요 — 방향이 도박이 되는 구간이라 신규 진입은 비추천해요'};
   else if(net>=6)
@@ -1866,6 +1952,90 @@ $('vBtn').onclick = ()=>{
   $('vCard').style.display = vOpen ? '' : 'none';
   if(vOpen){ vCompute(); vTimer = setInterval(vCompute, 15_000); }
   else clearInterval(vTimer);
+};
+
+// ---- 🩺 내 포지션 주치의 ----
+let pdSide = 'long', pdOpen = false, pdTimer = null;
+function pdSeg(s){
+  pdSide = s;
+  $('pdLong').classList.toggle('on', s==='long');
+  $('pdShort').classList.toggle('on', s==='short');
+}
+$('pdLong').onclick = ()=>pdSeg('long');
+$('pdShort').onclick = ()=>pdSeg('short');
+async function pdRun(){
+  const entry = +$('pdEntry').value, lev = Math.max(1, Math.min(125, +$('pdLev').value||10));
+  if(!entry) return;
+  localStorage.setItem('pdPos', JSON.stringify({s:pdSide, e:entry, l:lev}));
+  $('pdOut').style.display = '';
+  if(!window.__vSum || Date.now()-window.__vSum.at > 20_000) await vCompute();  // 시장 종합이 오래됐으면 갱신
+  const px = window.__btc;
+  if(!px || !window.__vSum){ $('pdTitle').textContent = '시세 로딩 중 — 잠시 후 다시 눌러주세요'; return; }
+  const S = window.__vSum, an = __analog;
+  const dir = pdSide==='long' ? 1 : -1;
+  const raw = ((px-entry)/entry)*100*dir;             // 가격 기준 %
+  const pnl = raw*lev;                                 // 증거금 대비 %
+  const liq = pdSide==='long' ? entry*(1-0.98/lev) : entry*(1+0.98/lev);
+  const liqDist = Math.abs(px-liq)/px*100;
+  const align = dir*S.net;                             // 시장 근거가 내 방향인지 (+우호 -반대)
+  // 닮은꼴 통계가 내 방향인지: +1 우호 / -1 반대 / 0 중립
+  let anAlign = 0, anTxt = null;
+  if(an && an.n>=8){
+    const domUp = an.up>=an.down, p = domUp?an.upPct:an.downPct;
+    if(p>=62){ anAlign = (domUp?1:-1)*dir; anTxt = `${an.n}번 중 ${domUp?an.up:an.down}번 ${domUp?'상승':'하락'} (${p}%)`; }
+    else anTxt = `${an.n}번 중 상승 ${an.up}·하락 ${an.down} — 반반`;
+  }
+  const rows = []; const R2=(n,v,j,d)=>rows.push({n,v,j,d});
+  R2('💰 내 손익 (증거금 대비)', (pnl>=0?'+':'')+pnl.toFixed(1)+'%', '가격 기준 '+(raw>=0?'+':'')+raw.toFixed(2)+'%', pnl>=0?'up':'down');
+  R2('🧨 추정 청산가', Math.round(liq).toLocaleString(), liqDist<8?'남은 거리 '+liqDist.toFixed(1)+'% — 위험':liqDist<15?'남은 거리 '+liqDist.toFixed(1)+'% — 여유 부족':'남은 거리 '+liqDist.toFixed(1)+'% — 여유', liqDist<8?'down':liqDist<15?'warn':'neutral');
+  R2('🧭 시장 방향 vs 내 방향', `상승 ${S.bull} · 하락 ${S.bear}`, align>=3?'내 방향과 일치':align<=-3?'내 방향과 반대':'팽팽', align>=3?'up':align<=-3?'down':'neutral');
+  R2('🌡️ 과열·변동성', `주의 신호 ${S.risk}개`, S.risk>=2?'출렁임 큰 구간':'안정', S.risk>=2?'warn':'neutral');
+  if(S.evNear) R2('📅 주요 발표', '임박/직후', '도박 구간 — 비중 관리', 'warn');
+  if(anTxt) R2('📜 과거 닮은꼴', anTxt, anAlign>0?'통계가 내 편':anAlign<0?'통계가 반대편':'중립', anAlign>0?'up':anAlign<0?'down':'neutral');
+  // 단호한 결론 — "오를 수도 내릴 수도"는 금지, 항상 행동 지시로 끝남
+  let v;
+  if(liqDist <= 8)
+    v = {e:'🚨', t:'청산 위험 — 지금은 판단이 아니라 생존입니다', s:`청산가(${Math.round(liq).toLocaleString()})까지 ${liqDist.toFixed(1)}%밖에 안 남았어요. 비중 축소나 증거금 보충부터 하세요. 이 자리 물타기는 금지예요`};
+  else if(S.evNear)
+    v = pnl>=0
+      ? {e:'🎯', t:'발표 직전 — 수익 절반은 지금 챙기세요', s:'발표 구간은 방향이 도박이 돼요. 절반 익절로 이익을 잠그고, 나머지만 걸어두는 게 정답이에요'}
+      : {e:'✂️', t:'발표 직전 — 비중부터 줄이세요', s:'손실 포지션으로 발표를 통과하는 건 복구가 아니라 도박이에요. 비중을 줄이고 발표 지나고 다시 잡는 게 낫습니다'};
+  else if(align>=3 && pnl>=0)
+    v = {e:'✅', t:'홀딩 — 시장이 당신 편이에요', s:`근거가 내 방향으로 ${Math.abs(S.net)}개 우위${anAlign>0?', 과거 통계까지 같은 방향':''}이에요. 나갈 이유가 없어요 — 익절선만 수익 방향으로 올려두고 최대한 끌고 가세요`};
+  else if(align>=3)
+    v = {e:'💪', t:'버티세요 — 단, 손절선은 지금 정하고', s:`손실 중이지만 시장 근거는 내 방향으로 ${Math.abs(S.net)}개 우위예요. 회복 확률이 있는 자리니 유지하되, "여기 오면 나간다"는 손절선 없이 버티는 건 금지예요`};
+  else if(align<=-3 && pnl>0)
+    v = {e:'🎯', t:'지금 챙기세요 — 방향이 등을 돌리는 중', s:`수익 중인데 시장 근거가 반대로 ${Math.abs(S.net)}개 쌓였어요${anAlign<0?', 과거 통계도 반대편':''}. 전량 또는 절반 익절로 이익을 확정하세요. 미련이 수익을 반납하게 만들어요`};
+  else if(align<=-3)
+    v = {e:'❌', t:'정리하세요 — 근거가 전부 반대편이에요', s:`시장 근거 ${Math.abs(S.net)}개가 내 방향과 반대${anAlign<0?', 과거 통계까지 반대':''}예요. 여기서 버티는 건 분석이 아니라 희망이에요. 정리하고 방향 맞는 자리에서 다시 잡는 게 기대값이 높습니다`};
+  else if(anAlign>0)
+    v = {e:'🟡', t:'유지 — 통계가 당신 손을 들었어요', s:`지표는 팽팽한데 과거 닮은꼴 통계(${anTxt})가 내 방향이에요. 유지하되 본전 아래로는 안 내려가게 손절선을 올려두세요`};
+  else if(anAlign<0)
+    v = {e:'✂️', t:'줄이세요 — 통계까지 반대편이에요', s:`지표는 팽팽한데 과거 닮은꼴 통계(${anTxt})가 반대 방향이에요. 절반은 정리해서 노출을 줄이는 게 정답이에요`};
+  else
+    v = pnl>=0
+      ? {e:'🎯', t:'절반 익절 — 애매할 땐 이익부터 확정', s:'근거가 반반인 자리예요. 이럴 땐 수익 절반을 챙기고 나머지로만 노출을 유지하는 게 정답이에요 — 다음 방향이 나오면 그때 다시 태우면 돼요'}
+      : {e:'✂️', t:'본전 오면 나가세요 — 여긴 승부처가 아니에요', s:'근거가 반반인 자리에서 손실 포지션을 키울 이유가 없어요. 반등에 본전 근처 오면 정리하고, 확실한 자리를 기다리세요'};
+  $('pdEmoji').textContent = v.e;
+  $('pdTitle').textContent = v.t;
+  $('pdSub').textContent = v.s;
+  const list = $('pdList'); list.innerHTML = '';
+  rows.forEach(r=>{
+    const d = document.createElement('div'); d.className='v-row';
+    const n = document.createElement('span'); n.className='vn'; n.textContent=r.n;
+    const val = document.createElement('span'); val.className='vv'; val.textContent=r.v;
+    const j = document.createElement('span'); j.className='vj '+r.d; j.textContent=r.j;
+    d.appendChild(n); d.appendChild(val); d.appendChild(j); list.appendChild(d);
+  });
+}
+$('pdGo').onclick = ()=>{ pdRun(); clearInterval(pdTimer); pdTimer = setInterval(()=>{ if(pdOpen && $('pdEntry').value) pdRun(); }, 20_000); };
+$('pdBtn').onclick = ()=>{
+  pdOpen = !pdOpen;
+  $('pdCard').style.display = pdOpen ? '' : 'none';
+  if(pdOpen){
+    const s = JSON.parse(localStorage.getItem('pdPos')||'null');
+    if(s){ pdSeg(s.s); $('pdEntry').value = s.e; $('pdLev').value = s.l; $('pdGo').onclick(); }
+  } else clearInterval(pdTimer);
 };
 
 // ---- 차트 바로가기 (차트 탭으로 이동) ----
