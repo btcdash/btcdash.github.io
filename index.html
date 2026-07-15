@@ -282,6 +282,13 @@
   .kp-row{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-top:1px solid var(--border);color:var(--ink2);line-height:1.55}
   .kp-row .g{flex:none;min-width:96px;font-weight:700;color:var(--ink)}
   .kp-row .g.up2{color:var(--up)} .kp-row .g.dn2{color:var(--down)}
+  .kp-crow{display:grid;grid-template-columns:64px 1fr 1fr 76px;gap:8px;padding:8px 0;border-top:1px solid var(--border);font-size:13px;align-items:center}
+  .kp-crow .c{font-weight:700}
+  .kp-crow .p{color:var(--ink3);font-size:12px;font-variant-numeric:tabular-nums}
+  .kp-crow .v{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
+  .kp-crow .v.up{color:var(--up)} .kp-crow .v.down{color:var(--down)}
+  .kp-chead{border-top:0;padding:2px 0 6px;font-size:11px;color:var(--ink3)}
+  .kp-alt{margin-top:10px;padding:9px 12px;border-radius:8px;background:var(--surface2);font-size:12.5px;color:var(--ink2);line-height:1.55}
   .brief{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 16px;margin-bottom:14px}
   .brief-head{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;margin-bottom:8px}
   .brief-date{margin-left:auto;font-size:11px;color:var(--ink3);font-weight:400}
@@ -776,6 +783,16 @@
         <div class="kp-mini"><span>실시간 환율 (코인 시장 기준)</span><b id="kpFx">—</b></div>
       </div>
       <div class="kp-guide">
+        <b>🪙 코인별 김프</b>
+        <div class="kp-crow kp-chead"><span>코인</span><span>업비트</span><span>바이낸스</span><span style="text-align:right">김프</span></div>
+        <div id="kpCoins"><div class="err">불러오는 중…</div></div>
+        <div class="kp-alt" id="kpAlt"></div>
+      </div>
+      <div class="kp-guide">
+        <b>📈 김프 7일 흐름 <span class="help">?<span class="tip">10분마다 자동 기록된 비트코인 김프의 최근 7일 추이예요. 김프가 급등하면 국내 과열, 급락하면 심리 위축으로 읽어요.</span></span></b>
+        <div id="kpChart"><div class="err">기록 수집 중 — 10분마다 쌓여요</div></div>
+      </div>
+      <div class="kp-guide">
         <b>📖 김프 읽는 법</b>
         <div class="kp-row"><span class="g up2">+3% 이상</span>국내 과열 — 역사적으로 단기 고점 부근에서 자주 나타나요. 추격 매수 조심</div>
         <div class="kp-row"><span class="g">0 ~ +2%</span>평범한 수준 — 김프만으로 판단할 구간은 아니에요</div>
@@ -1030,7 +1047,7 @@ csGuideRender('clean');
 // ---- 김치 프리미엄 (60초마다) — 코인게코 경유 업비트 시세 (직접 호출 시 업비트가 차단해서 우회) ----
 async function loadKimchi(){
   try{
-    const j = await fetch('https://api.coingecko.com/api/v3/exchanges/upbit/tickers?coin_ids=bitcoin,tether')
+    const j = await fetch('https://api.coingecko.com/api/v3/exchanges/upbit/tickers?coin_ids=bitcoin,tether,ethereum,ripple,solana,dogecoin')
       .then(r=>{ if(!r.ok) throw new Error('coingecko http '+r.status); return r.json(); });
     const t = j.tickers.find(x=>x.base==='BTC' && x.target==='KRW');
     if(!t) throw new Error('KRW 티커 없음');
@@ -1063,6 +1080,34 @@ async function loadKimchi(){
         const te = $('kpTether'); te.textContent = pct(tp); te.className = tp>=0.5?'up':tp<=-0.5?'down':'';
         $('kpFx').textContent = '₩'+fmt(ut.last,0)+'/USDT';
       }
+      // 코인별 김프 표 + 알트 과열 진단
+      try{
+        const fut = await fetch('https://fapi.binance.com/fapi/v1/ticker/price').then(r=>r.json());
+        const px = {}; fut.forEach(x=>px[x.symbol]=+x.price);
+        const list = $('kpCoins'); list.innerHTML='';
+        let altSum=0, altN=0, btcPrem=null;
+        [['BTC','bitcoin'],['ETH','ethereum'],['XRP','ripple'],['SOL','solana'],['DOGE','dogecoin']].forEach(([sym])=>{
+          const tk = j.tickers.find(x=>x.base===sym && x.target==='KRW');
+          const bp = px[sym+'USDT'];
+          if(!tk || !bp) return;
+          const pr = (tk.converted_last.usd/bp - 1)*100;
+          if(sym==='BTC') btcPrem=pr; else { altSum+=pr; altN++; }
+          const d = document.createElement('div'); d.className='kp-crow';
+          const c1=document.createElement('span'); c1.className='c'; c1.textContent=sym;
+          const c2=document.createElement('span'); c2.className='p'; c2.textContent='₩'+fmt(tk.last, tk.last<1000?1:0);
+          const c3=document.createElement('span'); c3.className='p'; c3.textContent='$'+fmt(bp, bp<10?4:bp<1000?2:0);
+          const c4=document.createElement('span'); c4.className='v '+(pr>=0.5?'up':pr<=-0.5?'down':''); c4.textContent=pct(pr);
+          d.append(c1,c2,c3,c4); list.appendChild(d);
+        });
+        if(btcPrem!==null && altN){
+          const avg = altSum/altN, gap = avg - btcPrem;
+          $('kpAlt').textContent = gap>=0.7
+            ? `🔥 알트 김프 평균(${pct(avg)})이 비트코인(${pct(btcPrem)})보다 ${gap.toFixed(2)}%p 높아요 — 국내 자금이 알트에 몰리는 과열 신호. 알트 추격 매수는 특히 조심할 자리예요`
+            : gap<=-0.7
+            ? `🧊 알트 김프 평균(${pct(avg)})이 비트코인(${pct(btcPrem)})보다 ${(-gap).toFixed(2)}%p 낮아요 — 국내가 알트를 외면하는 위축 구간이에요`
+            : `알트 김프 평균 ${pct(avg)} · 비트코인 ${pct(btcPrem)} — 비슷한 수준이라 특이 신호는 없어요`;
+        }
+      }catch(e){}
     }
   }catch(e){
     console.error('[김프] 로드 실패:', e);   // 화면 문구는 건드리지 않고 조용히 재시도
@@ -1073,6 +1118,28 @@ async function loadKimchi(){
   kimchiRetry = 1500;   // 성공하면 재시도 간격 초기화
 }
 let kimchiRetry = 1500;
+
+// ---- 김프 7일 추이 차트 (회사 PC가 10분마다 기록한 데이터) ----
+async function loadKimpChart(){
+  const el = $('kpChart'); if(!el) return;
+  try{
+    const d = await fetch('https://gist.githubusercontent.com/btcdash/2dbcf6ec8074b85380d3cf119f6f1091/raw/kimp.json?ts='+Date.now()).then(r=>r.json());
+    const h = d.hist || [];
+    if(h.length < 3){ el.innerHTML = '<div class="err">기록 쌓는 중 — 10분마다 저장돼요 (지금 '+h.length+'건)</div>'; return; }
+    const w=660, ht=130, pad=8;
+    const vs = h.map(x=>x[1]);
+    const mn = Math.min(...vs), mx = Math.max(...vs), rg = (mx-mn)||0.1;
+    const X = i => pad+(w-2*pad)*i/(h.length-1);
+    const Y = v => pad+(ht-2*pad)*(1-(v-mn)/rg);
+    let path=''; h.forEach((p,i)=>{ path += (i?'L':'M')+X(i).toFixed(1)+' '+Y(p[1]).toFixed(1)+' '; });
+    const zero = (0>=mn && 0<=mx) ? `<line x1="${pad}" y1="${Y(0).toFixed(1)}" x2="${w-pad}" y2="${Y(0).toFixed(1)}" stroke="#6b7683" stroke-dasharray="4 4" stroke-width="1" opacity=".6"/>` : '';
+    const last = vs[vs.length-1];
+    el.innerHTML = `<svg viewBox="0 0 ${w} ${ht}" style="width:100%;height:auto;display:block;margin-top:4px">${zero}<path d="${path}" fill="none" stroke="${last>=0?'#f6465d':'#3b82f6'}" stroke-width="2" stroke-linejoin="round"/></svg>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);margin-top:4px"><span>최저 ${mn.toFixed(2)}%</span><span>현재 ${(last>=0?'+':'')+last.toFixed(2)}%</span><span>최고 ${mx.toFixed(2)}%</span></div>`;
+  }catch(e){ el.innerHTML = '<div class="err">기록 수집 중 — 곧 표시돼요</div>'; }
+}
+loadKimpChart();
+setInterval(loadKimpChart, 600_000);
 
 // ---- 공포/탐욕 (10분마다) ----
 async function loadFng(){
