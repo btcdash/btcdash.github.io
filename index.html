@@ -376,12 +376,20 @@
   .ad-dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35);cursor:pointer}
   .ad-dots i.on{background:#fff}
   @media(max-width:760px){
-    .ad{padding:20px 18px 16px}
-    .ad-row{flex-direction:column;align-items:flex-start;gap:14px}
-    .ad .ad-title{font-size:24px}
-    .ad .ad-cta{align-self:stretch;text-align:center}
-    .ad-feats{grid-template-columns:repeat(2,1fr)}
-    .ad-coins b{font-size:22px}
+    /* 배너: 첫 화면을 다 먹지 않게 배지+제목+버튼만 컴팩트하게 */
+    .ad{padding:13px 15px 15px}
+    .ad-row{flex-direction:column;align-items:flex-start;gap:10px}
+    .ad .ad-badge{margin-bottom:7px;font-size:11px;padding:4px 11px}
+    .ad .ad-title{font-size:19px;letter-spacing:-.5px}
+    .ad .ad-title br{display:none}
+    .ad .ad-sub{display:none}
+    .ad .ad-cta{align-self:stretch;text-align:center;font-size:13px;padding:10px 14px}
+    .ad-feats{display:none}
+    .ad-coins b{font-size:16px;opacity:.45}
+    .ad-dots{right:10px;bottom:7px}
+    /* 상단 요소 컴팩트 + 탭바는 스크롤해도 고정 */
+    header .cta{font-size:12px;padding:8px 11px}
+    .topnav{position:sticky;top:0;z-index:60;background:var(--bg)}
   }
 </style>
 </head>
