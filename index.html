@@ -1158,13 +1158,15 @@ setInterval(loadKimpChart, 600_000);
 let kpRows = [], kpSortKey = 'vol', kpSortDir = -1, kpLoaded = false;
 async function loadKimpTable(){
   try{
-    const [cg, bn] = await Promise.all([
-      fetch('https://api.coingecko.com/api/v3/exchanges/upbit/tickers?page=1').then(r=>{ if(!r.ok) throw 0; return r.json(); }),
+    const [cg1, cg2, bn] = await Promise.all([
+      fetch('https://api.coingecko.com/api/v3/exchanges/upbit/tickers?order=volume_desc&page=1').then(r=>{ if(!r.ok) throw 0; return r.json(); }),
+      fetch('https://api.coingecko.com/api/v3/exchanges/upbit/tickers?order=volume_desc&page=2').then(r=>r.ok?r.json():{tickers:[]}).catch(()=>({tickers:[]})),
       fetch('https://api.binance.com/api/v3/ticker/price').then(r=>r.json())
     ]);
     const px = {}; bn.forEach(x=>px[x.symbol]=+x.price);
-    const rows = [];
-    (cg.tickers||[]).forEach(t=>{
+    const rows = []; const seen = new Set();
+    [...(cg1.tickers||[]), ...(cg2.tickers||[])].forEach(t=>{
+      if(seen.has(t.base)) return; seen.add(t.base);
       if(t.target!=='KRW' || t.base==='USDT') return;
       const bp = px[t.base+'USDT'];
       if(!bp) return;
