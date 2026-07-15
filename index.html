@@ -406,7 +406,7 @@
     <div class="cta-group">
       <button class="cta ask" id="sndBtn" title="고래체결·소통방·게임 효과음">🔇 소리</button>
       <a class="cta ask" href="https://telegram.me/richtrading_support_bot" target="_blank">💬 문의·건의</a>
-      <a class="cta" id="refLink" href="https://telegram.me/richtrading_support_bot" target="_blank">💰 수수료 할인 가입 문의 →</a>
+      <a class="cta" id="refLink" href="https://telegram.me/richtrading_support_bot" target="_blank">💰 수수료 할인 문의 →</a>
     </div>
   </header>
 
@@ -1637,6 +1637,19 @@ try{
   let vid = localStorage.getItem('vid');
   if(!vid){ vid = Math.random().toString(36).slice(2,12); localStorage.setItem('vid', vid); }
   fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid})}).catch(()=>{});
+}catch(e){}
+// ---- 배너 클릭 집계 (익명 · 화면 표시 없음, 관리자 /방문 으로 조회) ----
+function trackClick(tag){
+  try{
+    fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST',
+      body: JSON.stringify({v: localStorage.getItem('vid')||'anon', c: tag})}).catch(()=>{});
+  }catch(e){}
+}
+try{
+  $('ad1').addEventListener('click', ()=>trackClick('tg'));        // 텔레그램 소통방 배너
+  $('ad0').addEventListener('click', ()=>trackClick('ask'));       // 탭비트 할인 배너 → 문의봇
+  $('refLink').addEventListener('click', ()=>trackClick('ask'));   // 우상단 할인 문의 버튼
+  document.querySelectorAll('.chat-join').forEach(a=>a.addEventListener('click', ()=>trackClick('tg')));  // 소통방 피드 참여 버튼
 }catch(e){}
 if(G.pos){ $('gTpE').value = G.pos.tp||''; $('gSlE').value = G.pos.sl||''; }
 gTick(); gRender(); gHistRender(); gLoadRank();
