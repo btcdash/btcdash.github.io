@@ -2020,6 +2020,18 @@ async function pdRun(){
   R2('🌡️ 과열·변동성', `주의 신호 ${S.risk}개`, S.risk>=2?'출렁임 큰 구간':'안정', S.risk>=2?'warn':'neutral');
   if(S.evNear) R2('📅 주요 발표', '임박/직후', '도박 구간 — 비중 관리', 'warn');
   if(anTxt) R2('📜 과거 닮은꼴', anTxt, anAlign>0?'통계가 내 편':anAlign<0?'통계가 반대편':'중립', anAlign>0?'up':anAlign<0?'down':'neutral');
+  // 추천 손절선 — 최근 12시간 스윙 저점/고점 기준으로 구체적 가격 제시
+  let stopTxt = null;
+  try{
+    const kk = await fetch('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1h&limit=12').then(r=>r.json());
+    let stop = pdSide==='long'
+      ? Math.min(...kk.map(c=>+c[3]))*0.998
+      : Math.max(...kk.map(c=>+c[2]))*1.002;
+    if(pdSide==='long' && stop <= liq) stop = liq*1.012;   // 청산가 아래로는 추천하지 않음
+    if(pdSide==='short' && stop >= liq) stop = liq*0.988;
+    stopTxt = Math.round(stop).toLocaleString();
+    R2('🛡️ 추천 손절선', stopTxt, pdSide==='long'?'최근 12시간 저점 바로 아래':'최근 12시간 고점 바로 위', 'neutral');
+  }catch(e){}
   // 단호한 결론 — "오를 수도 내릴 수도"는 금지, 항상 행동 지시로 끝남
   let v;
   if(liqRatio <= 0.4)
@@ -2046,7 +2058,7 @@ async function pdRun(){
       : {e:'✂️', t:'본전 오면 나가세요 — 여긴 승부처가 아니에요', s:'근거가 반반인 자리에서 손실 포지션을 키울 이유가 없어요. 반등에 본전 근처 오면 정리하고, 확실한 자리를 기다리세요'};
   $('pdEmoji').textContent = v.e;
   $('pdTitle').textContent = v.t;
-  $('pdSub').textContent = v.s;
+  $('pdSub').textContent = v.s + (stopTxt && /손절/.test(v.t + v.s) ? ` — 🛡️ 추천 손절선: ${stopTxt}` : '');
   const list = $('pdList'); list.innerHTML = '';
   rows.forEach(r=>{
     const d = document.createElement('div'); d.className='v-row';
