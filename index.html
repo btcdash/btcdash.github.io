@@ -268,24 +268,28 @@
   .cs-row .n{color:var(--ink2)}
   .cs-row b{font-variant-numeric:tabular-nums}
   /* 김프 탭 */
-  .kp-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:26px;text-align:center}
-  .kp-label{font-size:14px;color:var(--ink2)}
-  .kp-num{font-size:58px;font-weight:900;letter-spacing:-2px;margin:6px 0;font-variant-numeric:tabular-nums}
-  .kp-num.up{color:var(--up)} .kp-num.down{color:var(--down)} .kp-num.neutral{color:var(--ink)}
-  .kp-desc{font-size:13px;color:var(--ink3)}
-  .kp-word{display:inline-block;margin-top:10px;padding:6px 14px;border-radius:20px;background:var(--surface2);font-size:13px;font-weight:700}
-  .kp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
-  @media(max-width:520px){.kp-grid{grid-template-columns:1fr}}
+  .kp-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:520px){.kp-grid3{grid-template-columns:1fr 1fr}.kp-grid3 .kp-mini:first-child{grid-column:1/-1}}
   .kp-mini{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
   .kp-mini>span{font-size:12px;color:var(--ink3)}
-  .kp-mini b{display:block;font-size:22px;margin-top:4px;font-variant-numeric:tabular-nums}
+  .kp-mini b{display:block;font-size:24px;margin-top:4px;font-weight:900;font-variant-numeric:tabular-nums}
   .kp-mini b.up{color:var(--up)} .kp-mini b.down{color:var(--down)}
+  .kp-num.up{color:var(--up)} .kp-num.down{color:var(--down)} .kp-num.neutral{color:var(--ink)}
+  .kp-wsub{display:block;font-style:normal;font-size:11px;color:var(--ink3);margin-top:5px}
+  .kp-desc2{text-align:center;font-size:12px;color:var(--ink3);margin-top:8px}
+  .kp-exrow{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+  .kp-ex{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink3)}
+  .kp-ex button{border:1px solid var(--border);background:var(--surface2);color:var(--ink2);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer}
+  .kp-ex button.on{background:var(--accent);color:#111;border-color:var(--accent)}
+  .kp-ex .vs{color:var(--ink3)}
   .kp-guide{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-top:14px;font-size:13px}
   .kp-guide>b{color:var(--accent);display:block;margin-bottom:10px}
   .kp-row{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-top:1px solid var(--border);color:var(--ink2);line-height:1.55}
   .kp-row .g{flex:none;min-width:96px;font-weight:700;color:var(--ink)}
   .kp-row .g.up2{color:var(--up)} .kp-row .g.dn2{color:var(--down)}
-  .kp-crow{display:grid;grid-template-columns:70px 1fr 1fr 80px 72px;gap:8px;padding:8px 0;border-top:1px solid var(--border);font-size:13px;align-items:center}
+  .kp-crow{display:grid;grid-template-columns:64px 1fr 1fr 74px 74px 64px;gap:8px;padding:8px 0;border-top:1px solid var(--border);font-size:13px;align-items:center}
+  .kp-crow .chg{text-align:right;font-weight:700;font-size:12px;font-variant-numeric:tabular-nums;color:var(--ink3)}
+  .kp-crow .chg.up{color:var(--up)} .kp-crow .chg.down{color:var(--down)}
   .kp-crow .c{font-weight:700}
   .kp-crow .p{color:var(--ink3);font-size:12px;font-variant-numeric:tabular-nums}
   .kp-crow .v{text-align:right;font-weight:800;font-variant-numeric:tabular-nums}
@@ -298,7 +302,10 @@
   .kp-list{max-height:480px;overflow-y:auto}
   .kp-search{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--ink);font-size:13px;margin-bottom:8px}
   .kp-search:focus{border-color:var(--accent);outline:none}
-  @media(max-width:520px){.kp-crow{grid-template-columns:56px 1fr 76px 64px;font-size:12px}.kp-crow .p:nth-child(3),.kp-chead span:nth-child(3){display:none}}
+  @media(max-width:520px){
+    .kp-crow{grid-template-columns:52px 1fr 66px 62px;font-size:12px}
+    .kp-crow>*:nth-child(3),.kp-crow>*:nth-child(6){display:none}
+  }
   .kp-alt{margin-top:10px;padding:9px 12px;border-radius:8px;background:var(--surface2);font-size:12.5px;color:var(--ink2);line-height:1.55}
   .brief{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 16px;margin-bottom:14px}
   .brief-head{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;margin-bottom:8px}
@@ -809,20 +816,19 @@
   <div id="pageKimp" style="display:none;max-width:720px;margin:0 auto">
     <section style="margin-top:6px">
       <h2>🇰🇷 실시간 김치프리미엄 <span class="help">?<span class="tip">같은 코인이 한국 거래소(업비트)에서 해외(바이낸스)보다 얼마나 비싸게 거래되는지예요. 60초마다 자동 갱신됩니다.</span></span></h2>
-      <div class="kp-card">
-        <div class="kp-label">비트코인 김프</div>
-        <div class="kp-num neutral" id="kpNum">—</div>
-        <div class="kp-desc" id="kpDesc">불러오는 중…</div>
-        <div class="kp-word" id="kpWord">계산 중</div>
+      <div class="kp-grid3">
+        <div class="kp-mini"><span>비트코인 김프 (업비트)</span><b id="kpNum" class="kp-num neutral">—</b><i class="kp-wsub" id="kpWord">계산 중</i></div>
+        <div class="kp-mini"><span>테더 김프 (USDT) <span class="help">?<span class="tip">달러 스테이블코인의 국내 프리미엄 — "원화 자금이 코인판에 들어오는 압력"을 더 순수하게 보여줘요.</span></span></span><b id="kpTether">—</b><i class="kp-wsub">원화 자금 유입 압력</i></div>
+        <div class="kp-mini"><span>실시간 환율</span><b id="kpFx">—</b><i class="kp-wsub">코인 시장 기준</i></div>
       </div>
-      <div class="kp-grid">
-        <div class="kp-mini"><span>테더 김프 (USDT) <span class="help">?<span class="tip">달러 스테이블코인의 국내 프리미엄 — "원화 자금이 코인판에 들어오는 압력"을 더 순수하게 보여줘요.</span></span></span><b id="kpTether">—</b></div>
-        <div class="kp-mini"><span>실시간 환율 (코인 시장 기준)</span><b id="kpFx">—</b></div>
-      </div>
+      <div class="kp-desc2" id="kpDesc">불러오는 중…</div>
       <div class="kp-guide">
-        <b>🪙 코인별 김프 <span class="help">?<span class="tip">업비트 원화마켓 코인 중 바이낸스에도 상장된 코인의 김프예요. "김프"나 "거래액"을 누르면 정렬 기준이 바뀌고, 2분마다 자동 갱신됩니다.</span></span></b>
+        <div class="kp-exrow">
+          <b style="margin:0">🪙 코인별 김프 <span class="help">?<span class="tip">기준 거래소 원화마켓 코인 중 바이낸스에도 상장된 코인의 김프예요. 김프·전일대비·거래액을 누르면 정렬이 바뀌고, 2분마다 자동 갱신됩니다.</span></span></b>
+          <div class="kp-ex"><span>기준</span><button id="kpExU" class="on" type="button">업비트</button><button id="kpExB" type="button">빗썸</button><span class="vs">× 바이낸스</span></div>
+        </div>
         <input id="kpSearch" class="kp-search" placeholder="🔍 코인 검색 (예: BTC, XRP, DOGE)">
-        <div class="kp-crow kp-chead"><span>코인</span><span>업비트</span><span>바이낸스</span><span class="kp-sort" id="kpSortKimp">김프 ▾</span><span class="kp-sort" id="kpSortVol">거래액</span></div>
+        <div class="kp-crow kp-chead"><span>코인</span><span>현재가</span><span>바이낸스</span><span class="kp-sort" id="kpSortKimp">김프</span><span class="kp-sort" id="kpSortChg">전일대비</span><span class="kp-sort" id="kpSortVol">거래액 ▾</span></div>
         <div id="kpCoins" class="kp-list"><div class="err">불러오는 중…</div></div>
         <div class="kp-alt" id="kpAlt"></div>
       </div>
@@ -1157,13 +1163,17 @@ setInterval(loadKimpChart, 600_000);
 
 // ---- 🪙 코인별 김프 테이블 (업비트 원화마켓 × 바이낸스 상장 코인 전체) ----
 let kpRows = [], kpSortKey = 'vol', kpSortDir = -1, kpLoaded = false;
+let kpEx = 'upbit';                    // 기준 거래소: upbit | bithumb
+const kpMajors = {};                   // 거래소별 메이저 코인 캐시
+const KP_MAJOR_IDS = 'bitcoin,tether,ethereum,ripple,solana,dogecoin,cardano,tron,chainlink,avalanche-2,stellar,polkadot,bitcoin-cash,near,aptos,arbitrum,sui,shiba-inu,pepe,ethereum-classic,hedera-hashgraph,ondo-finance,worldcoin-wld,uniswap,aave';
 async function loadKimpTable(){
   try{
-    const bn = await fetch('https://api.binance.com/api/v3/ticker/price').then(r=>r.json());
+    const ex = kpEx;
+    const bn = await fetch('https://api.binance.com/api/v3/ticker/24hr').then(r=>r.json());
     const tickers = [];
     for(let p=1; p<=3; p++){   // 300개까지 순차 수집 (호출 제한 안 걸리게 천천히)
       try{
-        const r = await fetch('https://api.coingecko.com/api/v3/exchanges/upbit/tickers?order=volume_desc&page='+p);
+        const r = await fetch(`https://api.coingecko.com/api/v3/exchanges/${ex}/tickers?order=volume_desc&page=${p}`);
         if(!r.ok) break;
         const j = await r.json();
         if(!(j.tickers||[]).length) break;
@@ -1172,25 +1182,27 @@ async function loadKimpTable(){
       }catch(e){ break; }
     }
     // 메이저 목록이 아직 없으면(호출 제한 등) 직접 한 번 확보
-    if(!(window.__cgMajors||[]).length){
+    if(ex==='upbit' && (window.__cgMajors||[]).length) kpMajors.upbit = window.__cgMajors;
+    if(!(kpMajors[ex]||[]).length){
       try{
-        const r = await fetch('https://api.coingecko.com/api/v3/exchanges/upbit/tickers?coin_ids=bitcoin,tether,ethereum,ripple,solana,dogecoin,cardano,tron,chainlink,avalanche-2,stellar,polkadot,bitcoin-cash,near,aptos,arbitrum,sui,shiba-inu,pepe,ethereum-classic,hedera-hashgraph,ondo-finance,worldcoin-wld,uniswap,aave');
-        if(r.ok) window.__cgMajors = (await r.json()).tickers || [];
+        const r = await fetch(`https://api.coingecko.com/api/v3/exchanges/${ex}/tickers?coin_ids=${KP_MAJOR_IDS}`);
+        if(r.ok) kpMajors[ex] = (await r.json()).tickers || [];
       }catch(e){}
     }
-    const merged = [...(window.__cgMajors||[]), ...tickers];   // 메이저 먼저(보장) + 페이지 수집분
+    const merged = [...(kpMajors[ex]||[]), ...tickers];   // 메이저 먼저(보장) + 페이지 수집분
     if(!merged.length) throw 0;
-    const px = {}; bn.forEach(x=>px[x.symbol]=+x.price);
+    const px = {}; bn.forEach(x=>{ px[x.symbol] = {p:+x.lastPrice, c:+x.priceChangePercent}; });
     const rows = []; const seen = new Set();
     merged.forEach(t=>{
-      if(seen.has(t.base)) return; seen.add(t.base);
       if(t.target!=='KRW' || t.base==='USDT') return;
-      const bp = px[t.base+'USDT'];
-      if(!bp) return;
-      const prem = (t.converted_last.usd/bp - 1)*100;
+      if(seen.has(t.base)) return; seen.add(t.base);
+      const b = px[t.base+'USDT'];
+      if(!b || !b.p) return;
+      const prem = (t.converted_last.usd/b.p - 1)*100;
       if(!isFinite(prem) || Math.abs(prem)>30) return;   // 이상치 제외
-      rows.push({sym:t.base, krw:t.last, usd:bp, kimp:prem, vol:(t.converted_volume&&t.converted_volume.usd)||0});
+      rows.push({sym:t.base, krw:t.last, usd:b.p, kimp:prem, chg:b.c, vol:(t.converted_volume&&t.converted_volume.usd)||0});
     });
+    if(ex !== kpEx) return;            // 로딩 중 거래소를 바꿨으면 버림
     if(rows.length) kpRows = rows;
     kpTableRender();
     // BTC가 빠졌으면(호출 제한 순간) 90초 뒤 자동 보강
@@ -1211,15 +1223,19 @@ function kpTableRender(){
     const c2=document.createElement('span'); c2.className='p'; c2.textContent='₩'+fmt(r.krw, r.krw<1000?(r.krw<1?4:1):0);
     const c3=document.createElement('span'); c3.className='p'; c3.textContent='$'+fmt(r.usd, r.usd<10?4:r.usd<1000?2:0);
     const c4=document.createElement('span'); c4.className='v '+(r.kimp>=0.5?'up':r.kimp<=-0.5?'down':''); c4.textContent=pct(r.kimp);
+    const c5=document.createElement('span'); c5.className='chg '+(r.chg>0?'up':r.chg<0?'down':''); c5.textContent=(r.chg>0?'+':'')+r.chg.toFixed(2)+'%';
     const vKrw = r.vol*fx;
-    const c5=document.createElement('span'); c5.className='vol';
-    c5.textContent = vKrw>=1e12 ? fmt(vKrw/1e12,1)+'조' : vKrw>=1e8 ? fmt(vKrw/1e8,0)+'억' : fmt(vKrw/1e4,0)+'만';
-    d.append(c1,c2,c3,c4,c5); list.appendChild(d);
+    const c6=document.createElement('span'); c6.className='vol';
+    c6.textContent = vKrw>=1e12 ? fmt(vKrw/1e12,1)+'조' : vKrw>=1e8 ? fmt(vKrw/1e8,0)+'억' : fmt(vKrw/1e4,0)+'만';
+    d.append(c1,c2,c3,c4,c5,c6); list.appendChild(d);
   });
   // 정렬 표시
-  const sk=$('kpSortKimp'), sv=$('kpSortVol');
-  if(sk){ sk.textContent = '김프'+(kpSortKey==='kimp'?(kpSortDir<0?' ▾':' ▴'):''); sk.classList.toggle('on', kpSortKey==='kimp'); }
-  if(sv){ sv.textContent = '거래액'+(kpSortKey==='vol'?(kpSortDir<0?' ▾':' ▴'):''); sv.classList.toggle('on', kpSortKey==='vol'); }
+  const heads = [['kpSortKimp','김프','kimp'],['kpSortChg','전일대비','chg'],['kpSortVol','거래액','vol']];
+  heads.forEach(([id,label,key])=>{
+    const el=$(id); if(!el) return;
+    el.textContent = label+(kpSortKey===key?(kpSortDir<0?' ▾':' ▴'):'');
+    el.classList.toggle('on', kpSortKey===key);
+  });
   // 알트 과열 진단 — BTC vs 거래액 상위 10개 알트
   const btc = kpRows.find(r=>r.sym==='BTC');
   const alts = kpRows.filter(r=>r.sym!=='BTC').sort((a,b)=>b.vol-a.vol).slice(0,10);
@@ -1236,10 +1252,21 @@ function kpSortBy(key){
   if(kpSortKey===key) kpSortDir*=-1; else { kpSortKey=key; kpSortDir=-1; }
   kpTableRender();
 }
+function kpSwitchEx(ex){
+  if(kpEx===ex) return;
+  kpEx = ex; kpRows = [];
+  $('kpExU').classList.toggle('on', ex==='upbit');
+  $('kpExB').classList.toggle('on', ex==='bithumb');
+  $('kpCoins').innerHTML = '<div class="err">'+(ex==='upbit'?'업비트':'빗썸')+' 기준으로 다시 불러오는 중…</div>';
+  loadKimpTable();
+}
 try{
   $('kpSortKimp').onclick = ()=>kpSortBy('kimp');
+  $('kpSortChg').onclick = ()=>kpSortBy('chg');
   $('kpSortVol').onclick = ()=>kpSortBy('vol');
   $('kpSearch').addEventListener('input', kpTableRender);
+  $('kpExU').onclick = ()=>kpSwitchEx('upbit');
+  $('kpExB').onclick = ()=>kpSwitchEx('bithumb');
 }catch(e){}
 setInterval(()=>{ if($('pageKimp') && $('pageKimp').style.display!=='none') loadKimpTable(); }, 120_000);
 
