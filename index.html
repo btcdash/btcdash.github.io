@@ -277,6 +277,10 @@
   .kp-num.up{color:var(--up)} .kp-num.down{color:var(--down)} .kp-num.neutral{color:var(--ink)}
   .kp-wsub{display:block;font-style:normal;font-size:11px;color:var(--ink3);margin-top:5px}
   .kp-desc2{text-align:center;font-size:12px;color:var(--ink3);margin-top:8px}
+  .kp-cols{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;align-items:start;margin-top:14px}
+  .kp-side{display:flex;flex-direction:column;gap:14px}
+  .kp-side .kp-guide{margin:0}
+  @media(max-width:900px){.kp-cols{grid-template-columns:1fr}}
   .kp-exrow{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
   .kp-ex{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink3)}
   .kp-ex button{border:1px solid var(--border);background:var(--surface2);color:var(--ink2);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer}
@@ -813,7 +817,7 @@
   </div>
 
   <!-- 📰 뉴스 페이지 (탭) -->
-  <div id="pageKimp" style="display:none;max-width:720px;margin:0 auto">
+  <div id="pageKimp" style="display:none;max-width:1160px;margin:0 auto">
     <section style="margin-top:6px">
       <h2>🇰🇷 실시간 김치프리미엄 <span class="help">?<span class="tip">같은 코인이 한국 거래소(업비트)에서 해외(바이낸스)보다 얼마나 비싸게 거래되는지예요. 60초마다 자동 갱신됩니다.</span></span></h2>
       <div class="kp-grid3">
@@ -822,7 +826,8 @@
         <div class="kp-mini"><span>실시간 환율</span><b id="kpFx">—</b><i class="kp-wsub">코인 시장 기준</i></div>
       </div>
       <div class="kp-desc2" id="kpDesc">불러오는 중…</div>
-      <div class="kp-guide">
+      <div class="kp-cols">
+      <div class="kp-guide" style="margin:0">
         <div class="kp-exrow">
           <b style="margin:0">🪙 코인별 김프 <span class="help">?<span class="tip">기준 거래소 원화마켓 코인 중 바이낸스에도 상장된 코인의 김프예요. 김프·전일대비·거래액을 누르면 정렬이 바뀌고, 2분마다 자동 갱신됩니다.</span></span></b>
           <div class="kp-ex"><span>기준</span><button id="kpExU" class="on" type="button">업비트</button><button id="kpExB" type="button">빗썸</button><span class="vs">× 바이낸스</span></div>
@@ -832,6 +837,7 @@
         <div id="kpCoins" class="kp-list"><div class="err">불러오는 중…</div></div>
         <div class="kp-alt" id="kpAlt"></div>
       </div>
+      <div class="kp-side">
       <div class="kp-guide">
         <b>📈 김프 7일 흐름 <span class="help">?<span class="tip">10분마다 자동 기록된 비트코인 김프의 최근 7일 추이예요. 김프가 급등하면 국내 과열, 급락하면 심리 위축으로 읽어요.</span></span></b>
         <div id="kpChart"><div class="err">기록 수집 중 — 10분마다 쌓여요</div></div>
@@ -842,6 +848,8 @@
         <div class="kp-row"><span class="g">0 ~ +2%</span>평범한 수준 — 김프만으로 판단할 구간은 아니에요</div>
         <div class="kp-row"><span class="g dn2">마이너스(역프)</span>국내 심리 침체 — 바닥권에서 자주 보여서 역발상 매수 신호로 참고하기도 해요</div>
       </div>
+      </div><!-- kp-side 끝 -->
+      </div><!-- kp-cols 끝 -->
     </section>
   </div>
 
@@ -2340,10 +2348,9 @@ document.querySelectorAll('.jump a').forEach(a=>{ a.onclick = ()=>showPage('char
 
 // ---- 상단 탭 전환 (대시보드 / 차트 / 뉴스 / 매매도구) ----
 let chartBuilt = false;
-const AD_ALL = new URLSearchParams(location.search).has('adall');   // ?adall 붙이면 배너를 전 탭에 표시 (미리보기용)
 function showPage(p){
   const home = p==='home';
-  $('adwrap').style.display = (home || AD_ALL)?'':'none';
+  $('adwrap').style.display = '';   // 홍보 배너는 모든 탭에서 노출
   document.querySelector('.cols').style.display = home?'':'none';
   $('pageChart').style.display = p==='chart'?'':'none';
   $('pageKimp').style.display = p==='kimp'?'':'none';
