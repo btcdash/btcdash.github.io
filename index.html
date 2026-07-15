@@ -1668,14 +1668,22 @@ if(!$('gAmt').value) $('gAmt').value = Math.max(1, Math.floor(G.eq*0.25/10000));
 gSyncPct();
 
 // ---- 방문 집계 (익명 · 화면 표시 없음, 관리자만 조회) ----
+// 관리자 기기 제외: 주소 뒤에 #owner 붙여 한 번 열면 이 기기는 방문·클릭 집계에서 영구 제외
+if(location.hash === '#owner'){
+  try{ localStorage.setItem('owner','1'); }catch(e){}
+  alert('✅ 이 기기는 방문·클릭 집계에서 제외됩니다');
+  history.replaceState(null, '', location.pathname);
+}
+const IS_OWNER = (()=>{ try{ return localStorage.getItem('owner')==='1'; }catch(e){ return false; } })();
 try{
   let vid = localStorage.getItem('vid');
   if(!vid){ vid = Math.random().toString(36).slice(2,12); localStorage.setItem('vid', vid); }
-  fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid})}).catch(()=>{});
+  if(!IS_OWNER) fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid})}).catch(()=>{});
 }catch(e){}
 // ---- 배너 클릭 집계 (익명 · 화면 표시 없음, 관리자 /방문 으로 조회) ----
 function trackClick(tag){
   try{
+    if(IS_OWNER) return;   // 관리자 기기는 집계 제외
     fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST',
       body: JSON.stringify({v: localStorage.getItem('vid')||'anon', c: tag})}).catch(()=>{});
   }catch(e){}
