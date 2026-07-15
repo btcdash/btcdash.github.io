@@ -1658,8 +1658,8 @@ async function vCompute(){
     if(next){
       const mins = Math.round((next.ts-now)/60);
       const when = mins>=0 ? (mins<90 ? mins+'분 뒤' : Math.round(mins/60)+'시간 뒤') : (-mins)+'분 전 발표';
-      if(mins<=40 && mins>=-30){ evNear=true; risk++; R('📅 주요 발표', next.t, when+' · 도박 구간', 'warn'); }
-      else R('📅 주요 발표', next.t, when, 'neutral');
+      if(mins<=40 && mins>=-30){ evNear=true; risk++; R('📅 주요 발표', evKo(next.t), when+' · 도박 구간', 'warn'); }
+      else R('📅 주요 발표', evKo(next.t), when, 'neutral');
     } else R('📅 주요 발표','이번 주 남은 대형 발표 없음','여유','neutral');
   }catch(e){ R('📅 주요 발표','일정 로딩 실패','—','neutral'); }
 
@@ -1942,6 +1942,19 @@ setInterval(renderNewsTimes, 60_000);  // "몇 분 전" 표시는 1분마다 실
 
 // ---- ☀️ 오늘의 브리핑 (판정 버튼 위 상단 카드) ----
 let briefEvList = null;   // null=로딩 전, []=일정 없음
+function evKo(t){
+  const map = [
+    [/core ppi/i,'근원 PPI(생산자물가)'], [/ppi/i,'PPI(생산자물가)'],
+    [/core cpi/i,'근원 CPI(소비자물가)'], [/cpi/i,'CPI(소비자물가)'],
+    [/fomc.*minutes/i,'FOMC 의사록 공개'], [/fomc|federal funds rate/i,'FOMC 금리 발표'],
+    [/non-?farm/i,'비농업 고용지표'], [/unemployment claims/i,'신규 실업수당 청구'], [/unemployment rate/i,'실업률'],
+    [/gdp/i,'GDP(성장률)'], [/core pce/i,'근원 PCE(연준 물가지표)'], [/pce/i,'PCE 물가지표'],
+    [/powell/i,'파월 연준 의장 발언'], [/fed chair/i,'연준 의장 발언'],
+    [/retail sales/i,'소매판매 지표']
+  ];
+  for(const [re,ko] of map) if(re.test(t)) return ko;
+  return t;
+}
 function briefTick(){
   const el = $('briefEv'); if(!el || briefEvList===null) return;
   const now = Date.now()/1000;
@@ -1953,7 +1966,7 @@ function briefTick(){
     const next = briefEvList.find(e=>e.ts>now);
     if(next){
       const d = new Date(next.ts*1000);
-      el.textContent = '📅 오늘 주요 발표 없음 — 다음: '+wd[d.getDay()]+'요일 '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+' '+next.t;
+      el.textContent = '📅 오늘 주요 발표 없음 — 다음: '+wd[d.getDay()]+'요일 '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+' '+evKo(next.t);
     } else el.textContent = '📅 오늘 주요 발표 없음 — 기술적 흐름 위주 장세예요';
     return;
   }
@@ -1964,7 +1977,7 @@ function briefTick(){
     ? (mins>=90 ? Math.floor(mins/60)+'시간 '+(mins%60)+'분 남음' : mins+'분 남음 — 진입 주의')
     : '방금 발표 — 변동성 주의';
   el.className = 'brief-ev'+(mins<=60 ? ' hot' : '');
-  el.textContent = '🕐 오늘 '+hhmm+' '+ev.t+' — '+when;
+  el.textContent = '🕐 오늘 '+hhmm+' '+evKo(ev.t)+' — '+when;
 }
 function briefNewsTick(){
   const top = ((window.__newsAll)||[]).filter(n=>n.hot)[0];
