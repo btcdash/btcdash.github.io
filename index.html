@@ -2340,9 +2340,10 @@ document.querySelectorAll('.jump a').forEach(a=>{ a.onclick = ()=>showPage('char
 
 // ---- 상단 탭 전환 (대시보드 / 차트 / 뉴스 / 매매도구) ----
 let chartBuilt = false;
+const AD_ALL = new URLSearchParams(location.search).has('adall');   // ?adall 붙이면 배너를 전 탭에 표시 (미리보기용)
 function showPage(p){
   const home = p==='home';
-  $('adwrap').style.display = home?'':'none';
+  $('adwrap').style.display = (home || AD_ALL)?'':'none';
   document.querySelector('.cols').style.display = home?'':'none';
   $('pageChart').style.display = p==='chart'?'':'none';
   $('pageKimp').style.display = p==='kimp'?'':'none';
