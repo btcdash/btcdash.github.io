@@ -166,9 +166,12 @@
   .topnav button.on{color:var(--accent);border-bottom-color:var(--accent)}
   .topnav button.on small{color:var(--accent);opacity:.75}
   @media(max-width:620px){
-    .topnav{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .topnav{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+      touch-action:pan-x;                 /* 탭바 위에서는 가로 스와이프만 — 세로 스크롤 안 끌려감 */
+      overscroll-behavior-x:contain;      /* 끝까지 밀어도 페이지 전체가 튕기지 않게 */
+      scroll-snap-type:x proximity}       /* 놓으면 탭 경계에 자석처럼 정렬 */
     .topnav::-webkit-scrollbar{display:none}
-    .topnav button{flex:none;padding:8px 10px 11px;font-size:13px;white-space:nowrap}
+    .topnav button{flex:none;padding:8px 10px 11px;font-size:13px;white-space:nowrap;scroll-snap-align:start}
     .topnav button small{font-size:8.5px}
   }
 
