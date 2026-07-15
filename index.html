@@ -255,6 +255,17 @@
   .cs-row:last-child{border-bottom:0}
   .cs-row .n{color:var(--ink2)}
   .cs-row b{font-variant-numeric:tabular-nums}
+  .brief{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 16px;margin-bottom:14px}
+  .brief-head{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;margin-bottom:8px}
+  .brief-date{margin-left:auto;font-size:11px;color:var(--ink3);font-weight:400}
+  .brief-row{display:flex;gap:10px;align-items:baseline;padding:6px 0;border-top:1px solid var(--border);font-size:13px;min-width:0}
+  .brief-row .bl{color:var(--ink2);font-size:12px;min-width:64px;flex:none}
+  .brief-row a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;min-width:0}
+  .brief-row a:hover{color:var(--accent)}
+  .brief-row b.up{color:var(--up)} .brief-row b.down{color:var(--down)}
+  .brief-ev{display:flex;gap:8px;align-items:center;margin-top:7px;padding:7px 10px;border-radius:8px;font-size:12.5px;background:var(--surface2);color:var(--ink2)}
+  .brief-ev.hot{background:rgba(240,185,11,.13);color:var(--accent);font-weight:700;animation:evPulse 2.2s infinite}
+  @keyframes evPulse{0%,100%{opacity:1}50%{opacity:.6}}
   .cs-guide{font-size:12px;color:var(--ink2);line-height:1.65}
   .cs-guide b{color:var(--accent);display:block;margin-top:9px}
   .cs-guide b:first-child{margin-top:0}
@@ -541,6 +552,14 @@
   </aside>
 
   <div>
+
+  <!-- ☀️ 오늘의 브리핑 -->
+  <section class="brief" id="brief" style="display:none">
+    <div class="brief-head"><span id="briefTitle">☀️ 오늘의 브리핑</span><span class="brief-date" id="briefDate"></span></div>
+    <div class="brief-row"><span class="bl" id="briefPxL">밤사이</span><span id="briefPx">—</span></div>
+    <div class="brief-row"><span class="bl">주요 뉴스</span><a id="briefNews" target="_blank" rel="noopener">수집 중…</a></div>
+    <div class="brief-ev" id="briefEv">📅 발표 일정 확인 중…</div>
+  </section>
 
   <!-- 🤔 지금 들어가도 돼? -->
   <section style="margin-top:0;margin-bottom:22px">
@@ -1920,6 +1939,71 @@ async function loadNews(){
 loadNews();
 setInterval(loadNews, 120_000);        // 2분마다 새 기사 확인
 setInterval(renderNewsTimes, 60_000);  // "몇 분 전" 표시는 1분마다 실시간 갱신
+
+// ---- ☀️ 오늘의 브리핑 (판정 버튼 위 상단 카드) ----
+let briefEvList = null;   // null=로딩 전, []=일정 없음
+function briefTick(){
+  const el = $('briefEv'); if(!el || briefEvList===null) return;
+  const now = Date.now()/1000;
+  const kstDay = ts => new Date((ts+32400)*1000).toISOString().slice(0,10);
+  const wd = '일월화수목금토';
+  const ev = briefEvList.find(e => e.ts > now-1800 && kstDay(e.ts)===kstDay(now));
+  if(!ev){
+    el.className = 'brief-ev';
+    const next = briefEvList.find(e=>e.ts>now);
+    if(next){
+      const d = new Date(next.ts*1000);
+      el.textContent = '📅 오늘 주요 발표 없음 — 다음: '+wd[d.getDay()]+'요일 '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+' '+next.t;
+    } else el.textContent = '📅 오늘 주요 발표 없음 — 기술적 흐름 위주 장세예요';
+    return;
+  }
+  const mins = Math.round((ev.ts-now)/60);
+  const d = new Date(ev.ts*1000);
+  const hhmm = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  const when = mins>=0
+    ? (mins>=90 ? Math.floor(mins/60)+'시간 '+(mins%60)+'분 남음' : mins+'분 남음 — 진입 주의')
+    : '방금 발표 — 변동성 주의';
+  el.className = 'brief-ev'+(mins<=60 ? ' hot' : '');
+  el.textContent = '🕐 오늘 '+hhmm+' '+ev.t+' — '+when;
+}
+function briefNewsTick(){
+  const top = ((window.__newsAll)||[]).filter(n=>n.hot)[0];
+  if(!top) return;
+  const a = $('briefNews'); a.href = top.u; a.innerHTML = '';
+  if(top.b==='up' || top.b==='down'){
+    const m = document.createElement('b');
+    m.textContent = top.b==='up' ? '▲ ' : '▼ ';
+    m.className = top.b;
+    a.appendChild(m);
+  }
+  a.appendChild(document.createTextNode(top.t));
+}
+async function loadBrief(){
+  try{
+    const h = new Date().getHours();
+    $('briefTitle').textContent = (h>=5&&h<12) ? '☀️ 오늘의 브리핑' : h<18 ? '📋 오후 브리핑' : '🌙 저녁 브리핑';
+    $('briefPxL').textContent = (h>=5&&h<12) ? '밤사이' : '최근 12시간';
+    const d = new Date();
+    $('briefDate').textContent = (d.getMonth()+1)+'월 '+d.getDate()+'일 ('+'일월화수목금토'[d.getDay()]+')';
+    const k = await fetch('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1h&limit=13').then(r=>r.json());
+    const from = +k[0][4], cur = +k[k.length-1][4];
+    const chg = (cur-from)/from*100;
+    const word = Math.abs(chg)<0.3 ? '보합' : chg>0 ? '상승' : '하락';
+    $('briefPx').innerHTML = '<b class="'+(chg>=0?'up':'down')+'">'+(chg>=0?'+':'')+chg.toFixed(1)+'% '+word+'</b> <span style="color:var(--ink3);font-size:12px;margin-left:4px">'+Math.round(from).toLocaleString()+' → '+Math.round(cur).toLocaleString()+'</span>';
+    $('brief').style.display = '';
+  }catch(e){}
+  try{
+    const ev = await fetch(EVENTS_RAW+'?ts='+Date.now()).then(r=>r.json());
+    briefEvList = ev.events || [];
+  }catch(e){ if(briefEvList===null) briefEvList = []; }
+  briefTick();
+  briefNewsTick();
+}
+loadBrief();
+setInterval(loadBrief, 300_000);      // 시세·일정 5분마다
+setInterval(briefTick, 30_000);       // 카운트다운 30초마다
+setInterval(briefNewsTick, 60_000);   // 대표 뉴스 1분마다
+setTimeout(briefNewsTick, 4000);      // 첫 뉴스 로딩 직후 반영
 
 // ---- ? 도움말: 폰에서 탭하면 열림 ----
 document.querySelectorAll('.help').forEach(h=>{
