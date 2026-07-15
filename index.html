@@ -1158,14 +1158,22 @@ setInterval(loadKimpChart, 600_000);
 let kpRows = [], kpSortKey = 'vol', kpSortDir = -1, kpLoaded = false;
 async function loadKimpTable(){
   try{
-    const [cg1, cg2, bn] = await Promise.all([
-      fetch('https://api.coingecko.com/api/v3/exchanges/upbit/tickers?order=volume_desc&page=1').then(r=>{ if(!r.ok) throw 0; return r.json(); }),
-      fetch('https://api.coingecko.com/api/v3/exchanges/upbit/tickers?order=volume_desc&page=2').then(r=>r.ok?r.json():{tickers:[]}).catch(()=>({tickers:[]})),
-      fetch('https://api.binance.com/api/v3/ticker/price').then(r=>r.json())
-    ]);
+    const bn = await fetch('https://api.binance.com/api/v3/ticker/price').then(r=>r.json());
+    const tickers = [];
+    for(let p=1; p<=3; p++){   // 300개까지 순차 수집 (호출 제한 안 걸리게 천천히)
+      try{
+        const r = await fetch('https://api.coingecko.com/api/v3/exchanges/upbit/tickers?order=volume_desc&page='+p);
+        if(!r.ok) break;
+        const j = await r.json();
+        if(!(j.tickers||[]).length) break;
+        tickers.push(...j.tickers);
+        await new Promise(s=>setTimeout(s, 900));
+      }catch(e){ break; }
+    }
+    if(!tickers.length) throw 0;
     const px = {}; bn.forEach(x=>px[x.symbol]=+x.price);
     const rows = []; const seen = new Set();
-    [...(cg1.tickers||[]), ...(cg2.tickers||[])].forEach(t=>{
+    tickers.forEach(t=>{
       if(seen.has(t.base)) return; seen.add(t.base);
       if(t.target!=='KRW' || t.base==='USDT') return;
       const bp = px[t.base+'USDT'];
