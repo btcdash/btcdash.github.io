@@ -163,7 +163,28 @@
       const lastday = localStorage.getItem('lastday');
       if(lastday && lastday !== today) window.__sendTag('revisit');
       localStorage.setItem('lastday', today);
-      setTimeout(()=>window.__sendTag('stay3m'), 180000);
+      // 3분+ 체류: 화면에 실제 표시된 시간 누적 180초 (탭만 열어둔 시간 제외)
+      let visSec = 0;
+      const visT = setInterval(()=>{
+        if(document.visibilityState==='visible' && ++visSec >= 180){ clearInterval(visT); window.__sendTag('stay3m'); }
+      }, 1000);
+      // 페이지 체류시간 — 화면 표시 시간만 재서 GA4 + 관리자 집계 양쪽 전송
+      let ttStart = document.visibilityState==='visible' ? Date.now() : 0;
+      const ttFlush = (final)=>{
+        if(!ttStart) return;
+        const sec = Math.round((Date.now()-ttStart)/1000);
+        ttStart = (!final && document.visibilityState==='visible') ? Date.now() : 0;
+        if(sec < 3 || sec > 7200) return;
+        try{ gtag('event','tab_time',{tab_name:'calc_land', seconds: sec, value: sec}); }catch(e){}
+        const body = JSON.stringify({v: vid, tt: 'calc_land', s: sec});
+        if(final && navigator.sendBeacon) navigator.sendBeacon('https://ntfy.sh/rich-btcdash-visit-x8a2k9', body);
+        else fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body, keepalive:true}).catch(()=>{});
+      };
+      document.addEventListener('visibilitychange', ()=>{
+        if(document.visibilityState==='hidden') ttFlush(true);
+        else if(!ttStart) ttStart = Date.now();
+      });
+      window.addEventListener('pagehide', ()=>ttFlush(true));
     }
   }catch(e){}
 </script>

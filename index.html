@@ -2011,8 +2011,34 @@ try{
     const lastday = localStorage.getItem('lastday');
     if(lastday && lastday !== today) window.__sendTag('revisit');   // 어제 이전에 온 적 있는 사람
     localStorage.setItem('lastday', today);
-    setTimeout(()=>window.__sendTag('stay3m'), 180000);             // 3분 이상 머문 사람
+    // 3분+ 체류: 화면에 실제 표시된 시간 누적 180초 (탭만 열어두고 딴짓한 시간은 제외)
+    let visSec = 0;
+    const visT = setInterval(()=>{
+      if(document.visibilityState==='visible' && ++visSec >= 180){ clearInterval(visT); window.__sendTag('stay3m'); }
+    }, 1000);
   }
+}catch(e){}
+// ---- 콘텐츠(탭)별 체류시간 — 화면에 실제 표시된 시간만 초 단위로 재서 GA4 + 관리자 집계 양쪽 전송 ----
+try{
+  const TT_URL = 'https://ntfy.sh/rich-btcdash-visit-x8a2k9';
+  let ttTab = 'home';
+  let ttStart = document.visibilityState==='visible' ? Date.now() : 0;
+  const ttFlush = (final)=>{
+    if(!ttStart) return;
+    const sec = Math.round((Date.now()-ttStart)/1000);
+    ttStart = (!final && document.visibilityState==='visible') ? Date.now() : 0;
+    if(sec < 3 || sec > 7200 || IS_OWNER) return;   // 3초 미만 노이즈·비정상 값·관리자 기기 제외
+    try{ gtag('event','tab_time',{tab_name: ttTab, seconds: sec, value: sec}); }catch(e){}
+    const body = JSON.stringify({v: localStorage.getItem('vid')||'anon', tt: ttTab, s: sec});
+    if(final && navigator.sendBeacon) navigator.sendBeacon(TT_URL, body);   // 페이지 떠날 땐 beacon으로 확실히 전송
+    else fetch(TT_URL, {method:'POST', body, keepalive:true}).catch(()=>{});
+  };
+  window.__ttSwitch = p => { if(p !== ttTab){ ttFlush(false); ttTab = p; } };
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState==='hidden') ttFlush(true);        // 백그라운드로 내려가면 초시계 정지
+    else if(!ttStart) ttStart = Date.now();                       // 다시 돌아오면 이어서 잼
+  });
+  window.addEventListener('pagehide', ()=>ttFlush(true));
 }catch(e){}
 // 실시간 접속자 하트비트 — 화면이 켜져 있는 동안 60초마다 (관리자 /방문 으로만 조회)
 try{
@@ -2417,6 +2443,8 @@ const gaEvt = (n, p) => { try { gtag('event', n, p || {}); } catch (e) {} };
 
 function showPage(p){
   gaEvt('tab_view', { tab_name: p });
+  if(window.__ttSwitch) window.__ttSwitch(p);   // 탭 바뀌면 이전 탭 체류시간 마감
+
   window.__tabsSent = window.__tabsSent || new Set();
   if(p!=='home' && window.__sendTag && !window.__tabsSent.has(p)){ window.__tabsSent.add(p); window.__sendTag('t_'+p); }
   const home = p==='home';
