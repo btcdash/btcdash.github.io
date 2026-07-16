@@ -139,7 +139,7 @@
     const avg=(a1+a2)/(q1+q2);
     const drop=(1-avg/p1)*100;
     const need=(avg/p2-1)*100;
-    if(!window.__calcTracked){ window.__calcTracked=true; try{gtag('event','calc_use',{tool:'multa_landing'})}catch(e){} }
+    if(!window.__calcTracked){ window.__calcTracked=true; try{gtag('event','calc_use',{tool:'multa_landing'})}catch(e){}; if(window.__sendTag) window.__sendTag('calc'); }
     const f=n=>n>=100?n.toLocaleString(undefined,{maximumFractionDigits:1}):n.toLocaleString(undefined,{maximumFractionDigits:4});
     $('rAvg').textContent=f(avg);
     $('rDrop').textContent='-'+drop.toFixed(2)+'%';
@@ -158,6 +158,12 @@
       const r = document.referrer || '';
       const eng = srcTag ? srcTag : /instagram\./.test(r) ? 'insta' : /google\./.test(r) ? 's_g' : /search\.naver|naver\.com\/search/.test(r) ? 's_n' : /daum\.net/.test(r) ? 's_d' : '';
       if(eng) fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid, c:eng})}).catch(()=>{});
+      window.__sendTag = t => fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid, c:t})}).catch(()=>{});
+      const today = new Date().toISOString().slice(0,10);
+      const lastday = localStorage.getItem('lastday');
+      if(lastday && lastday !== today) window.__sendTag('revisit');
+      localStorage.setItem('lastday', today);
+      setTimeout(()=>window.__sendTag('stay3m'), 180000);
     }
   }catch(e){}
 </script>

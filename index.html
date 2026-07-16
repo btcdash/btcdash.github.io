@@ -1928,8 +1928,9 @@ function gHistRender(){
       `<b class="${cls(h.pnl)}">${(h.pnl>=0?'+':'')+krwFmt(h.pnl)}</b></div>`;
   }).join('');
 }
-$('gLong').onclick = ()=>{ try{gtag('event','game_bet',{side:'long'})}catch(e){}; gOpenPos(1); };
-$('gShort').onclick = ()=>{ try{gtag('event','game_bet',{side:'short'})}catch(e){}; gOpenPos(-1); };
+const gameTag = ()=>{ if(window.__sendTag && !window.__gameSent){ window.__gameSent=1; window.__sendTag('game'); } };
+$('gLong').onclick = ()=>{ try{gtag('event','game_bet',{side:'long'})}catch(e){}; gameTag(); gOpenPos(1); };
+$('gShort').onclick = ()=>{ try{gtag('event','game_bet',{side:'short'})}catch(e){}; gameTag(); gOpenPos(-1); };
 $('gClose').onclick = ()=>gClosePos();
 $('gDca').onclick = gDca;
 function gSyncPct(){
@@ -2004,6 +2005,13 @@ try{
     const r = document.referrer || '';
     const eng = srcTag ? srcTag : /instagram\./.test(r) ? 'insta' : /google\./.test(r) ? 's_g' : /search\.naver|naver\.com\/search/.test(r) ? 's_n' : /daum\.net/.test(r) ? 's_d' : '';
     if(eng) fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid, c:eng})}).catch(()=>{});
+    // 행동 태그 전송기 (탭·게임·재방문·체류 — 중계기가 방문자별 하루 1회로 중복 제거함)
+    window.__sendTag = t => fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid, c:t})}).catch(()=>{});
+    const today = new Date().toISOString().slice(0,10);
+    const lastday = localStorage.getItem('lastday');
+    if(lastday && lastday !== today) window.__sendTag('revisit');   // 어제 이전에 온 적 있는 사람
+    localStorage.setItem('lastday', today);
+    setTimeout(()=>window.__sendTag('stay3m'), 180000);             // 3분 이상 머문 사람
   }
 }catch(e){}
 // 실시간 접속자 하트비트 — 화면이 켜져 있는 동안 60초마다 (관리자 /방문 으로만 조회)
@@ -2407,6 +2415,8 @@ const gaEvt = (n, p) => { try { gtag('event', n, p || {}); } catch (e) {} };
 
 function showPage(p){
   gaEvt('tab_view', { tab_name: p });
+  window.__tabsSent = window.__tabsSent || new Set();
+  if(p!=='home' && window.__sendTag && !window.__tabsSent.has(p)){ window.__tabsSent.add(p); window.__sendTag('t_'+p); }
   const home = p==='home';
   $('adwrap').style.display = '';   // 홍보 배너는 모든 탭에서 노출
   document.querySelector('.cols').style.display = home?'':'none';
