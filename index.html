@@ -8,6 +8,7 @@
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', 'AW-16326833027');
+  gtag('config', 'G-R62BXFVW67');
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1927,8 +1928,8 @@ function gHistRender(){
       `<b class="${cls(h.pnl)}">${(h.pnl>=0?'+':'')+krwFmt(h.pnl)}</b></div>`;
   }).join('');
 }
-$('gLong').onclick = ()=>gOpenPos(1);
-$('gShort').onclick = ()=>gOpenPos(-1);
+$('gLong').onclick = ()=>{ try{gtag('event','game_bet',{side:'long'})}catch(e){}; gOpenPos(1); };
+$('gShort').onclick = ()=>{ try{gtag('event','game_bet',{side:'short'})}catch(e){}; gOpenPos(-1); };
 $('gClose').onclick = ()=>gClosePos();
 $('gDca').onclick = gDca;
 function gSyncPct(){
@@ -2401,7 +2402,11 @@ document.querySelectorAll('.jump a').forEach(a=>{ a.onclick = ()=>showPage('char
 
 // ---- 상단 탭 전환 (대시보드 / 차트 / 뉴스 / 매매도구) ----
 let chartBuilt = false;
+// GA 이벤트 헬퍼 (차단기 등으로 gtag 없어도 사이트는 정상 동작)
+const gaEvt = (n, p) => { try { gtag('event', n, p || {}); } catch (e) {} };
+
 function showPage(p){
+  gaEvt('tab_view', { tab_name: p });
   const home = p==='home';
   $('adwrap').style.display = '';   // 홍보 배너는 모든 탭에서 노출
   document.querySelector('.cols').style.display = home?'':'none';

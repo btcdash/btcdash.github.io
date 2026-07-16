@@ -8,6 +8,7 @@
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', 'AW-16326833027');
+  gtag('config', 'G-R62BXFVW67');
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -138,6 +139,7 @@
     const avg=(a1+a2)/(q1+q2);
     const drop=(1-avg/p1)*100;
     const need=(avg/p2-1)*100;
+    if(!window.__calcTracked){ window.__calcTracked=true; try{gtag('event','calc_use',{tool:'multa_landing'})}catch(e){} }
     const f=n=>n>=100?n.toLocaleString(undefined,{maximumFractionDigits:1}):n.toLocaleString(undefined,{maximumFractionDigits:4});
     $('rAvg').textContent=f(avg);
     $('rDrop').textContent='-'+drop.toFixed(2)+'%';
