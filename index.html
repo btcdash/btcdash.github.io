@@ -2301,6 +2301,7 @@ $('vMore').onclick = ()=>{
 };
 $('vBtn').onclick = ()=>{
   vOpen = !vOpen;
+  if(vOpen){ gaEvt('judge_open'); if(window.__sendTag) window.__sendTag('judge'); }
   $('vCard').style.display = vOpen ? '' : 'none';
   if(vOpen){ vCompute(); vTimer = setInterval(vCompute, 15_000); }
   else clearInterval(vTimer);
@@ -2398,6 +2399,7 @@ async function pdRun(){
 $('pdGo').onclick = ()=>{ pdRun(); clearInterval(pdTimer); pdTimer = setInterval(()=>{ if(pdOpen && $('pdEntry').value) pdRun(); }, 20_000); };
 $('pdBtn').onclick = ()=>{
   pdOpen = !pdOpen;
+  if(pdOpen){ gaEvt('mypos_open'); if(window.__sendTag) window.__sendTag('mypos'); }
   $('pdCard').style.display = pdOpen ? '' : 'none';
   if(pdOpen){
     const s = JSON.parse(localStorage.getItem('pdPos')||'null');
