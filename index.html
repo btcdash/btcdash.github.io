@@ -1998,9 +1998,10 @@ try{
   if(!vid){ vid = Math.random().toString(36).slice(2,12); localStorage.setItem('vid', vid); }
   if(!IS_OWNER){
     fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid})}).catch(()=>{});
-    // 검색엔진 통해 들어온 방문은 따로 집계 (구글/네이버/다음)
+    // 유입 출처 집계: ?src= 꼬리표 우선(인스타 등 referrer 안 주는 앱 대응), 없으면 referrer로 검색엔진 판별
+    const srcTag = (new URLSearchParams(location.search).get('src') || '').replace(/[^a-z0-9_]/gi,'').slice(0,8);
     const r = document.referrer || '';
-    const eng = /google\./.test(r) ? 's_g' : /search\.naver|naver\.com\/search/.test(r) ? 's_n' : /daum\.net/.test(r) ? 's_d' : '';
+    const eng = srcTag ? srcTag : /instagram\./.test(r) ? 'insta' : /google\./.test(r) ? 's_g' : /search\.naver|naver\.com\/search/.test(r) ? 's_n' : /daum\.net/.test(r) ? 's_d' : '';
     if(eng) fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid, c:eng})}).catch(()=>{});
   }
 }catch(e){}

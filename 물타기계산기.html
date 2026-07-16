@@ -152,8 +152,9 @@
       let vid = localStorage.getItem('vid');
       if(!vid){ vid = Math.random().toString(36).slice(2,12); localStorage.setItem('vid', vid); }
       fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid})}).catch(()=>{});
+      const srcTag = (new URLSearchParams(location.search).get('src') || '').replace(/[^a-z0-9_]/gi,'').slice(0,8);
       const r = document.referrer || '';
-      const eng = /google\./.test(r) ? 's_g' : /search\.naver|naver\.com\/search/.test(r) ? 's_n' : /daum\.net/.test(r) ? 's_d' : '';
+      const eng = srcTag ? srcTag : /instagram\./.test(r) ? 'insta' : /google\./.test(r) ? 's_g' : /search\.naver|naver\.com\/search/.test(r) ? 's_n' : /daum\.net/.test(r) ? 's_d' : '';
       if(eng) fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid, c:eng})}).catch(()=>{});
     }
   }catch(e){}
