@@ -616,6 +616,11 @@
   .ad{display:none;position:relative;padding:26px 30px 22px;cursor:pointer;overflow:hidden}
   .ad.on{display:block;animation:adfade .5s ease}
   @keyframes adfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  /* 스와이프 시엔 방향에 맞춰 옆에서 슬라이드 */
+  .ad.on.sl{animation:adslideL .28s ease}
+  .ad.on.sr{animation:adslideR .28s ease}
+  @keyframes adslideL{from{opacity:0;transform:translateX(46px)}to{opacity:1;transform:none}}
+  @keyframes adslideR{from{opacity:0;transform:translateX(-46px)}to{opacity:1;transform:none}}
   .ad-row{display:flex;align-items:center;justify-content:space-between;gap:24px;position:relative;z-index:2}
   .ad .ad-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:5px 14px;border-radius:20px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff;margin-bottom:12px}
   .ad .ad-title{font-size:34px;font-weight:900;letter-spacing:-1px;line-height:1.15;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.35)}
@@ -643,6 +648,13 @@
   .ad-1{background:radial-gradient(900px 300px at 85% -20%,#8f6a2a55 0%,transparent 60%),radial-gradient(700px 260px at 10% 120%,#8f5c0e44 0%,transparent 60%),linear-gradient(115deg,#16110a 0%,#2b1e08 55%,#4a3005 100%)}
   .ad-3{background:radial-gradient(900px 300px at 85% -20%,#1f8f4a55 0%,transparent 60%),radial-gradient(700px 260px at 10% 120%,#0e8f5a44 0%,transparent 60%),linear-gradient(115deg,#06180d 0%,#0a2e18 55%,#0f4d27 100%)}
   .ad-3 .ad-cta{background:linear-gradient(92deg,#3ddc97,#22c55e);color:#03301a}
+  /* 라운지 최신 메시지 티커 (배너 바로 아래 한 줄) */
+  .lg-tick{display:flex;align-items:center;gap:10px;margin:-12px 0 22px;padding:9px 13px;border:1px solid var(--border);border-radius:11px;background:var(--surface);cursor:pointer;text-decoration:none}
+  .lg-tick .b{flex-shrink:0;font-size:11.5px;font-weight:800;color:#3ddc97;display:flex;gap:5px;align-items:center}
+  .lg-tick .b i{font-style:normal;font-size:9px;letter-spacing:1px;background:#f6465d;color:#fff;border-radius:4px;padding:1px 5px;animation:chatpulse 2s infinite}
+  .lg-tick .m{flex:1;min-width:0;font-size:12px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .lg-tick .go{flex-shrink:0;font-size:11.5px;color:var(--ink3);font-weight:700}
+  .lg-tick:hover .go{color:var(--accent)}
   .ad-dots{position:absolute;right:14px;bottom:10px;display:flex;gap:6px;z-index:3}
   .ad-dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35);cursor:pointer}
   .ad-dots i.on{background:#fff}
@@ -770,6 +782,13 @@
 
     <div class="ad-dots"><i class="on" onclick="showAd(0)"></i><i onclick="showAd(1)"></i><i onclick="showAd(2)"></i></div>
   </div>
+
+  <!-- 라운지 최신 메시지 티커 — 맨 아래 묻힌 라운지를 첫 화면에서 보여주는 미끼 -->
+  <a class="lg-tick" id="lgTick" href="#secChat" style="display:none">
+    <span class="b">💬 라운지 <i>LIVE</i></span>
+    <span class="m" id="lgTickTxt"></span>
+    <span class="go">보기 →</span>
+  </a>
 
   <div class="cols">
 
@@ -1284,14 +1303,32 @@ if (TELEGRAM_URL !== '#'){ $('ad1').href = TELEGRAM_URL; }
 // ---- 배너 롤링 (텔레그램·탭비트 8초, 챌린지는 12초로 조금 더 오래) ----
 let adIdx = 0, adTimer = null;
 const AD_DUR = [8000, 8000, 12000];
-function showAd(i){
+function showAd(i, dir){
   adIdx = i;
-  document.querySelectorAll('.ad').forEach((el,n)=>el.classList.toggle('on', n===i));
+  document.querySelectorAll('.ad').forEach((el,n)=>{
+    el.classList.remove('sl','sr');
+    el.classList.toggle('on', n===i);
+    if(n===i && dir) el.classList.add(dir==='l'?'sl':'sr');   // 스와이프 방향으로 슬라이드
+  });
   document.querySelectorAll('.ad-dots i').forEach((el,n)=>el.classList.toggle('on', n===i));
   clearTimeout(adTimer);
   adTimer = setTimeout(()=>showAd((adIdx+1)%3), AD_DUR[i] || 8000);
 }
 adTimer = setTimeout(()=>showAd(1), AD_DUR[0]);
+// 배너 좌우 스와이프 (모바일) — 스와이프 직후 링크 오클릭 방지 포함
+(function(){
+  const w = $('adwrap'); if(!w) return;
+  let sx=0, sy=0, swiped=false;
+  w.addEventListener('touchstart', e=>{ sx=e.touches[0].clientX; sy=e.touches[0].clientY; }, {passive:true});
+  w.addEventListener('touchend', e=>{
+    const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>45 && Math.abs(dx)>Math.abs(dy)*1.5){
+      swiped=true; setTimeout(()=>{ swiped=false; }, 400);
+      showAd((adIdx + (dx<0?1:2))%3, dx<0?'l':'r');
+    }
+  }, {passive:true});
+  w.addEventListener('click', e=>{ if(swiped){ e.preventDefault(); e.stopPropagation(); } }, true);
+})();
 
 // ---- BTC 헤더 가격 (10초마다) ----
 async function loadPrices(){
@@ -1763,8 +1800,23 @@ async function loadChat(){
     // 사진 로딩이 늦어도 확실히 바닥에 붙도록 여러 번 보정
     toBottom(); requestAnimationFrame(toBottom);
     [200, 600, 1200, 2500].forEach(ms=>setTimeout(toBottom, ms));
+    // 첫 화면 티커에 최신 메시지 반영
+    const last = d.messages[d.messages.length-1];
+    if(last && $('lgTick')){
+      const who = (last.name==='Group') ? '[리치]' : last.name;
+      $('lgTickTxt').textContent = who+': '+(last.text ? last.text.replace(/\s+/g,' ') : '📷 사진');
+      $('lgTick').style.display='flex';
+    }
   }catch(e){ console.error('[소통방]', e); }
 }
+// 티커 클릭 → (다른 탭이면 홈으로 전환 후) 라운지 패널로 스크롤
+$('lgTick').onclick = e=>{
+  e.preventDefault();
+  const homeBtn = document.querySelector('.topnav button[data-page="home"]');
+  if(homeBtn && !homeBtn.classList.contains('on')) homeBtn.click();
+  setTimeout(()=>{ $('secChat').scrollIntoView({behavior:'smooth',block:'start'}); }, 60);
+  try{ gaEvt('lounge_tick'); }catch(err){}
+};
 
 // ---- 효과음 (버튼으로 켜고 끔) ----
 let SND = localStorage.getItem('snd')==='1';
