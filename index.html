@@ -440,6 +440,10 @@
   .bigcta.green .dot{background:#3ddc97} .bigcta.green .ping{border:1.5px solid #3ddc97}
   .bigcta.green .rx{color:#4f7a63} .bigcta.green .rx i{color:#7ef0bb}
   /* 챌린지 유도줄 (판정쇼·클리닉 결과 하단) */
+  .we-hitline{margin-top:10px;padding:8px 11px;border:1px solid #2a3140;border-left:2px solid #f0b90b;border-radius:9px;background:rgba(240,185,11,.04)}
+  .we-hitline .h1{font-size:12.5px;color:#d8dee8}
+  .we-hitline .h1 b{color:#ffd452;font-weight:800}
+  .we-hitline .h2{font-size:10px;color:#8b949e;margin-top:2px}
   .chg-cta{position:relative;overflow:hidden;margin-top:12px;border:1px solid #3a3420;background:linear-gradient(180deg,rgba(240,185,11,.05),transparent);border-radius:11px;padding:12px 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
   /* 등장 시 1회성 주목 모션 — 금색 글로우 2회 맥동 + 빛줄기 1회 통과 */
   .chg-cta.flash{animation:chgglow 2.2s ease-out .15s}
@@ -962,7 +966,12 @@
             <div class="we-vlb" id="weVlb">VERDICT · 28 SIGNALS</div>
           </div>
         </div>
-        <div class="we-side"><div class="we-fwin"><div class="we-fmask"></div><div class="we-feed" id="weFeed"></div></div></div>
+        <div class="we-side"><div class="we-fwin"><div class="we-fmask"></div><div class="we-feed" id="weFeed"></div></div>
+          <div class="we-hitline" id="vHit" style="display:none">
+            <div class="h1">🎯 <span id="vHitTx"></span></div>
+            <div class="h2">실제 시세 데이터로 채점한 기록이나 매매 권유가 아닙니다</div>
+          </div>
+        </div>
       </div>
       <div class="we-sum" id="weSum"></div>
       <div class="we-src" id="weSrc"><span class="we-srcdot"></span><span>실시간 데이터 · <b>바이낸스</b> · <b>업비트</b> · <b>코인게코</b> 수신 — <span class="ago" id="weAgo">방금 전</span> 갱신</span></div>
@@ -1985,6 +1994,8 @@ const GAME_START = 1_000_000;                    // 시작 시드 100만원
 const GAME_FEE = 0.0005;                         // 편도 수수료 0.05%
 const RANK_TOPIC = 'rich-btcdash-rank-x8a2k9';
 const RANK_RAW = 'https://gist.githubusercontent.com/btcdash/2dbcf6ec8074b85380d3cf119f6f1091/raw/rank.json';
+const HIT_TOPIC = 'rich-btcdash-hit-x8a2k9';
+const HIT_RAW = 'https://gist.githubusercontent.com/btcdash/2dbcf6ec8074b85380d3cf119f6f1091/raw/hit.json';
 let G;
 try{ G = JSON.parse(localStorage.getItem('richgame')||'null'); }catch(e){ G=null; }
 if(!G) G = {eq:GAME_START, w:0, l:0, pos:null, nick:'', key:'', last:null, hist:[]};
@@ -2512,6 +2523,7 @@ async function vCompute(){
     const k = await fetch('https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1h&limit=210').then(r=>r.json());
     const closes = k.map(c=>+c[4]), highs = k.map(c=>+c[2]), lows = k.map(c=>+c[3]), vols = k.map(c=>+c[5]);
     const last = closes[closes.length-1];
+    window.__vPx = last;
     const ma = n => closes.slice(-n).reduce((a,b)=>a+b,0)/n;
     const ma20=ma(20), ma50=ma(50), ma200=ma(200);
     // 이동평균 배열
@@ -2728,6 +2740,33 @@ const V_DIRM={'🚀':'up','📈':'up','🩸':'down','📉':'down','🚫':'warn',
 const V_COL={up:['#f6465d','246,70,93'],down:['#3b82f6','59,130,246'],warn:['#f59e0b','245,158,11'],neutral:['#b7c0cc','139,148,158']};
 const V_TAGT={up:'롱',down:'숏',warn:'주의',neutral:'중립'};
 const V_TAGC={up:'u',down:'d',warn:'w',neutral:'n0'};
+/* ── 판정 적중 기록부 — 판정을 본 순간을 익명 기록, 채점 결과는 gist에서 읽어 표시 ── */
+function vHitSend(em){
+  try{
+    if(IS_OWNER || !window.__vPx) return;
+    const now = Date.now(), lastT = +(localStorage.getItem('hitT')||0);
+    if(now - lastT < 3600_000) return;               // 같은 방문자는 1시간에 1건만
+    localStorage.setItem('hitT', String(now));
+    const dm = V_DIRM[em];
+    const d = dm==='up' ? 'L' : dm==='down' ? 'S' : 'N';   // 중립·주의는 N — 집계 제외, 관망 기록만
+    fetch('https://ntfy.sh/'+HIT_TOPIC, {method:'POST',
+      body: JSON.stringify({v: localStorage.getItem('vid')||'anon', d, p: window.__vPx})}).catch(()=>{});
+  }catch(e){}
+}
+async function vHitLoad(){
+  try{
+    const s = await fetch(HIT_RAW+'?ts='+Date.now()).then(r=>r.json());
+    if(s && (s.h|0)+(s.m|0) >= 1){ window.__vHitS = s; if(!vShowing) vHitRender(false); }
+  }catch(e){}
+}
+function vHitRender(anim){
+  const s = window.__vHitS; if(!s) return;
+  const n = (s.h|0)+(s.m|0);
+  $('vHitTx').innerHTML = '최근 12시간, 판정을 확인한 <b>'+n+'건</b> 기준 적중 <b>'+(s.h|0)+'건</b> · 적중률 <b>'+Math.round((s.h|0)/n*100)+'%</b>';
+  const el = $('vHit'); el.style.display='';
+  if(anim && window.gsap) gsap.fromTo(el,{opacity:0,y:6},{opacity:1,y:0,duration:.4,ease:'power2.out'});
+  else el.style.opacity=1;
+}
 /* 효과음 — 확정 조합: 틱A(전자 블립) + 딩동C(유리잔 팅) + 툭B(심장박동) */
 let vSndOn = localStorage.getItem('vSnd')!=='0';
 const vQuiet = !localStorage.getItem('vSndSeen');    // 첫 방문은 볼륨 축소, 재방문부터 원래 볼륨
@@ -2800,6 +2839,7 @@ function vSilent(data){
   $('weHead').setAttribute('opacity','0');
   vTickEls.forEach((t,i)=>t.setAttribute('stroke', i<V_NT*.27?'#f0b90b':'#f6465d'));
   ['weTag','weGrid','weSum','weSrc','vMore','vChg'].forEach(id=>{ $(id).style.opacity=1; });
+  vHitRender(false);
   document.querySelectorAll('.we-ck').forEach(el=>el.style.opacity=1);
   $('weCen').style.opacity=0;
   $('weVer').style.opacity=1;
@@ -2831,7 +2871,7 @@ function vPlayShow(data){
   $('weSum').innerHTML=data.sum;
   vVerdictPaint(data.verdict);
   gsap.set('#vCard',{opacity:0,y:10});
-  gsap.set(['#weVer','#weSum','#weGlow','#weTag','#weGrid','#vMore','#weSrc','#vChg'],{opacity:0});
+  gsap.set(['#weVer','#weSum','#weGlow','#weTag','#weGrid','#vMore','#weSrc','#vChg','#vHit'],{opacity:0});
   gsap.set(feed,{y:0});
   gsap.set('#weCen',{opacity:1,y:0,scale:1});
   gsap.set('#weUnd',{scaleX:0});
@@ -2875,7 +2915,7 @@ function vPlayShow(data){
   tle.set(cur,{opacity:0},tV-.1);
   tle.to('#weCen',{y:-18,opacity:0,duration:.32,ease:'power3.in'},tV);
   tle.set('#weVer',{opacity:1},tV+.16);
-  tle.call(()=>{ vThud(); },null,tV+.2);
+  tle.call(()=>{ vThud(); vHitSend(data.verdict.e); },null,tV+.2);   // 판정이 보이는 순간 = 적중 기록 시점
   tle.fromTo('#weVt',{y:20,opacity:0},{y:0,opacity:1,duration:.5,ease:'power3.out'},tV+.16);
   tle.to('#weVlb',{opacity:1,letterSpacing:'3px',duration:.55,ease:'power2.out'},tV+.35);
   tle.to('#weGlow',{opacity:1,duration:.7,ease:'sine.out'},tV+.25);
@@ -2890,6 +2930,7 @@ function vPlayShow(data){
   tle.call(()=>{ const el=$('vChg'); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
     el.scrollIntoView({behavior:'smooth',block:'nearest'});               // 모바일에서 유도줄이 화면 밖에 남는 것 방지
   },null,tV+.95);
+  tle.call(()=>{ vHitRender(true); },null,tV+1.05);
 }
 $('vMore').onclick = ()=>{
   vMoreOpen=!vMoreOpen;
@@ -2918,6 +2959,7 @@ $('vBtn').onclick = ()=>{
   if(vOpen){
     vShowNext = true;                              // 열 때만 판정쇼, 15초 자동 갱신은 조용히
     if(vSndOn){ try{ vAC(); }catch(e){} }
+    vHitLoad();                                    // 적중 기록 미리 로드 (쇼 끝날 때 표시)
     vCompute(); vTimer = setInterval(vCompute, 15_000);
     setTimeout(()=>$('vBtn').scrollIntoView({behavior:'smooth',block:'start'}), 80);   // 카드가 화면 밖이라 버튼째 따라 내려감
   }
