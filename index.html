@@ -177,6 +177,13 @@
   .topnav button:hover{color:var(--ink)}
   .topnav button.on{color:var(--accent);border-bottom-color:var(--accent)}
   .topnav button.on small{color:var(--accent);opacity:.75}
+  /* 모의게임 탭: 게임이 맨 아래로 내려가는 좁은 화면(≤1000px)에서만 노출 */
+  .topnav .mob-tab{display:none}
+  @media(max-width:1000px){.topnav .mob-tab{display:block}}
+  /* 게임 탭 선택 시: 게임 박스만 전체 폭으로 */
+  body.game-tab .cols>div{display:none}
+  body.game-tab .chatbox{display:none}
+  body.game-tab .gamebox{grid-column:1/-1;order:1}
   @media(max-width:620px){
     /* 모바일: 부가 설명은 숨기고 탭 5개가 전부 한 화면에 보이게 (숨은 탭이 없도록) */
     .topnav{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;
@@ -185,6 +192,7 @@
     .topnav{gap:0}
     .topnav button{flex:none;padding:9px 3px 11px;font-size:12px;white-space:nowrap}
     .topnav button small{display:none}
+    .topnav .lf{display:none}   /* 좁은 화면에선 긴 라벨 축약 (주요 뉴스→뉴스, 매매 도구→도구) */
   }
 
   .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
@@ -705,8 +713,9 @@
     <button class="on" data-page="home"><small>시세 · 고래 · 게임 · 라운지</small>📊 대시보드</button>
     <button data-page="chart"><small>트레이딩뷰 · 보조지표 원클릭설정</small>📈 차트</button>
     <button data-page="kimp"><small>김치프리미엄 · 테더김프</small>🇰🇷 김프</button>
-    <button data-page="news"><small>자동선별 · 쉬운해석</small>📰 주요 뉴스</button>
-    <button data-page="calc"><small>계산기 · 물타기 · 펀딩</small>🛠️ 매매 도구</button>
+    <button data-page="news"><small>자동선별 · 쉬운해석</small>📰 <span class="lf">주요 </span>뉴스</button>
+    <button data-page="calc"><small>계산기 · 물타기 · 펀딩</small>🛠️ <span class="lf">매매 </span>도구</button>
+    <button data-page="game" class="mob-tab"><small>가상 시드 매매 연습</small>🎮 모의게임</button>
   </nav>
 
   <!-- 롤링 광고 배너 -->
@@ -1286,9 +1295,8 @@
   </div>
 
   <footer>
-    본 사이트의 모든 정보는 투자 참고용이며, 투자 권유나 매매 신호가 아닙니다. 암호화폐 선물 거래는 원금 전액 손실 위험이 있습니다.
-    데이터 출처: Binance · Upbit · alternative.me · 환율(open.er-api.com)<br>
-    사이트명: 리치 트레이딩 라운지 · 운영자: 박준현 · 문의: pkpkwnsgus@naver.com
+    본 사이트의 모든 정보는 투자 참고용이며, 투자 권유나 매매 신호가 아닙니다. 암호화폐 선물 거래는 원금 전액 손실 위험이 있습니다.<br>
+    데이터 출처: Binance · Upbit · alternative.me · 환율(open.er-api.com) · 사이트명: 리치 트레이딩 라운지
   </footer>
 </div>
 
@@ -3147,9 +3155,10 @@ function showPage(p){
 
   window.__tabsSent = window.__tabsSent || new Set();
   if(p!=='home' && window.__sendTag && !window.__tabsSent.has(p)){ window.__tabsSent.add(p); window.__sendTag('t_'+p); }
-  const home = p==='home';
+  const home = p==='home', game = p==='game';
   $('adwrap').style.display = '';   // 홍보 배너는 모든 탭에서 노출
-  document.querySelector('.cols').style.display = home?'':'none';
+  document.querySelector('.cols').style.display = (home||game)?'':'none';
+  document.body.classList.toggle('game-tab', game);   // 게임 탭: .cols 안에서 게임 박스만 노출
   $('pageChart').style.display = p==='chart'?'':'none';
   $('pageKimp').style.display = p==='kimp'?'':'none';
   if(p==='kimp' && !kpLoaded){ kpLoaded = true; loadKimpTable(); }
@@ -3171,6 +3180,7 @@ document.querySelector('.topnav').addEventListener('click', e=>{
 if(location.hash === '#calc') showPage('calc');
 else if(location.hash === '#news') showPage('news');
 else if(location.hash === '#chart') showPage('chart');
+else if(location.hash === '#game') showPage('game');
 
 // ---- 차트 탭 사이드: 실시간 핵심 지표 스트립 ----
 function csRender(){
