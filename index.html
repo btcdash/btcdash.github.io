@@ -673,7 +673,7 @@
       <div class="updated" id="updated">불러오는 중…</div>
     </div>
     <div class="cta-group">
-      <button class="cta ask" id="sndBtn" title="고래체결·소통방·게임 효과음">🔇 소리</button>
+      <button class="cta ask" id="sndBtn" title="고래체결·라운지·게임 효과음">🔇 소리</button>
       <a class="cta ask" href="https://telegram.me/richtrading_support_bot" target="_blank">💬 문의·건의</a>
       <a class="cta" id="refLink" href="https://telegram.me/richtrading_support_bot" target="_blank">🎁 거래소 혜택 문의 →</a>
     </div>
@@ -681,7 +681,7 @@
 
   <!-- 상단 탭 -->
   <nav class="topnav">
-    <button class="on" data-page="home"><small>시세 · 고래 · 게임 · 소통방</small>📊 대시보드</button>
+    <button class="on" data-page="home"><small>시세 · 고래 · 게임 · 라운지</small>📊 대시보드</button>
     <button data-page="chart"><small>트레이딩뷰 · 보조지표 원클릭설정</small>📈 차트</button>
     <button data-page="kimp"><small>김치프리미엄 · 테더김프</small>🇰🇷 김프</button>
     <button data-page="news"><small>자동선별 · 쉬운해석</small>📰 주요 뉴스</button>
@@ -702,10 +702,10 @@
       <div class="ad-row">
         <div>
           <span class="ad-badge">🔥 시황부터 챌린지까지, 트레이딩의 모든 것</span>
-          <div class="ad-title"><span class="grad">리치 트레이딩</span> 텔레그램 채널</div>
+          <div class="ad-title">텔레그램 <span class="grad">리치 라운지</span></div>
           <div class="ad-sub">실시간 시황부터 챌린지, 지표·전자책 자료까지 한 곳에서!</div>
         </div>
-        <span class="ad-cta">✈️ 리치 채널 바로가기 →</span>
+        <span class="ad-cta">✈️ 리치 라운지 입장하기 →</span>
       </div>
       <div class="ad-feats">
         <div class="f"><i>⚡</i><div><b>실시간 시황</b><span>시장 흐름을 가장 빠르게 브리핑</span></div></div>
@@ -1038,9 +1038,9 @@
 
   <!-- 실시간 소통방 패널 -->
   <aside class="chatbox" id="secChat">
-    <div class="chat-head">💬 [리치] 실시간 소통방 <span class="chat-live">LIVE</span></div>
+    <div class="chat-head">💬 [리치] 라운지 <span class="chat-live">LIVE</span></div>
     <div class="chat-list" id="chatList"><div class="err">불러오는 중…</div></div>
-    <a class="chat-join" href="https://t.me/+lwamipsqA29hYmY1" target="_blank">소통방 참여하기 →<small>실시간 시황 브리핑 · 지표·전자책 자료실 포함</small></a>
+    <a class="chat-join" href="https://t.me/+lwamipsqA29hYmY1" target="_blank">리치 라운지 입장하기 →<small>실시간 시황 브리핑 · 지표·전자책 자료실 포함</small></a>
   </aside>
 
   </div><!-- cols 끝 -->
@@ -1743,7 +1743,7 @@ async function loadChat(){
       n.appendChild(t); w.appendChild(n);
       if(m.img){                       // 텔레그램처럼 사진 먼저, 글은 그 아래
         const im=document.createElement('img'); im.className='chat-img';
-        im.src=m.img; im.alt='소통방 사진';
+        im.src=m.img; im.alt='라운지 사진';
         im.onclick=()=>window.open(m.img,'_blank');
         im.addEventListener('load', toBottom);   // 사진 하나 뜰 때마다 다시 맨 아래로 (밀림 방지)
         w.appendChild(im);
