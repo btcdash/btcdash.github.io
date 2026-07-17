@@ -174,10 +174,18 @@
 
   /* ===== 상단 탭 ===== */
   .topnav{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:20px}
-  .topnav button{background:none;border:0;color:var(--ink2);font-size:14px;font-weight:700;padding:8px 18px 11px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;text-align:center;transition:transform .08s ease;-webkit-tap-highlight-color:transparent}
+  .topnav button{position:relative;overflow:hidden;background:none;border:0;color:var(--ink2);font-size:14px;font-weight:700;padding:8px 18px 11px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;text-align:center;transition:transform .08s ease;-webkit-tap-highlight-color:transparent}
   .topnav button:active{transform:scale(.9)}
   .topnav button.on{animation:tabpop .18s ease}
   @keyframes tabpop{50%{transform:scale(1.07)}}
+  /* 탭한 지점에서 금색 물결이 퍼지는 리플 */
+  .tnav-rip{position:absolute;border-radius:50%;background:rgba(240,185,11,.35);transform:scale(0);animation:tnavrip .45s ease-out forwards;pointer-events:none}
+  @keyframes tnavrip{to{transform:scale(2.6);opacity:0}}
+  @media(max-width:760px){
+    .topnav button:active{transform:scale(.86)}
+    .topnav button.on{animation:tabpopm .22s ease}
+  }
+  @keyframes tabpopm{40%{transform:scale(1.14)}}
   .topnav button small{display:block;font-size:9.5px;font-weight:600;color:var(--ink3);margin-bottom:3px;letter-spacing:.2px}
   .topnav button:hover{color:var(--ink)}
   .topnav button.on{color:var(--accent);border-bottom-color:var(--accent)}
@@ -3188,7 +3196,16 @@ function showPage(p){
 }
 document.querySelector('.topnav').addEventListener('click', e=>{
   const b = e.target.closest('button'); if(!b) return;
-  try{ if(navigator.vibrate) navigator.vibrate(8); }catch(err){}   // 안드로이드 햅틱 (아이폰은 미지원)
+  try{ if(navigator.vibrate) navigator.vibrate(15); }catch(err){}   // 안드로이드 햅틱 (아이폰은 미지원)
+  // 탭한 지점에서 리플 생성
+  try{
+    const r=b.getBoundingClientRect(), size=Math.max(r.width,r.height);
+    const rip=document.createElement('span'); rip.className='tnav-rip';
+    rip.style.width=rip.style.height=size+'px';
+    rip.style.left=((e.clientX||r.left+r.width/2)-r.left-size/2)+'px';
+    rip.style.top=((e.clientY||r.top+r.height/2)-r.top-size/2)+'px';
+    b.appendChild(rip); setTimeout(()=>rip.remove(), 500);
+  }catch(err){}
   showPage(b.dataset.page);
 });
 if(location.hash === '#calc') showPage('calc');
