@@ -371,6 +371,9 @@
   .v-row .vj{font-weight:700;text-align:right;white-space:nowrap}
   .v-row .vj.up{color:var(--up)} .v-row .vj.down{color:var(--down)} .v-row .vj.neutral{color:var(--ink3)} .v-row .vj.warn{color:#f59e0b}
   .v-note{font-size:11px;color:var(--ink3);margin-top:10px;line-height:1.5}
+  .push-btn{width:100%;margin-top:10px;border:1px solid #3a3420;border-radius:9px;padding:9px;font-size:12px;font-weight:700;background:rgba(240,185,11,.07);color:#ffd452;cursor:pointer;font-family:inherit}
+  .push-btn:hover{border-color:#f0b90b}
+  .push-btn:disabled{color:#8a949e;border-color:var(--border);background:var(--surface2);cursor:default}
   .v-upd{font-size:11.5px;color:#22c55e;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:5px;animation:chatpulse 2s infinite}
   .v-more{width:100%;margin-top:10px;border:1px solid var(--border);border-radius:9px;padding:9px;font-size:12px;font-weight:700;background:var(--surface2);color:var(--ink2);cursor:pointer}
   .v-more:hover{color:var(--ink);border-color:var(--ink3)}
@@ -1011,6 +1014,7 @@
     <div class="brief-row"><span class="bl" id="briefPxL">밤사이</span><span id="briefPx">—</span></div>
     <div class="brief-row"><span class="bl">주요 뉴스</span><a id="briefNews" target="_blank" rel="noopener">수집 중…</a></div>
     <div class="brief-ev" id="briefEv">📅 발표 일정 확인 중…</div>
+    <button class="push-btn" id="pushBtn" type="button" style="display:none">🔔 아침·저녁 브리핑 알림 받기</button>
   </section>
 
   <!-- 차트 바로가기 -->
@@ -3184,6 +3188,8 @@ if(location.hash === '#calc') showPage('calc');
 else if(location.hash === '#news') showPage('news');
 else if(location.hash === '#chart') showPage('chart');
 else if(location.hash === '#game') showPage('game');
+else if(location.hash === '#judge') setTimeout(()=>$('vBtn').click(), 900);    // 푸시 딥링크: 판정쇼 자동 열기
+else if(location.hash === '#clinic') setTimeout(()=>$('pdBtn').click(), 900);  // 푸시 딥링크: 클리닉 자동 열기
 
 // ---- 차트 탭 사이드: 실시간 핵심 지표 스트립 ----
 function csRender(){
@@ -3341,6 +3347,39 @@ document.addEventListener('click', ()=>document.querySelectorAll('.help.on').for
 
 // ---- 앱(PWA) 등록 ----
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+
+// ---- 브리핑 푸시 알림 구독 ----
+const PUSH_PUB = 'BFruLJxTrTceof7g89oRkvF2nOfyQXbOEVT2euUjril2RakK2Rw-uQ9A23z-ZZ7Hz02EdPeuhsnQn5ON2Ae-A24';
+const PUSH_SUB_URL = 'https://ntfy.sh/rich-btcdash-push-sub-x8a2k9';
+(function(){
+  const btn = $('pushBtn'); if(!btn) return;
+  const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if(!supported && !(isIOS && !standalone)) return;   // 아예 불가능한 환경이면 버튼 숨김 유지
+  btn.style.display = '';
+  if(supported && Notification.permission==='granted' && localStorage.getItem('pushOn')==='1'){
+    btn.textContent = '🔔 브리핑 알림 받는 중'; btn.disabled = true;
+  }
+  const b64ToU8 = s => { const p='='.repeat((4-s.length%4)%4); const b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/')); return Uint8Array.from(b, c=>c.charCodeAt(0)); };
+  btn.onclick = async ()=>{
+    if(isIOS && !standalone){   // 아이폰 웹푸시는 홈 화면에 추가한 앱에서만 가능
+      btn.textContent = '📲 아이폰은 [홈 화면에 추가] 후 앱에서 눌러주세요';
+      return;
+    }
+    try{
+      const perm = await Notification.requestPermission();
+      if(perm !== 'granted'){ btn.textContent = '🔕 알림이 차단됐어요 — 브라우저 설정에서 허용해 주세요'; return; }
+      const reg = await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      if(!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey: b64ToU8(PUSH_PUB) });
+      await fetch(PUSH_SUB_URL, { method:'POST', body: JSON.stringify({ t:'psub', s: sub.toJSON() }) });
+      localStorage.setItem('pushOn','1');
+      btn.textContent = '🔔 브리핑 알림 받는 중'; btn.disabled = true;
+      gaEvt('push_subscribe'); if(window.__sendTag) window.__sendTag('push_on');
+    }catch(e){ btn.textContent = '🔔 알림 설정 실패 — 다시 눌러주세요'; }
+  };
+})();
 
 // ---- 설치 안내 배너 ----
 (function(){
