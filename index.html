@@ -3042,7 +3042,9 @@ function pcRender(d, animated){
   pdLater(()=>{ $('pcPlab').classList.add('in'); }, t2+ST*5);
   for(let i=0;i<planN;i++) pdLater(()=>{ $('pcR'+i).classList.add('in'); }, t2+ST*6+i*ST);
   pdLater(()=>{ $('pcFoot').classList.add('in'); localStorage.setItem('vSndSeen','1'); }, t2+ST*(6+planN));
-  pdLater(()=>{ const el=$('pdChg'); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('in','flash'); }, t2+ST*(7+planN));
+  pdLater(()=>{ const el=$('pdChg'); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('in','flash');
+    el.scrollIntoView({behavior:'smooth',block:'nearest'});                 // 리포트가 길어 유도줄이 화면 밖에 남는 것 방지
+  }, t2+ST*(7+planN));
 }
 $('pdGo').onclick = ()=>{ pdShowNext = true; pdRun(); clearInterval(pdTimer); pdTimer = setInterval(()=>{ if(pdOpen && $('pdEntry').value) pdRun(); }, 20_000); };
 $('pdBtn').onclick = ()=>{
