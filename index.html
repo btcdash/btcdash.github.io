@@ -365,44 +365,44 @@
   .v-more:hover{color:var(--ink);border-color:var(--ink3)}
   @media(max-width:600px){.v-row{grid-template-columns:105px 1fr auto;font-size:11.5px}}
   /* ═══ 판정쇼 리뉴얼 (2026-07-17 확정: 버튼 D + HUD hud_final_with_sound + 클리닉 리포트) ═══ */
-  .cta{position:relative;width:100%;border:0;border-radius:15px;padding:2px;cursor:pointer;font-family:inherit;background-size:280% 280%;animation:ctaflow 5.5s ease-in-out infinite;transition:transform .12s ease;display:block}
+  .bigcta{position:relative;width:100%;border:0;border-radius:15px;padding:2px;cursor:pointer;font-family:inherit;background-size:280% 280%;animation:ctaflow 5.5s ease-in-out infinite;transition:transform .12s ease;display:block}
   @keyframes ctaflow{0%{background-position:0% 40%}50%{background-position:100% 60%}100%{background-position:0% 40%}}
-  .cta:hover{transform:translateY(-2px)}
-  .cta:active{transform:scale(.985)}
-  .cta .cin{display:block;position:relative;border-radius:13px;background:#12161f;padding:17px 18px 15px;text-align:center;overflow:hidden;transition:background .15s}
+  .bigcta:hover{transform:translateY(-2px)}
+  .bigcta:active{transform:scale(.985)}
+  .bigcta .cin{display:block;position:relative;border-radius:13px;background:#12161f;padding:17px 18px 15px;text-align:center;overflow:hidden;transition:background .15s}
   /* ↑ display:block 필수 — span이 inline이면 배경이 글줄 조각으로 칠해지고 절대배치 자식(샤인·글로우) 기준이 깨짐 (집 브라우저에서 버튼 깨져 보이던 원인) */
-  .cta .glowb{position:absolute;inset:-30px;animation:ctabreathe 3.4s ease-in-out infinite;pointer-events:none}
+  .bigcta .glowb{position:absolute;inset:-30px;animation:ctabreathe 3.4s ease-in-out infinite;pointer-events:none}
   @keyframes ctabreathe{50%{opacity:.35}}
-  .cta .shine{position:absolute;top:0;bottom:0;width:70px;transform:skewX(-18deg);animation:ctasweep 4.6s ease-in-out infinite;pointer-events:none}
+  .bigcta .shine{position:absolute;top:0;bottom:0;width:70px;transform:skewX(-18deg);animation:ctasweep 4.6s ease-in-out infinite;pointer-events:none}
   @keyframes ctasweep{0%,14%{left:-90px}60%,100%{left:115%}}
-  .cta .t1{position:relative;font-size:17.5px;font-weight:900}
-  .cta .t2{position:relative;font-size:11.5px;color:#c9d2dd;margin-top:5px;font-weight:600;line-height:1.5}
-  .cta .lv{position:absolute;right:13px;top:11px;display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;letter-spacing:1.2px;z-index:2}
-  .cta .dotw{position:relative;width:7px;height:7px}
-  .cta .dot{position:absolute;inset:0;border-radius:50%}
-  .cta .ping{position:absolute;inset:0;border-radius:50%;animation:ctaping 1.6s cubic-bezier(0,0,.2,1) infinite}
+  .bigcta .t1{position:relative;font-size:17.5px;font-weight:900}
+  .bigcta .t2{position:relative;font-size:11.5px;color:#c9d2dd;margin-top:5px;font-weight:600;line-height:1.5}
+  .bigcta .lv{position:absolute;right:13px;top:11px;display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:800;letter-spacing:1.2px;z-index:2}
+  .bigcta .dotw{position:relative;width:7px;height:7px}
+  .bigcta .dot{position:absolute;inset:0;border-radius:50%}
+  .bigcta .ping{position:absolute;inset:0;border-radius:50%;animation:ctaping 1.6s cubic-bezier(0,0,.2,1) infinite}
   @keyframes ctaping{0%{transform:scale(1);opacity:.9}80%,100%{transform:scale(3.2);opacity:0}}
-  .cta .rx{position:absolute;left:13px;top:11px;font-size:9px;font-weight:700;letter-spacing:.5px;z-index:2;display:flex;align-items:center;gap:4px;font-variant-numeric:tabular-nums}
-  .cta .rx i{font-style:normal;opacity:0;animation:ctarx 2.4s ease-in-out infinite}
+  .bigcta .rx{position:absolute;left:13px;top:11px;font-size:9px;font-weight:700;letter-spacing:.5px;z-index:2;display:flex;align-items:center;gap:4px;font-variant-numeric:tabular-nums}
+  .bigcta .rx i{font-style:normal;opacity:0;animation:ctarx 2.4s ease-in-out infinite}
   @keyframes ctarx{12%,80%{opacity:1}0%,100%{opacity:0}}
-  .cta.gold{background-image:linear-gradient(115deg,#ffd452,#f0b90b 28%,#f6465d 52%,#f0b90b 76%,#ffd452)}
-  .cta.gold:hover .cin{background:#171208}
-  .cta.gold .glowb{background:radial-gradient(ellipse at 50% 120%,rgba(240,185,11,.14),transparent 60%)}
-  .cta.gold .shine{background:linear-gradient(100deg,transparent,rgba(255,222,120,.13),transparent)}
-  .cta.gold .t1{color:#ffd452;text-shadow:0 0 18px rgba(240,185,11,.25)}
-  .cta.gold .t2 b{color:#ffd452}
-  .cta.gold .lv{color:#22c55e}
-  .cta.gold .dot{background:#22c55e} .cta.gold .ping{border:1.5px solid #22c55e}
-  .cta.gold .rx{color:#5f8a6b} .cta.gold .rx i{color:#7ee38b}
-  .cta.green{background-image:linear-gradient(115deg,#7ef0bb,#22c55e 28%,#0ea5a5 52%,#22c55e 76%,#7ef0bb)}
-  .cta.green:hover .cin{background:#0c1a12}
-  .cta.green .glowb{background:radial-gradient(ellipse at 50% 120%,rgba(34,197,94,.14),transparent 60%)}
-  .cta.green .shine{background:linear-gradient(100deg,transparent,rgba(126,240,187,.12),transparent)}
-  .cta.green .t1{color:#3ddc97;text-shadow:0 0 18px rgba(34,197,94,.28)}
-  .cta.green .t2 b{color:#3ddc97}
-  .cta.green .lv{color:#3ddc97}
-  .cta.green .dot{background:#3ddc97} .cta.green .ping{border:1.5px solid #3ddc97}
-  .cta.green .rx{color:#4f7a63} .cta.green .rx i{color:#7ef0bb}
+  .bigcta.gold{background-image:linear-gradient(115deg,#ffd452,#f0b90b 28%,#f6465d 52%,#f0b90b 76%,#ffd452)}
+  .bigcta.gold:hover .cin{background:#171208}
+  .bigcta.gold .glowb{background:radial-gradient(ellipse at 50% 120%,rgba(240,185,11,.14),transparent 60%)}
+  .bigcta.gold .shine{background:linear-gradient(100deg,transparent,rgba(255,222,120,.13),transparent)}
+  .bigcta.gold .t1{color:#ffd452;text-shadow:0 0 18px rgba(240,185,11,.25)}
+  .bigcta.gold .t2 b{color:#ffd452}
+  .bigcta.gold .lv{color:#22c55e}
+  .bigcta.gold .dot{background:#22c55e} .bigcta.gold .ping{border:1.5px solid #22c55e}
+  .bigcta.gold .rx{color:#5f8a6b} .bigcta.gold .rx i{color:#7ee38b}
+  .bigcta.green{background-image:linear-gradient(115deg,#7ef0bb,#22c55e 28%,#0ea5a5 52%,#22c55e 76%,#7ef0bb)}
+  .bigcta.green:hover .cin{background:#0c1a12}
+  .bigcta.green .glowb{background:radial-gradient(ellipse at 50% 120%,rgba(34,197,94,.14),transparent 60%)}
+  .bigcta.green .shine{background:linear-gradient(100deg,transparent,rgba(126,240,187,.12),transparent)}
+  .bigcta.green .t1{color:#3ddc97;text-shadow:0 0 18px rgba(34,197,94,.28)}
+  .bigcta.green .t2 b{color:#3ddc97}
+  .bigcta.green .lv{color:#3ddc97}
+  .bigcta.green .dot{background:#3ddc97} .bigcta.green .ping{border:1.5px solid #3ddc97}
+  .bigcta.green .rx{color:#4f7a63} .bigcta.green .rx i{color:#7ef0bb}
   /* 챌린지 유도줄 (판정쇼·클리닉 결과 하단) */
   .chg-cta{position:relative;overflow:hidden;margin-top:12px;border:1px solid #3a3420;background:linear-gradient(180deg,rgba(240,185,11,.05),transparent);border-radius:11px;padding:12px 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
   /* 등장 시 1회성 주목 모션 — 금색 글로우 2회 맥동 + 빛줄기 1회 통과 */
@@ -655,7 +655,12 @@
     .ad .ad-title br{display:none}
     .ad .ad-sub{display:none}
     .ad .ad-cta{align-self:stretch;text-align:center;font-size:13px;padding:10px 14px}
-    .ad-feats{display:none}
+    /* 피처 4개: 숨기지 말고 아이콘+제목만 2×2 컴팩트로 (설명줄만 생략) */
+    .ad-feats{grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+    .ad-feats .f{padding:7px 9px;gap:7px;align-items:center}
+    .ad-feats .f i{font-size:14px}
+    .ad-feats .f b{font-size:11.5px}
+    .ad-feats .f span{display:none}
     .ad-coins b{font-size:16px;opacity:.45}
     .ad-dots{right:10px;bottom:7px}
     /* 상단 요소 컴팩트 + 탭바는 스크롤해도 고정 */
@@ -867,7 +872,7 @@
 
   <!-- 🤔 지금 들어가도 돼? -->
   <section style="margin-top:0;margin-bottom:22px">
-    <button id="vBtn" class="cta gold">
+    <button id="vBtn" class="bigcta gold">
       <span class="rx">수신 중 <i id="vRx">고래 체결</i></span>
       <span class="lv"><span class="dotw"><span class="ping"></span><span class="dot"></span></span>LIVE</span>
       <span class="cin"><span class="glowb"></span><span class="shine"></span>
@@ -923,7 +928,7 @@
 
   <!-- 🩺 내 포지션 주치의 -->
   <section style="margin:-8px 0 22px">
-    <button id="pdBtn" class="cta green">
+    <button id="pdBtn" class="bigcta green">
       <span class="rx">감시 중 <i id="pdRx">청산가 거리</i></span>
       <span class="lv"><span class="dotw"><span class="ping"></span><span class="dot"></span></span>LIVE</span>
       <span class="cin"><span class="glowb"></span><span class="shine"></span>
@@ -2775,7 +2780,9 @@ function vPlayShow(data){
   tle.to('#weSrc',{opacity:1,duration:.4},tV+.6);
   tle.to('#vMore',{opacity:1,duration:.35},tV+.7);
   tle.fromTo('#vChg',{opacity:0,y:8},{opacity:1,y:0,duration:.4,ease:'power2.out'},tV+.85);
-  tle.call(()=>{ const el=$('vChg'); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); },null,tV+.95);
+  tle.call(()=>{ const el=$('vChg'); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+    el.scrollIntoView({behavior:'smooth',block:'nearest'});               // 모바일에서 유도줄이 화면 밖에 남는 것 방지
+  },null,tV+.95);
 }
 $('vMore').onclick = ()=>{
   vMoreOpen=!vMoreOpen;
@@ -3024,6 +3031,8 @@ function pcRender(d, animated){
     pdLater(()=>{ $('pcL'+i).classList.add('in'); vTick(i); },t+150);
     t+=ST;
   });
+  /* 모바일은 사다리→검진→판정이 세로로 길어서, 진행 단계마다 화면이 같이 내려가야 함 */
+  pdLater(()=>{ $('pcSide').scrollIntoView({behavior:'smooth',block:'nearest'}); }, t+60);
   d.checks.forEach((c,i)=>{
     pdLater(()=>{
       $('pcM'+i).classList.add('in'); vTick(i+4);
@@ -3032,7 +3041,9 @@ function pcRender(d, animated){
   });
   const t2=t+chkN*ST;
   pdLater(()=>{ vDing(); sw.style.opacity=0; }, t2+90);
-  pdLater(()=>{ $('pcLad').classList.add('dim'); $('pcDx').classList.add('on'); }, t2+ST);
+  pdLater(()=>{ $('pcLad').classList.add('dim'); $('pcDx').classList.add('on');
+    $('pcDx').scrollIntoView({behavior:'smooth',block:'nearest'});
+  }, t2+ST);
   pdLater(()=>{
     $('pcDxt').classList.add('in'); vThud();
     const card=$('pdCard'); card.classList.remove('shakeit'); void card.offsetWidth; card.classList.add('shakeit');
