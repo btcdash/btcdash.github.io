@@ -403,6 +403,22 @@
   .cta.green .lv{color:#3ddc97}
   .cta.green .dot{background:#3ddc97} .cta.green .ping{border:1.5px solid #3ddc97}
   .cta.green .rx{color:#4f7a63} .cta.green .rx i{color:#7ef0bb}
+  /* 챌린지 유도줄 (판정쇼·클리닉 결과 하단) */
+  .chg-cta{position:relative;overflow:hidden;margin-top:12px;border:1px solid #3a3420;background:linear-gradient(180deg,rgba(240,185,11,.05),transparent);border-radius:11px;padding:12px 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  /* 등장 시 1회성 주목 모션 — 금색 글로우 2회 맥동 + 빛줄기 1회 통과 */
+  .chg-cta.flash{animation:chgglow 2.2s ease-out .15s}
+  @keyframes chgglow{0%{box-shadow:0 0 0 rgba(240,185,11,0)}18%{box-shadow:0 0 22px rgba(240,185,11,.30);border-color:#f0b90b}40%{box-shadow:0 0 3px rgba(240,185,11,.06);border-color:#6b5c25}58%{box-shadow:0 0 15px rgba(240,185,11,.20);border-color:#d9a90e}100%{box-shadow:0 0 0 rgba(240,185,11,0);border-color:#3a3420}}
+  .chg-cta.flash::after{content:'';position:absolute;top:0;bottom:0;left:-80px;width:60px;transform:skewX(-16deg);background:linear-gradient(100deg,transparent,rgba(255,222,120,.16),transparent);animation:chgsweep 1.1s ease-out .3s forwards;pointer-events:none}
+  @keyframes chgsweep{to{left:115%}}
+  .chg-cta .tx{flex:1;min-width:220px}
+  .chg-cta .l1{font-size:12.5px;color:#d8dee8;line-height:1.55}
+  .chg-cta .l1 b{color:#ffd452}
+  .chg-cta .l2{font-size:11.5px;color:#9aa4b2;margin-top:3px}
+  .chg-cta .l2 b{color:#ffd452}
+  .chg-cta .btn{flex-shrink:0;border:1px solid #f0b90b;color:#ffd452;background:rgba(240,185,11,.08);border-radius:9px;padding:8px 13px;font-size:12px;font-weight:800;text-decoration:none;white-space:nowrap;transition:background .15s,color .15s}
+  .chg-cta .btn:hover{background:#f0b90b;color:#111}
+  #pdChg{opacity:0;transform:translateY(8px)}
+  #pdChg.in{animation:pcdtin .4s cubic-bezier(.2,1.3,.4,1) forwards}
   /* HUD 카드 */
   .we-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px 18px;margin-top:10px;color:var(--ink);position:relative;overflow:hidden}
   .we-vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 42%,transparent 55%,rgba(0,0,0,.35));pointer-events:none}
@@ -894,6 +910,13 @@
       <div class="we-src" id="weSrc"><span class="we-srcdot"></span><span>실시간 데이터 · <b>바이낸스</b> · <b>업비트</b> · <b>코인게코</b> 수신 — <span class="ago" id="weAgo">방금 전</span> 갱신</span></div>
       <button class="we-more" id="vMore" type="button">🔎 근거 자세히 보기 ▾</button>
       <div class="we-detail" id="weDetail"></div>
+      <div class="chg-cta" id="vChg">
+        <div class="tx">
+          <div class="l1">여기 28가지 신호는 기본기 — 챌린지방은 근거를 더 겹쳐 진입해서 <b>승률이 비교가 안 됩니다.</b></div>
+          <div class="l2">어떻게 하는지 궁금하다면? 지금 <b>참가비 0원</b>으로 진행 중</div>
+        </div>
+        <a class="btn" id="vChgGo" href="https://telegram.me/richtrading_support_bot" target="_blank" rel="noopener">🏆 챌린지 참여하기</a>
+      </div>
       <div class="v-note">* 자동 종합 분석 참고용이에요 — 투자 판단과 책임은 본인에게 있어요</div>
     </div>
   </section>
@@ -937,6 +960,13 @@
             <div id="pcPlan"></div>
           </div>
           <div class="pc-foot" id="pcFoot"></div>
+        </div>
+        <div class="chg-cta" id="pdChg">
+          <div class="tx">
+            <div class="l1">혼자 잡은 자리와 수십 가지 근거로 잡은 자리 — <b>승률 차이는 직접 보면 압니다.</b></div>
+            <div class="l2">내 포지션도 이렇게 잡아줬으면 한다면? <b>참가비 0원</b></div>
+          </div>
+          <a class="btn" id="pdChgGo" href="https://telegram.me/richtrading_support_bot" target="_blank" rel="noopener">🏆 챌린지 참여하기</a>
         </div>
         <div class="v-note">* 자동 분석 참고용이에요 — 투자 판단과 책임은 본인에게 있어요. 입력한 포지션은 이 브라우저에만 저장돼요</div>
       </div>
@@ -2288,6 +2318,8 @@ try{
   $('ad1').addEventListener('click', ()=>trackClick('tg'));        // 텔레그램 소통방 배너
   $('ad0').addEventListener('click', ()=>trackClick('ask'));       // 탭비트 할인 배너 → 문의봇
   $('ad2').addEventListener('click', ()=>trackClick('chg'));       // 챌린지 배너 → 문의봇
+  $('vChgGo').addEventListener('click', ()=>trackClick('chg_v'));  // 판정쇼 하단 챌린지 유도줄 → 문의봇
+  $('pdChgGo').addEventListener('click', ()=>trackClick('chg_p')); // 클리닉 하단 챌린지 유도줄 → 문의봇
   $('refLink').addEventListener('click', ()=>trackClick('ask'));   // 우상단 할인 문의 버튼
   document.querySelectorAll('.chat-join').forEach(a=>a.addEventListener('click', ()=>trackClick('tg')));  // 소통방 피드 참여 버튼
 }catch(e){}
@@ -2655,7 +2687,7 @@ function vSilent(data){
   $('weArc').setAttribute('stroke-dashoffset','0');
   $('weHead').setAttribute('opacity','0');
   vTickEls.forEach((t,i)=>t.setAttribute('stroke', i<V_NT*.27?'#f0b90b':'#f6465d'));
-  ['weTag','weGrid','weSum','weSrc','vMore'].forEach(id=>{ $(id).style.opacity=1; });
+  ['weTag','weGrid','weSum','weSrc','vMore','vChg'].forEach(id=>{ $(id).style.opacity=1; });
   document.querySelectorAll('.we-ck').forEach(el=>el.style.opacity=1);
   $('weCen').style.opacity=0;
   $('weVer').style.opacity=1;
@@ -2687,7 +2719,7 @@ function vPlayShow(data){
   $('weSum').innerHTML=data.sum;
   vVerdictPaint(data.verdict);
   gsap.set('#vCard',{opacity:0,y:10});
-  gsap.set(['#weVer','#weSum','#weGlow','#weTag','#weGrid','#vMore','#weSrc'],{opacity:0});
+  gsap.set(['#weVer','#weSum','#weGlow','#weTag','#weGrid','#vMore','#weSrc','#vChg'],{opacity:0});
   gsap.set(feed,{y:0});
   gsap.set('#weCen',{opacity:1,y:0,scale:1});
   gsap.set('#weUnd',{scaleX:0});
@@ -2742,6 +2774,8 @@ function vPlayShow(data){
   tle.call(()=>{ vLastSync=Date.now(); $('weAgo').textContent='방금 전'; },null,tV+.55);
   tle.to('#weSrc',{opacity:1,duration:.4},tV+.6);
   tle.to('#vMore',{opacity:1,duration:.35},tV+.7);
+  tle.fromTo('#vChg',{opacity:0,y:8},{opacity:1,y:0,duration:.4,ease:'power2.out'},tV+.85);
+  tle.call(()=>{ const el=$('vChg'); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); },null,tV+.95);
 }
 $('vMore').onclick = ()=>{
   vMoreOpen=!vMoreOpen;
@@ -2971,7 +3005,7 @@ function pcRender(d, animated){
     for(let i=0;i<lvlN;i++){ const el=$('pcL'+i); el.style.opacity=1; el.style.transform='none'; }
     for(let i=0;i<chkN;i++){ const el=$('pcM'+i); el.style.opacity=1; el.style.transform='none'; $('pcG'+i).style.width=d.checks[i].gg+'%'; }
     const dx=$('pcDx'); dx.style.opacity=1; dx.style.transform='none';
-    ['pcDxt','pcVlb','pcWhy','pcPlab','pcFoot'].forEach(id=>{ const el=$(id); el.style.opacity=1; el.style.transform='none'; });
+    ['pcDxt','pcVlb','pcWhy','pcPlab','pcFoot','pdChg'].forEach(id=>{ const el=$(id); el.style.opacity=1; el.style.transform='none'; });
     if($('pcVlb')) $('pcVlb').style.letterSpacing='2.5px';
     for(let i=0;i<planN;i++){ const el=$('pcR'+i); el.style.opacity=1; el.style.transform='none'; }
     return;
@@ -2982,7 +3016,7 @@ function pcRender(d, animated){
   $('pcLad').classList.remove('dim');
   /* 이전 쇼·오타 가드가 남긴 표시 상태 리셋 — 안 하면 재진단 때 판정 패널이 스캔 전에 미리 보임 */
   $('pcDx').classList.remove('on'); $('pcDx').style.opacity=0;
-  ['pcDxt','pcVlb','pcWhy','pcPlab','pcFoot'].forEach(id=>{ const el=$(id); el.classList.remove('in'); el.style.opacity=''; el.style.transform=''; el.style.letterSpacing=''; });
+  ['pcDxt','pcVlb','pcWhy','pcPlab','pcFoot','pdChg'].forEach(id=>{ const el=$(id); el.classList.remove('in'); el.style.opacity=''; el.style.transform=''; el.style.letterSpacing=''; });
   const ST=180;                                  // 등장 간격 180ms 고정 — 처음부터 끝까지 일정한 리듬
   let t=150;
   pts.forEach((p,i)=>{
@@ -3008,6 +3042,7 @@ function pcRender(d, animated){
   pdLater(()=>{ $('pcPlab').classList.add('in'); }, t2+ST*5);
   for(let i=0;i<planN;i++) pdLater(()=>{ $('pcR'+i).classList.add('in'); }, t2+ST*6+i*ST);
   pdLater(()=>{ $('pcFoot').classList.add('in'); localStorage.setItem('vSndSeen','1'); }, t2+ST*(6+planN));
+  pdLater(()=>{ const el=$('pdChg'); el.classList.remove('flash'); void el.offsetWidth; el.classList.add('in','flash'); }, t2+ST*(7+planN));
 }
 $('pdGo').onclick = ()=>{ pdShowNext = true; pdRun(); clearInterval(pdTimer); pdTimer = setInterval(()=>{ if(pdOpen && $('pdEntry').value) pdRun(); }, 20_000); };
 $('pdBtn').onclick = ()=>{
