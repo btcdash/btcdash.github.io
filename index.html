@@ -440,6 +440,8 @@
   .bigcta.green .dot{background:#3ddc97} .bigcta.green .ping{border:1.5px solid #3ddc97}
   .bigcta.green .rx{color:#4f7a63} .bigcta.green .rx i{color:#7ef0bb}
   /* 챌린지 유도줄 (판정쇼·클리닉 결과 하단) */
+  .hit-badge{display:flex;justify-content:center;align-items:center;gap:5px;margin:0 auto 7px;padding:4px 12px;width:fit-content;max-width:96%;border:1px solid #3a3420;border-radius:999px;background:rgba(240,185,11,.06);font-size:11px;color:#c9d2dd;font-variant-numeric:tabular-nums}
+  .hit-badge b{color:#ffd452;font-weight:800}
   .we-hitline{margin-top:10px;padding:8px 11px;border:1px solid #2a3140;border-left:2px solid #f0b90b;border-radius:9px;background:rgba(240,185,11,.04)}
   .we-hitline .h1{font-size:12.5px;color:#d8dee8}
   .we-hitline .h1 b{color:#ffd452;font-weight:800}
@@ -930,6 +932,7 @@
 
   <!-- 🤔 지금 들어가도 돼? — 핵심 무기 2개(판정쇼·클리닉)가 첫 화면에 먼저 -->
   <section style="margin-top:0;margin-bottom:22px">
+    <div class="hit-badge" id="vHitBadge" style="display:none">🎯 <span id="vHitBadgeTx"></span></div>
     <button id="vBtn" class="bigcta gold">
       <span class="rx">수신 중 <i id="vRx">고래 체결</i></span>
       <span class="lv"><span class="dotw"><span class="ping"></span><span class="dot"></span></span>LIVE</span>
@@ -2757,9 +2760,16 @@ function vHitSend(em){
 async function vHitLoad(){
   try{
     const s = await fetch(HIT_RAW+'?ts='+Date.now()).then(r=>r.json());
-    if(s){ window.__vHitS = s; if(!vShowing) vHitRender(false); }
+    if(!s) return;
+    window.__vHitS = s; if(!vShowing) vHitRender(false);
+    const n = (s.h|0)+(s.m|0);
+    if(n >= 1){   // 버튼 위 라이브 뱃지 — 채점 1건부터 노출
+      $('vHitBadgeTx').innerHTML = '최근 12시간 판정 적중 <b>'+(s.h|0)+' / '+n+'</b> · 적중률 <b>'+Math.round((s.h|0)/n*100)+'%</b>';
+      $('vHitBadge').style.display='';
+    }
   }catch(e){}
 }
+vHitLoad();   // 첫 화면 뱃지용 — 카드 열 때도 다시 불러와 갱신됨
 function vHitRender(anim){
   const s = window.__vHitS; if(!s) return;
   const n = (s.h|0)+(s.m|0);
