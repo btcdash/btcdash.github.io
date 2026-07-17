@@ -179,7 +179,10 @@
   .topnav button.on small{color:var(--accent);opacity:.75}
   /* 모의게임 탭: 게임이 맨 아래로 내려가는 좁은 화면(≤1000px)에서만 노출 */
   .topnav .mob-tab{display:none}
-  @media(max-width:1000px){.topnav .mob-tab{display:block}}
+  @media(max-width:1000px){
+    .topnav .mob-tab{display:block}
+    body:not(.game-tab) .gamebox{display:none}   /* 탭으로 옮겼으니 메인 하단에선 제거 (모바일만) */
+  }
   /* 게임 탭 선택 시: 게임 박스만 전체 폭으로 */
   body.game-tab .cols>div{display:none}
   body.game-tab .chatbox{display:none}
