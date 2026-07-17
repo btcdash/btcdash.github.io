@@ -891,21 +891,7 @@
   <div>
 
   <!-- ☀️ 오늘의 브리핑 -->
-  <section class="brief" id="brief" style="display:none">
-    <div class="brief-head"><span id="briefTitle">☀️ 오늘의 브리핑</span><span class="brief-date" id="briefDate"></span></div>
-    <div class="brief-row"><span class="bl" id="briefPxL">밤사이</span><span id="briefPx">—</span></div>
-    <div class="brief-row"><span class="bl">주요 뉴스</span><a id="briefNews" target="_blank" rel="noopener">수집 중…</a></div>
-    <div class="brief-ev" id="briefEv">📅 발표 일정 확인 중…</div>
-  </section>
-
-  <!-- 라운지 최신 메시지 티커 — 브리핑과 판정쇼 사이 한 줄 -->
-  <a class="lg-tick" id="lgTick" href="#secChat" style="display:none">
-    <span class="b">💬 라운지 <i>LIVE</i></span>
-    <span class="m" id="lgTickTxt"></span>
-    <span class="go">보기 →</span>
-  </a>
-
-  <!-- 🤔 지금 들어가도 돼? -->
+  <!-- 🤔 지금 들어가도 돼? — 핵심 무기 2개(판정쇼·클리닉)가 첫 화면에 먼저 -->
   <section style="margin-top:0;margin-bottom:22px">
     <button id="vBtn" class="bigcta gold">
       <span class="rx">수신 중 <i id="vRx">고래 체결</i></span>
@@ -1012,6 +998,20 @@
       </div>
     </div>
   </section>
+
+  <section class="brief" id="brief" style="display:none">
+    <div class="brief-head"><span id="briefTitle">☀️ 오늘의 브리핑</span><span class="brief-date" id="briefDate"></span></div>
+    <div class="brief-row"><span class="bl" id="briefPxL">밤사이</span><span id="briefPx">—</span></div>
+    <div class="brief-row"><span class="bl">주요 뉴스</span><a id="briefNews" target="_blank" rel="noopener">수집 중…</a></div>
+    <div class="brief-ev" id="briefEv">📅 발표 일정 확인 중…</div>
+  </section>
+
+  <!-- 라운지 최신 메시지 티커 — 브리핑 아래 한 줄 -->
+  <a class="lg-tick" id="lgTick" href="#secChat" style="display:none">
+    <span class="b">💬 라운지 <i>LIVE</i></span>
+    <span class="m" id="lgTickTxt"></span>
+    <span class="go">보기 →</span>
+  </a>
 
   <!-- 차트 바로가기 -->
   <div class="jump" style="justify-content:flex-end">
