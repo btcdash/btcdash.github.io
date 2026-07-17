@@ -660,7 +660,7 @@
   .ad-3{background:radial-gradient(900px 300px at 85% -20%,#1f8f4a55 0%,transparent 60%),radial-gradient(700px 260px at 10% 120%,#0e8f5a44 0%,transparent 60%),linear-gradient(115deg,#06180d 0%,#0a2e18 55%,#0f4d27 100%)}
   .ad-3 .ad-cta{background:linear-gradient(92deg,#3ddc97,#22c55e);color:#03301a}
   /* 라운지 최신 메시지 티커 (배너 바로 아래 한 줄) */
-  .lg-tick{display:flex;align-items:center;gap:10px;margin:0 0 16px;padding:9px 13px;border:1px solid var(--border);border-radius:11px;background:var(--surface);cursor:pointer;text-decoration:none}
+  .lg-tick{display:flex;align-items:center;gap:10px;margin:-8px 0 14px;padding:7px 12px;border:1px solid var(--border);border-radius:10px;background:var(--surface);cursor:pointer;text-decoration:none}
   /* 맨 위로 플로팅 버튼 (스크롤 내리면 좌하단에 등장) */
   .to-top{position:fixed;left:14px;bottom:16px;width:42px;height:42px;border-radius:50%;background:rgba(28,35,48,.92);border:1px solid var(--border);color:var(--ink);font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:90;opacity:0;pointer-events:none;transition:opacity .25s;box-shadow:0 4px 14px rgba(0,0,0,.4)}
   .to-top.show{opacity:1;pointer-events:auto}
@@ -891,6 +891,13 @@
   <div>
 
   <!-- ☀️ 오늘의 브리핑 -->
+  <!-- 라운지 최신 메시지 티커 — 슬림 한 줄로 배너 바로 아래 (무기 2개도 첫 화면에 같이) -->
+  <a class="lg-tick" id="lgTick" href="#secChat" style="display:none">
+    <span class="b">💬 라운지 <i>LIVE</i></span>
+    <span class="m" id="lgTickTxt"></span>
+    <span class="go">보기 →</span>
+  </a>
+
   <!-- 🤔 지금 들어가도 돼? — 핵심 무기 2개(판정쇼·클리닉)가 첫 화면에 먼저 -->
   <section style="margin-top:0;margin-bottom:22px">
     <button id="vBtn" class="bigcta gold">
@@ -1005,13 +1012,6 @@
     <div class="brief-row"><span class="bl">주요 뉴스</span><a id="briefNews" target="_blank" rel="noopener">수집 중…</a></div>
     <div class="brief-ev" id="briefEv">📅 발표 일정 확인 중…</div>
   </section>
-
-  <!-- 라운지 최신 메시지 티커 — 브리핑 아래 한 줄 -->
-  <a class="lg-tick" id="lgTick" href="#secChat" style="display:none">
-    <span class="b">💬 라운지 <i>LIVE</i></span>
-    <span class="m" id="lgTickTxt"></span>
-    <span class="go">보기 →</span>
-  </a>
 
   <!-- 차트 바로가기 -->
   <div class="jump" style="justify-content:flex-end">
