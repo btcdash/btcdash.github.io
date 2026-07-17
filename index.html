@@ -2756,13 +2756,14 @@ function vHitSend(em){
 async function vHitLoad(){
   try{
     const s = await fetch(HIT_RAW+'?ts='+Date.now()).then(r=>r.json());
-    if(s && (s.h|0)+(s.m|0) >= 1){ window.__vHitS = s; if(!vShowing) vHitRender(false); }
+    if(s){ window.__vHitS = s; if(!vShowing) vHitRender(false); }
   }catch(e){}
 }
 function vHitRender(anim){
   const s = window.__vHitS; if(!s) return;
   const n = (s.h|0)+(s.m|0);
-  $('vHitTx').innerHTML = '최근 12시간, 판정을 확인한 <b>'+n+'건</b> 기준 적중 <b>'+(s.h|0)+'건</b> · 적중률 <b>'+Math.round((s.h|0)/n*100)+'%</b>';
+  if(n) $('vHitTx').innerHTML = '최근 12시간, 판정을 확인한 <b>'+n+'건</b> 기준 적중 <b>'+(s.h|0)+'건</b> · 적중률 <b>'+Math.round((s.h|0)/n*100)+'%</b>';
+  else $('vHitTx').innerHTML = '적중 기록 집계 중'+((s.pend|0) ? ' — 실시간 채점 진행 <b>'+(s.pend|0)+'건</b>' : ' — 판정을 본 순간부터 실제 시세로 채점됩니다');
   const el = $('vHit'); el.style.display='';
   if(anim && window.gsap) gsap.fromTo(el,{opacity:0,y:6},{opacity:1,y:0,duration:.4,ease:'power2.out'});
   else el.style.opacity=1;
