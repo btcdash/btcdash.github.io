@@ -1116,7 +1116,7 @@
   <aside class="chatbox" id="secChat">
     <div class="chat-head">💬 [리치] 라운지 <span class="chat-live">LIVE</span></div>
     <div class="chat-list" id="chatList"><div class="err">불러오는 중…</div></div>
-    <a class="chat-join" href="https://t.me/+lwamipsqA29hYmY1" target="_blank">리치 라운지 입장하기 →<small>실시간 시황 브리핑 · 지표·전자책 자료실 포함</small></a>
+    <a class="chat-join" href="https://telegram.me/richtrading_support_bot?start=lounge" target="_blank">리치 라운지 입장하기 →<small>실시간 시황 브리핑 · 지표·전자책 자료실 포함</small></a>
   </aside>
 
   </div><!-- cols 끝 -->
@@ -1348,7 +1348,7 @@ const cls = n => n>0?'up':(n<0?'down':'neutral');
 
 // ===== 링크 설정 (여기만 바꾸면 됨) =====
 const REFERRAL_URL = 'https://www.tapbit.com/auth/KYSMLSK';   // 텝비트 레퍼럴 가입 주소 (1:1 안내용)
-const TELEGRAM_URL = 'https://t.me/+lwamipsqA29hYmY1';   // 텔레그램 소통방 주소 (사이트 배너 전용 초대링크 — 유입 추적용)
+const TELEGRAM_URL = 'https://telegram.me/richtrading_support_bot?start=lounge';   // 라운지 입장은 문의봇 경유 (봇이 초대링크 자동 발송 — 직링크 26클릭 0입장이라 교체, 2026-07-17)
 if (TELEGRAM_URL !== '#'){ $('ad1').href = TELEGRAM_URL; }
 // 우상단 버튼·탭비트 배너 모두 문의봇으로 연결 (HTML에 직접 지정됨)
 // 레퍼럴 직접 링크: REFERRAL_URL — 문의 응대 시 개별 전달용으로만 사용
