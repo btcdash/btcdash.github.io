@@ -2771,6 +2771,7 @@ $('vBtn').onclick = ()=>{
     vShowNext = true;                              // 열 때만 판정쇼, 15초 자동 갱신은 조용히
     if(vSndOn){ try{ vAC(); }catch(e){} }
     vCompute(); vTimer = setInterval(vCompute, 15_000);
+    setTimeout(()=>$('vBtn').scrollIntoView({behavior:'smooth',block:'start'}), 80);   // 카드가 화면 밖이라 버튼째 따라 내려감
   }
   else clearInterval(vTimer);
 };
@@ -3017,6 +3018,7 @@ $('pdBtn').onclick = ()=>{
     if(window.__btc) $('pdEntry').placeholder = '예: ' + Math.round(window.__btc);   // 예시값을 실제 현재가로
     const s = JSON.parse(localStorage.getItem('pdPos')||'null');
     if(s){ pdSeg(s.s); $('pdEntry').value = s.e; $('pdLev').value = s.l; $('pdGo').onclick(); }
+    setTimeout(()=>$('pdBtn').scrollIntoView({behavior:'smooth',block:'start'}), 80);  // 카드가 화면 밖이라 버튼째 따라 내려감
   } else clearInterval(pdTimer);
 };
 
