@@ -975,6 +975,7 @@
             <div class="h1">🎯 <span id="vHitTx"></span></div>
             <div class="h2">실제 시세 데이터로 채점한 기록이나 매매 권유가 아닙니다</div>
           </div>
+          <button class="push-btn" id="vPushGo" type="button" style="display:none">다음 판정이 기울면 제일 먼저 — <b>🔔 알림 받기</b></button>
         </div>
       </div>
       <div class="we-sum" id="weSum"></div>
@@ -2851,7 +2852,7 @@ function vSilent(data){
   $('weArc').setAttribute('stroke-dashoffset','0');
   $('weHead').setAttribute('opacity','0');
   vTickEls.forEach((t,i)=>t.setAttribute('stroke', i<V_NT*.27?'#f0b90b':'#f6465d'));
-  ['weTag','weGrid','weSum','weSrc','vMore','vChg'].forEach(id=>{ $(id).style.opacity=1; });
+  ['weTag','weGrid','weSum','weSrc','vMore','vChg','vPushGo'].forEach(id=>{ $(id).style.opacity=1; });
   vHitRender(false);
   document.querySelectorAll('.we-ck').forEach(el=>el.style.opacity=1);
   $('weCen').style.opacity=0;
@@ -2884,7 +2885,7 @@ function vPlayShow(data){
   $('weSum').innerHTML=data.sum;
   vVerdictPaint(data.verdict);
   gsap.set('#vCard',{opacity:0,y:10});
-  gsap.set(['#weVer','#weSum','#weGlow','#weTag','#weGrid','#vMore','#weSrc','#vChg','#vHit'],{opacity:0});
+  gsap.set(['#weVer','#weSum','#weGlow','#weTag','#weGrid','#vMore','#weSrc','#vChg','#vHit','#vPushGo'],{opacity:0});
   gsap.set(feed,{y:0});
   gsap.set('#weCen',{opacity:1,y:0,scale:1});
   gsap.set('#weUnd',{scaleX:0});
@@ -2944,6 +2945,7 @@ function vPlayShow(data){
     el.scrollIntoView({behavior:'smooth',block:'nearest'});               // 모바일에서 유도줄이 화면 밖에 남는 것 방지
   },null,tV+.95);
   tle.call(()=>{ vHitRender(true); },null,tV+1.05);
+  tle.to('#vPushGo',{opacity:1,duration:.4,ease:'power2.out'},tV+1.2);
 }
 $('vMore').onclick = ()=>{
   vMoreOpen=!vMoreOpen;
@@ -3446,33 +3448,36 @@ if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catc
 const PUSH_PUB = 'BFruLJxTrTceof7g89oRkvF2nOfyQXbOEVT2euUjril2RakK2Rw-uQ9A23z-ZZ7Hz02EdPeuhsnQn5ON2Ae-A24';
 const PUSH_SUB_URL = 'https://ntfy.sh/rich-btcdash-push-sub-x8a2k9';
 (function(){
-  const btn = $('pushBtn'); if(!btn) return;
+  const btns = ['pushBtn','vPushGo'].map(id=>$(id)).filter(Boolean);
+  if(!btns.length) return;
   const supported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
   const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
   const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
   if(!supported && !(isIOS && !standalone)) return;   // 아예 불가능한 환경이면 버튼 숨김 유지
-  btn.style.display = '';
-  if(supported && Notification.permission==='granted' && localStorage.getItem('pushOn')==='1'){
-    btn.textContent = '🔔 브리핑 알림 받는 중'; btn.disabled = true;
-  }
+  const subscribed = supported && Notification.permission==='granted' && localStorage.getItem('pushOn')==='1';
   const b64ToU8 = s => { const p='='.repeat((4-s.length%4)%4); const b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/')); return Uint8Array.from(b, c=>c.charCodeAt(0)); };
-  btn.onclick = async ()=>{
-    if(isIOS && !standalone){   // 아이폰 웹푸시는 홈 화면에 추가한 앱에서만 가능
-      btn.textContent = '📲 아이폰은 [홈 화면에 추가] 후 앱에서 눌러주세요';
-      return;
-    }
-    try{
-      const perm = await Notification.requestPermission();
-      if(perm !== 'granted'){ btn.textContent = '🔕 알림이 차단됐어요 — 브라우저 설정에서 허용해 주세요'; return; }
-      const reg = await navigator.serviceWorker.ready;
-      let sub = await reg.pushManager.getSubscription();
-      if(!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey: b64ToU8(PUSH_PUB) });
-      await fetch(PUSH_SUB_URL, { method:'POST', body: JSON.stringify({ t:'psub', s: sub.toJSON() }) });
-      localStorage.setItem('pushOn','1');
-      btn.textContent = '🔔 브리핑 알림 받는 중'; btn.disabled = true;
-      gaEvt('push_subscribe'); if(window.__sendTag) window.__sendTag('push_on');
-    }catch(e){ btn.textContent = '🔔 알림 설정 실패 — 다시 눌러주세요'; }
-  };
+  btns.forEach(btn => {
+    if(btn.id === 'vPushGo' && subscribed) return;     // 판정쇼 쪽 유도줄은 이미 구독자면 아예 안 보임
+    btn.style.display = '';
+    if(subscribed){ btn.textContent = '🔔 브리핑 알림 받는 중'; btn.disabled = true; }
+    btn.onclick = async ()=>{
+      if(isIOS && !standalone){   // 아이폰 웹푸시는 홈 화면에 추가한 앱에서만 가능
+        btn.textContent = '📲 아이폰은 [홈 화면에 추가] 후 앱에서 눌러주세요';
+        return;
+      }
+      try{
+        const perm = await Notification.requestPermission();
+        if(perm !== 'granted'){ btn.textContent = '🔕 알림이 차단됐어요 — 브라우저 설정에서 허용해 주세요'; return; }
+        const reg = await navigator.serviceWorker.ready;
+        let sub = await reg.pushManager.getSubscription();
+        if(!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey: b64ToU8(PUSH_PUB) });
+        await fetch(PUSH_SUB_URL, { method:'POST', body: JSON.stringify({ t:'psub', s: sub.toJSON() }) });
+        localStorage.setItem('pushOn','1');
+        btns.forEach(b=>{ b.textContent = '🔔 알림 켜짐 — 다음 판정을 보내드릴게요'; b.disabled = true; });
+        gaEvt('push_subscribe'); if(window.__sendTag) window.__sendTag(btn.id==='vPushGo' ? 'push_onv' : 'push_on');
+      }catch(e){ btn.textContent = '🔔 알림 설정 실패 — 다시 눌러주세요'; }
+    };
+  });
 })();
 
 // ---- 설치 안내 배너 ----
