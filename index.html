@@ -3274,7 +3274,16 @@ else if(location.hash === '#news') showPage('news');
 else if(location.hash === '#chart') showPage('chart');
 else if(location.hash === '#game') showPage('game');
 else if(location.hash === '#judge') setTimeout(()=>$('vBtn').click(), 900);    // 푸시 딥링크: 판정쇼 자동 열기
-else if(location.hash === '#clinic') setTimeout(()=>$('pdBtn').click(), 900);  // 푸시 딥링크: 클리닉 자동 열기
+else if(location.hash === '#clinic'){                                          // 푸시·계산기 딥링크: 클리닉 자동 열기
+  try{
+    const pe = +(new URLSearchParams(location.search).get('pd') || 0);
+    if(pe >= 10000 && pe <= 500000){                                           // 계산기에서 넘어온 평단 (BTC USDT 범위만)
+      const old = JSON.parse(localStorage.getItem('pdPos')||'null');
+      localStorage.setItem('pdPos', JSON.stringify({s:'long', e:Math.round(pe), l:(old&&old.l)||10}));
+    }                                                                          // → 카드 열리며 이 값으로 자동 진단까지 실행됨
+  }catch(e){}
+  setTimeout(()=>$('pdBtn').click(), 900);
+}
 
 // ---- 차트 탭 사이드: 실시간 핵심 지표 스트립 ----
 function csRender(){
