@@ -3685,7 +3685,7 @@ const PUSH_SUB_URL = 'https://ntfy.sh/rich-btcdash-push-sub-x8a2k9';
     if(hasMo){
       const mLabel = (new Date(Date.now()+32400000).getUTCMonth()+1)+'월';
       $$('.chg3-mo').forEach(e=>{
-        e.innerHTML = mLabel+' 한 달 누적 <b style="color:#2fd688;font-weight:800">+'+chg.mo+'%</b> · 익절 <b style="color:#ffd452">'+chg.mw+'건</b> 기준';
+        e.innerHTML = mLabel+' 한 달 누적 <b style="color:#2fd688;font-weight:800">+'+chg.mo+'%</b>';
       });
     }
     const inPos = chg && chg.st==='pos';
