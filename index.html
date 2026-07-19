@@ -908,7 +908,7 @@
       <span class="lv"><span class="dotw"><span class="ping"></span><span class="dot"></span></span>LIVE</span>
       <span class="cin"><span class="glowb"></span><span class="shine"></span>
         <span class="t1">🏆 챌린지 현황판</span>
-        <div class="chg3-numrow"><span class="lb">이번 주 수익률</span><span class="chg3-num">—</span></div>
+        <div class="chg3-numrow"><span class="lb">누적 수익률</span><span class="chg3-num">—</span></div>
         <div class="chg3-live"><span class="sp"></span><span>지표·시장 흐름 분석 중<span class="dots"><i>.</i><i>.</i><i>.</i></span> 진입 구간 탐색 중</span></div>
         <div class="chg3-last">최근 기록 집계 중…</div>
         <a class="chg3-btn" href="https://telegram.me/richtrading_support_bot?start=chgboard" target="_blank" rel="noopener"><span class="in">🏆 챌린지 참여하기 <span>— 참가비 0원</span></span></a>
@@ -1162,7 +1162,7 @@
       <span class="lv"><span class="dotw"><span class="ping"></span><span class="dot"></span></span>LIVE</span>
       <span class="cin"><span class="glowb"></span><span class="shine"></span>
         <span class="t1">🏆 챌린지 현황판</span>
-        <div class="chg3-numrow"><span class="lb">이번 주 수익률</span><span class="chg3-num">—</span></div>
+        <div class="chg3-numrow"><span class="lb">누적 수익률</span><span class="chg3-num">—</span></div>
         <div class="chg3-live"><span class="sp"></span><span>지표·시장 흐름 분석 중<span class="dots"><i>.</i><i>.</i><i>.</i></span> 진입 구간 탐색 중</span></div>
         <div class="chg3-last">최근 기록 집계 중…</div>
         <a class="chg3-btn" href="https://telegram.me/richtrading_support_bot?start=chgboard" target="_blank" rel="noopener"><span class="in">🏆 챌린지 참여하기 <span>— 참가비 0원</span></span></a>
@@ -3667,8 +3667,13 @@ const PUSH_SUB_URL = 'https://ntfy.sh/rich-btcdash-push-sub-x8a2k9';
     let liveHtml, tickHtml;
     if(inPos){
       const m = chg.posm||0, tm = m>=60 ? Math.floor(m/60)+'시간 '+(m%60)+'분' : m+'분';
-      liveHtml = '⚡ <b>포지션 운용 중 · '+tm+'째</b> · 분할 진입 <b>'+(chg.stg||1)+'/3</b> — 실시간 진행은 챌린지방에서';
-      tickHtml = '⚡ 포지션 운용 중 · '+tm+'째 · 분할 <b>'+(chg.stg||1)+'/3</b>';
+      if(m >= 360){   // 6시간+ 장기 보유 — 조급함 대신 전략으로 읽히게
+        liveHtml = '⚡ <b>포지션 관리 중 · '+tm+'째</b> — 서두르지 않는 것도 전략입니다';
+        tickHtml = '⚡ 포지션 관리 중 · '+tm+'째';
+      }else{
+        liveHtml = '⚡ <b>포지션 운용 중 · '+tm+'째</b> · 분할 진입 <b>'+(chg.stg||1)+'/3</b> — 실시간 진행은 챌린지방에서';
+        tickHtml = '⚡ 포지션 운용 중 · '+tm+'째 · 분할 <b>'+(chg.stg||1)+'/3</b>';
+      }
     }else{
       liveHtml = '지표 <b>'+cnt.toLocaleString()+'</b>개·시장 흐름 분석 중<span class="dots"><i>.</i><i>.</i><i>.</i></span> 진입 구간 탐색 중';
       tickHtml = '지표 <b>'+cnt.toLocaleString()+'</b>개 분석 중 · 진입 자리 탐색';
