@@ -918,6 +918,8 @@
         <div class="chg3-last">최근 기록 집계 중…</div>
         <a class="chg3-btn" href="https://telegram.me/richtrading_support_bot?start=chgboard" target="_blank" rel="noopener"><span class="in">🏆 챌린지 참여하기 <span>— 참가비 0원</span></span></a>
         <div class="chg3-qs">
+          <button class="chg3-q" type="button" data-t="chgMoP" style="display:none">▸ 이번 달 누적 수익률 보기</button>
+          <div class="chg3-a chg3-mo" id="chgMoP"></div>
           <button class="chg3-q" type="button" data-t="chgQa1p">▸ 챌린지가 뭔가요?</button>
           <div class="chg3-a" id="chgQa1p">내 거래소로 직접 매매하는 실전 매매 챌린지예요. 수천 개 지표를 실시간 분석해 진입 구간이 포착되면 참여자에게 실시간으로 전달돼요. 시작 안내부터 세팅까지, 궁금한 부분은 담당자가 1:1로 도와드리고요. 모의투자·게임이 아니라 실제 계좌의 수익을 만드는 과정이고, 기수 단위로 소수만 진행해요.</div>
           <button class="chg3-q" type="button" data-t="chgQa2p">▸ 왜 무료인가요?</button>
@@ -1173,6 +1175,8 @@
         <div class="chg3-last">최근 기록 집계 중…</div>
         <a class="chg3-btn" href="https://telegram.me/richtrading_support_bot?start=chgboard" target="_blank" rel="noopener"><span class="in">🏆 챌린지 참여하기 <span>— 참가비 0원</span></span></a>
         <div class="chg3-qs">
+          <button class="chg3-q" type="button" data-t="chgMo" style="display:none">▸ 이번 달 누적 수익률 보기</button>
+          <div class="chg3-a chg3-mo" id="chgMo"></div>
           <button class="chg3-q" type="button" data-t="chgQa1">▸ 챌린지가 뭔가요?</button>
           <div class="chg3-a" id="chgQa1">내 거래소로 직접 매매하는 실전 매매 챌린지예요. 수천 개 지표를 실시간 분석해 진입 구간이 포착되면 참여자에게 실시간으로 전달돼요. 시작 안내부터 세팅까지, 궁금한 부분은 담당자가 1:1로 도와드리고요. 모의투자·게임이 아니라 실제 계좌의 수익을 만드는 과정이고, 기수 단위로 소수만 진행해요.</div>
           <button class="chg3-q" type="button" data-t="chgQa2">▸ 왜 무료인가요?</button>
@@ -3675,6 +3679,15 @@ const PUSH_SUB_URL = 'https://ntfy.sh/rich-btcdash-push-sub-x8a2k9';
         e.innerHTML = '지난주 <b class="'+(chg.pret<0?'dn':'')+'">'+(chg.pret>=0?'+':'')+chg.pret+'%</b>';
       }else e.style.display = 'none';
     });
+    // 이번 달 누적 (접이식) — 데이터 있을 때만 토글 노출
+    const hasMo = chg && typeof chg.mo==='number' && chg.mw > 0;
+    $$('button[data-t="chgMo"],button[data-t="chgMoP"]').forEach(b=>{ b.style.display = hasMo?'':'none'; });
+    if(hasMo){
+      const mLabel = (new Date(Date.now()+32400000).getUTCMonth()+1)+'월';
+      $$('.chg3-mo').forEach(e=>{
+        e.innerHTML = mLabel+' 한 달 누적 <b style="color:#2fd688;font-weight:800">+'+chg.mo+'%</b> · 익절 <b style="color:#ffd452">'+chg.mw+'건</b> 기준';
+      });
+    }
     const inPos = chg && chg.st==='pos';
     let liveHtml, tickHtml;
     if(inPos){
