@@ -737,6 +737,7 @@
   .chg3-num.dn{background:linear-gradient(180deg,#ffc2cd,#f6465d 60%,#c72844);-webkit-background-clip:text;background-clip:text}
   .chg3-live{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;margin:11px auto 0;width:fit-content;max-width:100%;padding:8px 14px;border:1px solid #2a3140;border-radius:999px;background:rgba(26,33,48,.6);font-size:12px;color:#c9d2dd;white-space:nowrap;overflow:hidden}
   .chg3-live.pos{white-space:normal;line-height:1.55;border-radius:12px;text-align:center}
+  .chg3-ctx{position:relative;margin:9px auto -3px;font-size:10.5px;font-weight:700;color:#5b6472;letter-spacing:.2px}
   .chg3-live .sp{flex-shrink:0;width:12px;height:12px;border-radius:50%;border:2px solid #2a3140;border-top-color:#f0b90b;animation:chg2spin 1s linear infinite}
   .chg3-live b{color:#ffd452;font-variant-numeric:tabular-nums}
   .chg3-live .dots i{animation:chg2dot 1.4s infinite;font-style:normal}
@@ -908,7 +909,7 @@
       <span class="lv"><span class="dotw"><span class="ping"></span><span class="dot"></span></span>LIVE</span>
       <span class="cin"><span class="glowb"></span><span class="shine"></span>
         <span class="t1">🏆 챌린지 현황판</span>
-        <div class="chg3-numrow"><span class="lb">누적 수익률</span><span class="chg3-num">—</span></div>
+        <div class="chg3-numrow"><span class="lb">이번 주 누적 수익률</span><span class="chg3-num">—</span></div>
         <div class="chg3-live"><span class="sp"></span><span>지표·시장 흐름 분석 중<span class="dots"><i>.</i><i>.</i><i>.</i></span> 진입 구간 탐색 중</span></div>
         <div class="chg3-last">최근 기록 집계 중…</div>
         <a class="chg3-btn" href="https://telegram.me/richtrading_support_bot?start=chgboard" target="_blank" rel="noopener"><span class="in">🏆 챌린지 참여하기 <span>— 참가비 0원</span></span></a>
@@ -1162,7 +1163,7 @@
       <span class="lv"><span class="dotw"><span class="ping"></span><span class="dot"></span></span>LIVE</span>
       <span class="cin"><span class="glowb"></span><span class="shine"></span>
         <span class="t1">🏆 챌린지 현황판</span>
-        <div class="chg3-numrow"><span class="lb">누적 수익률</span><span class="chg3-num">—</span></div>
+        <div class="chg3-numrow"><span class="lb">이번 주 누적 수익률</span><span class="chg3-num">—</span></div>
         <div class="chg3-live"><span class="sp"></span><span>지표·시장 흐름 분석 중<span class="dots"><i>.</i><i>.</i><i>.</i></span> 진입 구간 탐색 중</span></div>
         <div class="chg3-last">최근 기록 집계 중…</div>
         <a class="chg3-btn" href="https://telegram.me/richtrading_support_bot?start=chgboard" target="_blank" rel="noopener"><span class="in">🏆 챌린지 참여하기 <span>— 참가비 0원</span></span></a>
@@ -3667,21 +3668,28 @@ const PUSH_SUB_URL = 'https://ntfy.sh/rich-btcdash-push-sub-x8a2k9';
     let liveHtml, tickHtml;
     if(inPos){
       const m = chg.posm||0, tm = m>=60 ? Math.floor(m/60)+'시간 '+(m%60)+'분' : m+'분';
-      if(m >= 360){   // 6시간+ 장기 보유 — 조급함 대신 전략으로 읽히게
-        liveHtml = '⚡ <b>포지션 관리 중 · '+tm+'째</b> — 서두르지 않는 것도 전략입니다';
-        tickHtml = '⚡ 포지션 관리 중 · '+tm+'째';
-      }else{
-        liveHtml = '⚡ <b>포지션 운용 중 · '+tm+'째</b> · 분할 진입 <b>'+(chg.stg||1)+'/3</b> — 실시간 진행은 챌린지방에서';
-        tickHtml = '⚡ 포지션 운용 중 · '+tm+'째 · 분할 <b>'+(chg.stg||1)+'/3</b>';
-      }
+      liveHtml = '⚡ <b>포지션 운용 중 · '+tm+'째</b> · 분할 진입 <b>'+(chg.stg||1)+'/3</b> — 실시간 진행은 챌린지방에서';
+      tickHtml = '⚡ 포지션 운용 중 · '+tm+'째 · 분할 <b>'+(chg.stg||1)+'/3</b>';
     }else{
       liveHtml = '지표 <b>'+cnt.toLocaleString()+'</b>개·시장 흐름 분석 중<span class="dots"><i>.</i><i>.</i><i>.</i></span> 진입 구간 탐색 중';
       tickHtml = '지표 <b>'+cnt.toLocaleString()+'</b>개 분석 중 · 진입 자리 탐색';
+    }
+    // 장기 보유(6시간+) 땐 상태줄 위에 시장 상황 부제 — "왜 오래 들고 있는지"를 시장이 설명
+    let ctxTxt = '';
+    if(inPos && (chg.posm||0) >= 360){
+      const wknd = [0,6].includes(new Date().getDay());
+      if(mkt && mkt.rng < 2.5) ctxTxt = (wknd?'주말 · ':'')+'변동성 낮은 구간 — 시장이 거의 안 움직이는 중';
+      else if(wknd) ctxTxt = '주말 장세 — 거래량 적은 구간';
     }
     $$('#secChg .chg3-live, #secChgPC .chg3-live').forEach(e=>{
       e.classList.toggle('pos', inPos);
       const sp = e.querySelector('.sp'); if(sp) sp.style.display = inPos?'none':'';
       const tx = e.querySelector('span:last-of-type'); if(tx) tx.innerHTML = liveHtml;
+      let cx = e.parentElement.querySelector('.chg3-ctx');
+      if(ctxTxt){
+        if(!cx){ cx = document.createElement('div'); cx.className = 'chg3-ctx'; e.parentElement.insertBefore(cx, e); }
+        cx.textContent = ctxTxt;
+      }else if(cx) cx.remove();
     });
     const tm2 = document.querySelector('#chgTick .m'); if(tm2) tm2.innerHTML = tickHtml;
     const tsp = document.querySelector('#chgTick > .sp'); if(tsp) tsp.style.display = inPos?'none':'';
@@ -3698,6 +3706,14 @@ const PUSH_SUB_URL = 'https://ntfy.sh/rich-btcdash-push-sub-x8a2k9';
     try{ const s = await fetch(CHG_RAW+'?ts='+Date.now()).then(r=>r.json()); if(s) chg = s; }catch(e){}
     render();
   };
+  let mkt = null;   // 24시간 변동폭 — 장기 보유 부제용
+  const loadMkt = async()=>{
+    try{
+      const t = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT').then(r=>r.json());
+      mkt = {rng: (t.highPrice - t.lowPrice) / t.lastPrice * 100};
+    }catch(e){}
+  };
+  loadMkt(); setInterval(loadMkt, 300_000);
   load(); setInterval(load, 60_000);
   setInterval(()=>{ cnt += 1; if(!chg || chg.st!=='pos') render(); }, 1800);
   // Q&A 접이식
