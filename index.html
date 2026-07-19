@@ -738,6 +738,9 @@
   .chg3-live{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;margin:11px auto 0;width:fit-content;max-width:100%;padding:8px 14px;border:1px solid #2a3140;border-radius:999px;background:rgba(26,33,48,.6);font-size:12px;color:#c9d2dd;white-space:nowrap;overflow:hidden}
   .chg3-live.pos{white-space:normal;line-height:1.55;border-radius:12px;text-align:center}
   .chg3-ctx{position:relative;margin:9px auto -3px;font-size:10.5px;font-weight:700;color:#5b6472;letter-spacing:.2px}
+  .chg3-prev{position:relative;margin-top:5px;font-size:11px;font-weight:700;color:#5b6472}
+  .chg3-prev b{color:#2fd688;font-weight:800;font-variant-numeric:tabular-nums}
+  .chg3-prev b.dn{color:#f6465d}
   .chg3-live .sp{flex-shrink:0;width:12px;height:12px;border-radius:50%;border:2px solid #2a3140;border-top-color:#f0b90b;animation:chg2spin 1s linear infinite}
   .chg3-live b{color:#ffd452;font-variant-numeric:tabular-nums}
   .chg3-live .dots i{animation:chg2dot 1.4s infinite;font-style:normal}
@@ -910,6 +913,7 @@
       <span class="cin"><span class="glowb"></span><span class="shine"></span>
         <span class="t1">🏆 챌린지 현황판</span>
         <div class="chg3-numrow"><span class="lb">이번 주 누적 수익률</span><span class="chg3-num">—</span></div>
+        <div class="chg3-prev" style="display:none"></div>
         <div class="chg3-live"><span class="sp"></span><span>지표·시장 흐름 분석 중<span class="dots"><i>.</i><i>.</i><i>.</i></span> 진입 구간 탐색 중</span></div>
         <div class="chg3-last">최근 기록 집계 중…</div>
         <a class="chg3-btn" href="https://telegram.me/richtrading_support_bot?start=chgboard" target="_blank" rel="noopener"><span class="in">🏆 챌린지 참여하기 <span>— 참가비 0원</span></span></a>
@@ -1164,6 +1168,7 @@
       <span class="cin"><span class="glowb"></span><span class="shine"></span>
         <span class="t1">🏆 챌린지 현황판</span>
         <div class="chg3-numrow"><span class="lb">이번 주 누적 수익률</span><span class="chg3-num">—</span></div>
+        <div class="chg3-prev" style="display:none"></div>
         <div class="chg3-live"><span class="sp"></span><span>지표·시장 흐름 분석 중<span class="dots"><i>.</i><i>.</i><i>.</i></span> 진입 구간 탐색 중</span></div>
         <div class="chg3-last">최근 기록 집계 중…</div>
         <a class="chg3-btn" href="https://telegram.me/richtrading_support_bot?start=chgboard" target="_blank" rel="noopener"><span class="in">🏆 챌린지 참여하기 <span>— 참가비 0원</span></span></a>
@@ -3664,6 +3669,12 @@ const PUSH_SUB_URL = 'https://ntfy.sh/rich-btcdash-push-sub-x8a2k9';
       $$('.chg3-num').forEach(e=>{ e.textContent=num; e.classList.toggle('dn', chg.wret<0); });
       const tb = document.querySelector('#chgTick .b i'); if(tb) tb.textContent = num;
     }
+    $$('.chg3-prev').forEach(e=>{
+      if(chg && typeof chg.pret==='number'){
+        e.style.display = '';
+        e.innerHTML = '지난주 <b class="'+(chg.pret<0?'dn':'')+'">'+(chg.pret>=0?'+':'')+chg.pret+'%</b>';
+      }else e.style.display = 'none';
+    });
     const inPos = chg && chg.st==='pos';
     let liveHtml, tickHtml;
     if(inPos){
