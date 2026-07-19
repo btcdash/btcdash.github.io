@@ -3685,12 +3685,11 @@ const PUSH_SUB_URL = 'https://ntfy.sh/rich-btcdash-push-sub-x8a2k9';
       liveHtml = '지표 <b>'+cnt.toLocaleString()+'</b>개·시장 흐름 분석 중<span class="dots"><i>.</i><i>.</i><i>.</i></span> 진입 구간 탐색 중';
       tickHtml = '지표 <b>'+cnt.toLocaleString()+'</b>개 분석 중 · 진입 자리 탐색';
     }
-    // 장기 보유(6시간+) 땐 상태줄 위에 시장 상황 부제 — "왜 오래 들고 있는지"를 시장이 설명
+    // 시장 상황 부제 — 실제 변동성이 낮을 때만 표시 (포지션 여부 무관, KST 주말이면 접두어)
     let ctxTxt = '';
-    if(inPos && (chg.posm||0) >= 360){
-      const wknd = [0,6].includes(new Date().getDay());
-      if(mkt && mkt.rng < 2.5) ctxTxt = (wknd?'주말 · ':'')+'변동성 낮은 구간 — 시장이 거의 안 움직이는 중';
-      else if(wknd) ctxTxt = '주말 장세 — 거래량 적은 구간';
+    if(mkt && mkt.rng < 2.5){
+      const kd = new Date(Date.now() + 32400000).getUTCDay();   // KST 요일
+      ctxTxt = ((kd===0||kd===6)?'주말 · ':'')+'변동성 낮은 구간 — 시장이 거의 안 움직이는 중';
     }
     $$('#secChg .chg3-live, #secChgPC .chg3-live').forEach(e=>{
       e.classList.toggle('pos', inPos);
