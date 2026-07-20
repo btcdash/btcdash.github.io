@@ -2673,6 +2673,7 @@ async function vCompute(){
     window.__vPx = last;
     const ma = n => closes.slice(-n).reduce((a,b)=>a+b,0)/n;
     const ma20=ma(20), ma50=ma(50), ma200=ma(200);
+    window.__trendMA = {last, ma50, ma200};   // 추세 필터용 (아래 종합 판정에서 역발상 롱 억제)
     // 이동평균 배열
     if(ma20>ma50 && ma50>ma200){ bull++; R('📊 이동평균 배열', `20>50>200`, '정배열 · 상승 추세','up'); }
     else if(ma20<ma50 && ma50<ma200){ bear++; R('📊 이동평균 배열', `20<50<200`, '역배열 · 하락 추세','down'); }
@@ -2845,10 +2846,21 @@ async function vCompute(){
 
   // 종합 판정 — 방향은 항상 헤드라인으로 선언, 과열은 "진입 방법"만 바꾼다 (방향 추천을 뭉개지 않게)
   let verdict;
-  const net = bull - bear;
-  window.__vSum = {bull, bear, risk, evNear, net, at: Date.now()};
+  const net0 = bull - bear;
+  // ── 추세 필터 (2026-07-20): 역발상 신호(과매도·공포·펀딩역전 등)가 추세 거스르는 진입을 만드는 것 차단 — "떨어지는 칼 잡지 않기" ──
+  const _t = window.__trendMA || {};
+  const downTrend = _t.last && _t.last < _t.ma50 && _t.ma50 < _t.ma200;   // 역배열 = 명확한 하락 추세
+  const upTrend   = _t.last && _t.last > _t.ma50 && _t.ma50 > _t.ma200;   // 정배열 = 명확한 상승 추세
+  let net = net0, trendBlock = 0;
+  if(downTrend && net0 >= 3){ net = 2; trendBlock = -1; }   // 하락 추세 중 롱 신호 → 관망으로 강등
+  if(upTrend   && net0 <= -3){ net = -2; trendBlock = 1; }  // 상승 추세 중 숏 신호 → 관망으로 강등
+  window.__vSum = {bull, bear, risk, evNear, net, net0, downTrend, upTrend, at: Date.now()};
   if(evNear)
     verdict = {e:'🚫', t:'지금은 쉬어갈 때예요', s:'주요 발표 직전·직후예요 — 방향이 도박이 되는 구간이라 신규 진입은 비추천해요'};
+  else if(trendBlock === -1)
+    verdict = {e:'🤔', t:'반등 신호는 있지만 — 추세는 아래예요', s:`과매도·공포 같은 반등 근거 ${bull}개가 떴지만, 지금은 이동평균 역배열 = 명확한 하락 추세예요 — 떨어지는 칼을 잡기보다 추세가 돌아설 때까지 관망이 유리해요`};
+  else if(trendBlock === 1)
+    verdict = {e:'🤔', t:'과열 신호는 있지만 — 추세는 위예요', s:`과열·차익 같은 하락 근거 ${bear}개가 떴지만, 지금은 이동평균 정배열 = 명확한 상승 추세예요 — 추세를 거슬러 숏 잡기보다 눌림목 매수가 유리해요`};
   else if(net>=6)
     verdict = {e:'🚀', t:'롱(상승) 관점 — 근거가 압도적이에요', s: risk>=2
       ? `상승 근거 ${bull}개 vs 하락 ${bear}개, 방향은 확실히 위쪽이에요. 다만 단기 과열 신호 ${risk}개 — 신규 진입은 추격보다 눌림목(잠깐 조정)에서 잡는 게 유리하고, 이미 롱이면 익절선 올려가며 최대한 끌고 가는 자리예요`
