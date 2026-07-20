@@ -268,6 +268,15 @@
   #installBar .txt span{font-size:12px;color:var(--ink2)}
   #installBar .go{background:var(--accent);color:#111;font-weight:800;font-size:13px;padding:10px 16px;border-radius:8px;border:0;white-space:nowrap;cursor:pointer}
   #installBar .x{background:none;border:0;color:var(--ink3);font-size:20px;cursor:pointer;padding:0 4px}
+  /* 챌린지 하단 고정 바 (모바일 엄지존 — 클릭 핵심) */
+  #chgBar{position:fixed;left:0;right:0;bottom:0;z-index:99990;background:linear-gradient(180deg,#0d1a17,#111722);border-top:1px solid rgba(53,224,138,.35);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:none;align-items:center;gap:11px;box-shadow:0 -6px 24px rgba(0,0,0,.5)}
+  #chgBar.show{display:flex}
+  #chgBar .txt{flex:1;min-width:0}
+  #chgBar .txt b{font-size:12.5px;display:block;color:#7fe3b4;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #chgBar .txt span{font-size:11px;color:var(--ink2);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #chgBar .go{background:linear-gradient(92deg,#35e08a,#1fb874);color:#042016;font-weight:900;font-size:13px;padding:11px 14px;border-radius:9px;white-space:nowrap;text-decoration:none;flex-shrink:0;box-shadow:0 3px 12px rgba(53,224,138,.28)}
+  #chgBar .x{background:none;border:0;color:var(--ink3);font-size:18px;cursor:pointer;padding:0 2px;flex-shrink:0}
+  @media(min-width:1001px){#chgBar{display:none !important}}
   /* 아이폰 안내 오버레이 */
   #iosGuide{position:fixed;inset:0;z-index:100001;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;padding:24px}
   #iosGuide.show{display:flex}
@@ -769,6 +778,18 @@
   .chg-tick .m b{color:#ffd452}
   .chg-tick:hover .go{color:#ffd452}
   .chg-tick .sp{flex-shrink:0;width:11px;height:11px;border-radius:50%;border:2px solid #2a3140;border-top-color:#f0b90b;animation:chg2spin 1s linear infinite;margin-right:-3px}
+  /* 챌린지 티커 3줄 + 참여 버튼 (모바일 첫 화면 핵심) */
+  .chg-tick{flex-direction:row;align-items:center;gap:14px;padding:12px 14px;margin:-2px 0 16px;border-width:1.5px;box-shadow:0 3px 16px rgba(240,185,11,.08)}
+  .chg-tick .chgt-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+  .chg-tick .b{font-size:14px;align-items:center;white-space:nowrap}
+  .chg-tick .b i{font-size:14px;padding:2px 9px;font-weight:900;background:rgba(53,224,138,.10);color:#5dd39e;border:1.5px solid rgba(53,224,138,.55);border-radius:7px;box-shadow:0 0 11px rgba(53,224,138,.22)}
+  .chg-tick .statline{display:flex;align-items:center;gap:6px;min-width:0}
+  .chg-tick .ldot{flex-shrink:0;width:6px;height:6px;border-radius:50%;background:#35e08a;box-shadow:0 0 6px #35e08a99;animation:chatpulse 2s infinite}
+  .chg-tick .stat{font-size:11.5px;color:#9aa6b4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chg-tick .stat b{color:#ffd452;font-weight:800}
+  .chg-tick .cta3{font-size:11.5px;color:#ffd452;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chg-tick .cta3 b{color:#fff;font-weight:800}
+  .chg-tick .go{flex-shrink:0;font-size:13.5px;font-weight:900;background:linear-gradient(92deg,#ffd452,#ff9d2e);color:#2b1600;padding:13px 16px;border-radius:11px;text-align:center;line-height:1.15;white-space:nowrap;box-shadow:0 3px 12px rgba(240,185,11,.3)}
   @media(max-width:760px){
     .chg3-num{font-size:33px}
     .chg3-live{font-size:11px;padding:7px 11px}
@@ -829,7 +850,7 @@
   <div class="adwrap" id="adwrap">
 
     <!-- 배너 1: 텔레그램 채널 -->
-    <a class="ad ad-2 on" id="ad1" target="_blank" href="#">
+    <a class="ad ad-2" id="ad1" target="_blank" href="#">
       <div class="ad-coins">
         <b style="top:12%;right:26%">🪙</b>
         <b style="top:55%;right:8%">💎</b>
@@ -877,7 +898,7 @@
     </a>
 
     <!-- 배너 3: 트레이딩 챌린지 -->
-    <a class="ad ad-3" id="ad2" target="_blank" href="https://telegram.me/richtrading_support_bot">
+    <a class="ad ad-3 on" id="ad2" target="_blank" href="https://telegram.me/richtrading_support_bot?start=chgboard">
       <div class="ad-coins">
         <b style="top:14%;right:24%">🏆</b>
         <b style="top:58%;right:9%">📈</b>
@@ -1027,11 +1048,13 @@
   </a>
 
   <!-- 🏆 챌린지 현황판 바로가기 티커 — 모바일 전용 (첫 화면 노출) -->
-  <a class="lg-tick chg-tick" id="chgTick" href="#secChg">
-    <span class="b">🏆 챌린지 <i>—</i></span>
-    <span class="sp"></span>
-    <span class="m">지표·시장 흐름 분석 중 · 진입 자리 탐색</span>
-    <span class="go">보기 →</span>
+  <a class="lg-tick chg-tick" id="chgTick" href="https://telegram.me/richtrading_support_bot?start=chgboard" target="_blank" rel="noopener">
+    <span class="chgt-main">
+      <span class="b">🏆 챌린지 · 이번주 누적 <i>—</i></span>
+      <span class="statline"><span class="ldot"></span><span class="stat">지표 분석 중…</span></span>
+      <span class="cta3">진입·물타기·익절 타이밍까지 <b>다 알려줘요</b></span>
+    </span>
+    <span class="go">참여하기 →</span>
   </a>
 
   <!-- 🤔 지금 들어가도 돼? — 핵심 무기 2개(판정쇼·클리닉)가 첫 화면에 먼저 -->
@@ -1443,6 +1466,11 @@
   </div>
 
   <!-- 앱 설치 안내 배너 (모바일) -->
+  <div id="chgBar">
+    <div class="txt"><b>🏆 무료 챌린지 · 실시간 진입 타이밍</b><span>초보도 그대로 따라 하면 돼요</span></div>
+    <a class="go" id="chgBarGo" href="https://telegram.me/richtrading_support_bot?start=chgboard" target="_blank" rel="noopener">문의하기 →</a>
+    <button class="x" id="chgBarX" aria-label="닫기">✕</button>
+  </div>
   <div id="installBar">
     <img src="icon-192.png" alt="앱 아이콘">
     <div class="txt"><b>앱으로 설치하기</b><span id="installSub">홈 화면에 추가하면 앱처럼 빠르게 열려요</span></div>
@@ -1487,8 +1515,8 @@ if (TELEGRAM_URL !== '#'){ $('ad1').href = TELEGRAM_URL; }
 // 레퍼럴 직접 링크: REFERRAL_URL — 문의 응대 시 개별 전달용으로만 사용
 
 // ---- 배너 롤링 (텔레그램·탭비트 8초, 챌린지는 12초로 조금 더 오래) ----
-let adIdx = 0, adTimer = null;
-const AD_DUR = [8000, 8000, 12000];
+let adIdx = 2, adTimer = null;
+const AD_DUR = [7000, 7000, 14000];
 function showAd(i, dir){
   adIdx = i;
   document.querySelectorAll('.ad').forEach((el,n)=>{
@@ -1500,7 +1528,7 @@ function showAd(i, dir){
   clearTimeout(adTimer);
   adTimer = setTimeout(()=>showAd((adIdx+1)%3), AD_DUR[i] || 8000);
 }
-adTimer = setTimeout(()=>showAd(1), AD_DUR[0]);
+adTimer = setTimeout(()=>showAd((adIdx+1)%3), AD_DUR[adIdx]);
 // 배너 좌우 스와이프 (모바일) — 스와이프 직후 링크 오클릭 방지 포함
 (function(){
   const w = $('adwrap'); if(!w) return;
@@ -1997,7 +2025,7 @@ async function loadChat(){
     if(last && $('lgTick')){
       const who = (last.name==='Group') ? '[리치]' : last.name;
       $('lgTickTxt').textContent = who+': '+(last.text ? last.text.replace(/\s+/g,' ') : '📷 사진');
-      $('lgTick').style.display='flex';
+      // 라운지 티커 노출 제거 (챌린지 우선 — 2026-07-20): 표시 안 함
     }
   }catch(e){ console.error('[소통방]', e); }
 }
@@ -3744,8 +3772,7 @@ const PUSH_SUB_URL = 'https://ntfy.sh/rich-btcdash-push-sub-x8a2k9';
         cx.textContent = ctxTxt;
       }else if(cx) cx.remove();
     });
-    const tm2 = document.querySelector('#chgTick .m'); if(tm2) tm2.innerHTML = tickHtml;
-    const tsp = document.querySelector('#chgTick > .sp'); if(tsp) tsp.style.display = inPos?'none':'';
+    const st2 = document.querySelector('#chgTick .stat'); if(st2) st2.innerHTML = tickHtml;
     if(chg && chg.last){
       const L = chg.last; let h;
       if(L.r==='익절') h = '<b class="up">✅ +'+L.p+'% 익절</b>';
@@ -3771,13 +3798,31 @@ const PUSH_SUB_URL = 'https://ntfy.sh/rich-btcdash-push-sub-x8a2k9';
   setInterval(()=>{ cnt += 1; if(!chg || chg.st!=='pos') render(); }, 1800);
   // Q&A 접이식
   $$('.chg3-q').forEach(q=>{ q.onclick = ()=>{ const a = document.getElementById(q.dataset.t); if(a) a.classList.toggle('on'); }; });
-  // 티커 → 현황판으로 스크롤 (모바일 전용 티커)
+  // 티커 → 챌린지 문의봇 직행 (클릭 집계)
   const tick = document.getElementById('chgTick');
-  if(tick) tick.onclick = e=>{
-    e.preventDefault();
-    const sec = document.getElementById('secChg');
-    if(sec) sec.scrollIntoView({behavior:'smooth', block:'center'});
-  };
+  if(tick) tick.addEventListener('click', ()=>{ try{ trackClick('chg'); }catch(e){} });
+})();
+</script>
+<script>
+/* 챌린지 하단 고정 바 — 모바일 전용, 클릭 유도 */
+(function(){
+  var bar=document.getElementById('chgBar'); if(!bar) return;
+  var go=document.getElementById('chgBarGo'), x=document.getElementById('chgBarX');
+  var install=document.getElementById('installBar');
+  function isMobile(){ return window.matchMedia('(max-width:1000px)').matches; }
+  function maybeShow(){
+    try{ if(sessionStorage.getItem('chgBarClosed')) return; }catch(e){}
+    if(!isMobile()) return;
+    if(install && install.classList.contains('show')) return;   // 설치바 있으면 양보
+    bar.classList.add('show');
+    document.body.style.paddingBottom='74px';
+  }
+  if(go) go.addEventListener('click', function(){ try{ trackClick('chg'); }catch(e){} });
+  if(x) x.addEventListener('click', function(){
+    bar.classList.remove('show'); document.body.style.paddingBottom='';
+    try{ sessionStorage.setItem('chgBarClosed','1'); }catch(e){}
+  });
+  setTimeout(maybeShow, 1500);
 })();
 </script>
 </body>
