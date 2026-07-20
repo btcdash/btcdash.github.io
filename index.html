@@ -3718,7 +3718,7 @@ const PUSH_SUB_URL = 'https://ntfy.sh/rich-btcdash-push-sub-x8a2k9';
     const tsp = document.querySelector('#chgTick > .sp'); if(tsp) tsp.style.display = inPos?'none':'';
     if(chg && chg.last){
       const L = chg.last; let h;
-      if(L.r==='익절') h = '<b class="up">✅ +10% 익절</b>';
+      if(L.r==='익절') h = '<b class="up">✅ +'+L.p+'% 익절</b>';
       else if(L.r==='본전') h = '<b>➖ 본전 정리</b>';
       else if(L.r==='청산') h = '<b class="dn">⛔ 청산 '+L.p+'%</b>';
       else h = L.p>=0 ? '<b class="up">✅ +'+L.p+'%</b>' : '<b class="dn">⛔ '+L.p+'%</b>';
