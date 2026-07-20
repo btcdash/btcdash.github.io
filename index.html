@@ -3751,7 +3751,7 @@ const PUSH_SUB_URL = 'https://ntfy.sh/rich-btcdash-push-sub-x8a2k9';
     let liveHtml, tickHtml;
     if(inPos){
       const m = chg.posm||0, tm = m>=60 ? Math.floor(m/60)+'시간 '+(m%60)+'분' : m+'분';
-      liveHtml = '⚡ <b>포지션 운용 중 · '+tm+'째</b> · 분할 진입 <b>'+(chg.stg||1)+'/3</b> — 실시간 진행은 챌린지방에서';
+      liveHtml = '⚡ <b>포지션 운용 중 · '+tm+'째</b> · 분할 진입 <b>'+(chg.stg||1)+'/3</b>';
       tickHtml = '⚡ 포지션 운용 중 · '+tm+'째 · 분할 <b>'+(chg.stg||1)+'/3</b>';
     }else{
       liveHtml = '지표 <b>'+cnt.toLocaleString()+'</b>개·시장 흐름 분석 중<span class="dots"><i>.</i><i>.</i><i>.</i></span> 진입 구간 탐색 중';
