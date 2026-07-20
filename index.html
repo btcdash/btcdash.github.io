@@ -2940,7 +2940,19 @@ function vHitRender(anim){
 let vSndOn = localStorage.getItem('vSnd')!=='0';
 const vQuiet = !localStorage.getItem('vSndSeen');    // 첫 방문은 볼륨 축소, 재방문부터 원래 볼륨
 function vVol(){ return 0.35 * (vQuiet ? 0.28 : 1); }
-function vAC(){ sndCtx = sndCtx || new (window.AudioContext||window.webkitAudioContext)(); if(sndCtx.state==='suspended') sndCtx.resume(); return sndCtx; }
+let vACUnlocked = false;
+function vAC(){
+  sndCtx = sndCtx || new (window.AudioContext||window.webkitAudioContext)();
+  if(sndCtx.state==='suspended') sndCtx.resume();
+  if(!vACUnlocked){                                    // 모바일 최초 unlock (iOS/안드 자동재생 정책)
+    vACUnlocked = true;
+    try{ const b=sndCtx.createBuffer(1,1,22050), s=sndCtx.createBufferSource(); s.buffer=b; s.connect(sndCtx.destination); s.start(0); }catch(e){}
+    try{ if(navigator.audioSession) navigator.audioSession.type='playback'; }catch(e){}   // iOS 무음(벨소리)스위치 무시 16.4+
+  }
+  return sndCtx;
+}
+// 페이지 첫 사용자 제스처에 오디오 컨텍스트 미리 깨워두기 — 판정쇼 소리가 비동기 타임라인이라 탭 순간 unlock 필요
+['pointerdown','touchend','click'].forEach(ev=>window.addEventListener(ev, ()=>{ try{ vAC(); }catch(e){} }, {capture:true, once:true}));
 function vOsc(type,f0,f1,dur,vol,when,curve){
   if(!vSndOn) return;
   try{
