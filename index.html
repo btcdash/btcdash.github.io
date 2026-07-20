@@ -2850,12 +2850,16 @@ async function vCompute(){
   const net0 = bull - bear;
   // ── 추세 필터 (2026-07-20): 역발상 신호(과매도·공포·펀딩역전 등)가 추세 거스르는 진입을 만드는 것 차단 — "떨어지는 칼 잡지 않기" ──
   const _t = window.__trendMA || {};
-  const downTrend = _t.last && _t.ma50 && _t.last < _t.ma50;   // 현재가 < 50시간MA = 하락 흐름 (역배열은 진행 중 급락을 놓쳐서 vs-ma50로 변경, 07-20)
-  const upTrend   = _t.last && _t.ma50 && _t.last > _t.ma50;   // 현재가 > 50시간MA = 상승 흐름
+  const belowMA = _t.last && _t.ma50 && _t.last < _t.ma50;                   // 현재가 < 50시간MA
+  const aboveMA = _t.last && _t.ma50 && _t.last > _t.ma50;
+  const downTrend = belowMA && _t.ma200 && _t.ma50 < _t.ma200;              // 역배열 = 확정 하락추세
+  const upTrend   = aboveMA && _t.ma200 && _t.ma50 > _t.ma200;              // 정배열 = 확정 상승추세
   let net = net0, trendBlock = 0;
-  // 추세매매: 하락 흐름이면 숏으로 기울임(균형·역발상 롱 포함), 상승 흐름이면 롱으로. 이미 추세보다 강한 반대편이 아니면 추세쪽 우세로 (백테스트 3년: 현재가<ma50 숏 74% · 무작위 71% 상회)
-  if(downTrend && net0 > -3){ net = Math.min(net0, -3); trendBlock = -1; }   // 하락장: net0가 숏우세(-3)보다 약하면 -3으로 당김, 더 강한 숏이면 그대로
-  if(upTrend   && net0 <  3){ net = Math.max(net0,  3); trendBlock = 1; }    // 상승장: net0가 롱우세(+3)보다 약하면 +3으로, 더 강한 롱이면 그대로
+  // 확정 추세(역/정배열)에선 균형도 추세쪽으로 기울임. 박스권(추세 미확정)에선 추세 거스르는 강한 역발상(±3)만 차단해 '떨어지는 칼' 방지하고, 균형은 관망 유지 → 횡보 휩쏘 방지 (07-20 재조정)
+  if(downTrend && net0 > -3){ net = Math.min(net0, -3); trendBlock = -1; }   // 확정 하락: 숏 우세로 기울임
+  else if(upTrend && net0 < 3){ net = Math.max(net0, 3); trendBlock = 1; }   // 확정 상승: 롱 우세로
+  else if(belowMA && net0 >= 3){ net = -3; trendBlock = -1; }                // 박스권 급락 중 강한 역발상 롱 → 숏으로 차단
+  else if(aboveMA && net0 <= -3){ net = 3; trendBlock = 1; }                 // 박스권 급등 중 강한 역발상 숏 → 롱으로
   window.__vSum = {bull, bear, risk, evNear, net, net0, downTrend, upTrend, at: Date.now()};
   if(evNear)
     verdict = {e:'🚫', t:'지금은 쉬어갈 때예요', s:'주요 발표 직전·직후예요 — 방향이 도박이 되는 구간이라 신규 진입은 비추천해요'};
