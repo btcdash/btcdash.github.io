@@ -2853,9 +2853,9 @@ async function vCompute(){
   const downTrend = _t.last && _t.ma50 && _t.last < _t.ma50;   // 현재가 < 50시간MA = 하락 흐름 (역배열은 진행 중 급락을 놓쳐서 vs-ma50로 변경, 07-20)
   const upTrend   = _t.last && _t.ma50 && _t.last > _t.ma50;   // 현재가 > 50시간MA = 상승 흐름
   let net = net0, trendBlock = 0;
-  // 추세 거스르는 역발상 진입 차단: 하락 흐름 중 롱 신호 → '숏 우세'로, 상승 흐름 중 숏 신호 → '롱 우세'로 (백테스트 3년: 현재가<ma50 숏 74% · 무작위 71% 상회)
-  if(downTrend && net0 >= 3){ net = -3; trendBlock = -1; }
-  if(upTrend   && net0 <= -3){ net =  3; trendBlock = 1; }
+  // 추세매매: 하락 흐름이면 숏으로 기울임(균형·역발상 롱 포함), 상승 흐름이면 롱으로. 이미 추세보다 강한 반대편이 아니면 추세쪽 우세로 (백테스트 3년: 현재가<ma50 숏 74% · 무작위 71% 상회)
+  if(downTrend && net0 > -3){ net = Math.min(net0, -3); trendBlock = -1; }   // 하락장: net0가 숏우세(-3)보다 약하면 -3으로 당김, 더 강한 숏이면 그대로
+  if(upTrend   && net0 <  3){ net = Math.max(net0,  3); trendBlock = 1; }    // 상승장: net0가 롱우세(+3)보다 약하면 +3으로, 더 강한 롱이면 그대로
   window.__vSum = {bull, bear, risk, evNear, net, net0, downTrend, upTrend, at: Date.now()};
   if(evNear)
     verdict = {e:'🚫', t:'지금은 쉬어갈 때예요', s:'주요 발표 직전·직후예요 — 방향이 도박이 되는 구간이라 신규 진입은 비추천해요'};
