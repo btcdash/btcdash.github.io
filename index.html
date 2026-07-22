@@ -2956,7 +2956,11 @@ async function vHitLoad(){
     const s = await fetch(HIT_RAW+'?ts='+Date.now()).then(r=>r.json());
     if(!s) return;
     window.__vHitS = s; if(!vShowing) vHitRender(false);
-    $('vHitBadge').style.display='none';   // 적중률 뱃지 노출 중단 (2026-07-20 사장님 지시)
+    const n = (s.h|0)+(s.m|0);
+    if(n >= 10){   // 07-22 재노출 (사장님 지시) — 채점 10건 미만이면 자동 숨김 (저표본 % 왜곡 방지)
+      $('vHitBadgeTx').innerHTML = '최근 24시간 판정 적중 <b>'+(s.h|0)+' / '+n+'</b> · 적중률 <b>'+Math.round((s.h|0)/n*100)+'%</b>';
+      $('vHitBadge').style.display='';
+    } else { $('vHitBadge').style.display='none'; }
   }catch(e){}
 }
 vHitLoad();   // 첫 화면 뱃지용 — 카드 열 때도 다시 불러와 갱신됨
@@ -2965,7 +2969,7 @@ function vHitRender(anim){
   const n = (s.h|0)+(s.m|0);
   if(n >= 10) $('vHitTx').innerHTML = '최근 24시간, 판정을 확인한 <b>'+n+'건</b> 기준 적중 <b>'+(s.h|0)+'건</b> · 적중률 <b>'+Math.round((s.h|0)/n*100)+'%</b>';
   else $('vHitTx').innerHTML = '적중 기록 집계 중 <b>('+n+'/10)</b>'+((s.pend|0) ? ' · 실시간 채점 <b>'+(s.pend|0)+'건</b>' : ' — 10건 이상 쌓이면 적중률이 표시됩니다');
-  const el = $('vHit'); el.style.display='none';   // 적중률 줄 노출 중단 (2026-07-20 사장님 지시)
+  const el = $('vHit'); el.style.display='';   // 07-22 재노출 (사장님 지시) — 10건 미만이면 위 문구가 '집계 중'으로 표시
   if(anim && window.gsap) gsap.fromTo(el,{opacity:0,y:6},{opacity:1,y:0,duration:.4,ease:'power2.out'});
   else el.style.opacity=1;
 }
