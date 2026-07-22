@@ -3753,11 +3753,15 @@ const PUSH_SUB_URL = 'https://ntfy.sh/rich-btcdash-push-sub-x8a2k9';
       liveHtml = '지표 <b>'+cnt.toLocaleString()+'</b>개·시장 흐름 분석 중<span class="dots"><i>.</i><i>.</i><i>.</i></span> 진입 구간 탐색 중';
       tickHtml = '지표 <b>'+cnt.toLocaleString()+'</b>개 분석 중 · 진입 자리 탐색';
     }
-    // 시장 상황 부제 — 실제 변동성이 낮을 때만 표시 (포지션 여부 무관, KST 주말이면 접두어)
+    // 시장 상황 부제 — 실제 24h 시세 기준 5가지 장세 멘트 (2026-07-22 확정, 보통 장은 미표시)
     let ctxTxt = '';
-    if(mkt && mkt.rng < 2.5){
+    if(mkt){
       const kd = new Date(Date.now() + 32400000).getUTCDay();   // KST 요일
-      ctxTxt = ((kd===0||kd===6)?'주말 · ':'')+'변동성 낮은 구간 — 시장이 거의 안 움직이는 중';
+      const wk = (kd===0||kd===6) ? '주말 · ' : '';
+      if(mkt.chg >= 3)        ctxTxt = wk+'상승 변동 큰 구간 — 시장이 강하게 움직이는 중';
+      else if(mkt.chg <= -3)  ctxTxt = wk+'하락 변동 큰 구간 — 시장이 크게 흔들리는 중';
+      else if(mkt.rng >= 5)   ctxTxt = wk+'변동성 큰 구간 — 위아래로 크게 출렁이는 중';
+      else if(mkt.rng < 2.5)  ctxTxt = wk+'변동성 낮은 구간 — 시장이 거의 안 움직이는 중';
     }
     $$('#secChg .chg3-live, #secChgPC .chg3-live').forEach(e=>{
       e.classList.toggle('pos', inPos);
@@ -3787,7 +3791,7 @@ const PUSH_SUB_URL = 'https://ntfy.sh/rich-btcdash-push-sub-x8a2k9';
   const loadMkt = async()=>{
     try{
       const t = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT').then(r=>r.json());
-      mkt = {rng: (t.highPrice - t.lowPrice) / t.lastPrice * 100};
+      mkt = {rng: (t.highPrice - t.lowPrice) / t.lastPrice * 100, chg: parseFloat(t.priceChangePercent)};
     }catch(e){}
   };
   loadMkt(); setInterval(loadMkt, 300_000);
