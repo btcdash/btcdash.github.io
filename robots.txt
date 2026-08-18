@@ -1,4 +1,5 @@
 User-agent: *
+Disallow: /join
 Allow: /
 
 Sitemap: https://btcdash.github.io/sitemap.xml

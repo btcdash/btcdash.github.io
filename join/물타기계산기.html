@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-16326833027"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'AW-16326833027');
+  gtag('config', 'G-R62BXFVW67');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>물타기 계산기 — 코인 평단가 자동 계산 (무료)</title>
+<meta name="description" content="물타기 계산기: 평단가와 금액만 입력하면 물타기 후 새 평단·본전까지 필요한 상승률을 바로 계산해드려요. 비트코인·알트코인·주식 모두 사용 가능, 무료·가입 없음.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="물타기 계산기 — 평단가 자동 계산">
+<meta property="og:description" content="평단가·금액만 넣으면 물타기 후 새 평단과 본전 상승률을 즉시 계산. 무료, 가입 없음.">
+<meta property="og:url" content="https://btcdash.github.io/물타기계산기.html">
+<meta property="og:image" content="https://btcdash.github.io/icon-512.png">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" type="image/png" href="icon-192.png">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"물타기 계산기","url":"https://btcdash.github.io/물타기계산기.html","applicationCategory":"FinanceApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"KRW"},"description":"코인·주식 물타기 후 평단가와 본전 상승률을 계산하는 무료 도구"}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"물타기 계산기는 어떻게 사용하나요?","acceptedAnswer":{"@type":"Answer","text":"현재 평단가와 투자 금액, 물타기할 가격과 금액 4가지만 입력하면 새 평단가, 평단 하락 폭, 본전까지 필요한 상승률이 자동으로 계산됩니다. 가입이나 로그인 없이 무료로 사용할 수 있습니다."}},
+{"@type":"Question","name":"물타기란 무엇인가요?","acceptedAnswer":{"@type":"Answer","text":"보유 중인 코인이나 주식의 가격이 내려갔을 때 추가 매수해서 평균 매수 단가(평단가)를 낮추는 것을 말합니다. 평단이 낮아지면 본전까지 필요한 상승률도 줄어듭니다."}},
+{"@type":"Question","name":"주식 물타기 계산에도 쓸 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"네. 계산 공식은 코인과 주식이 동일해서 원화, 달러 등 단위와 상관없이 사용할 수 있습니다. 두 입력의 단위만 같으면 됩니다."}},
+{"@type":"Question","name":"물타기하면 무조건 유리한가요?","acceptedAnswer":{"@type":"Answer","text":"아닙니다. 물타기는 평단을 낮추는 대신 투자 금액이 늘어나므로, 가격이 계속 하락하면 손실도 커집니다. 하락 추세가 진행 중인지, 물타기 후에도 여유 자금이 남는지 먼저 확인하는 것이 좋습니다."}},
+{"@type":"Question","name":"선물(레버리지) 포지션 물타기도 계산되나요?","acceptedAnswer":{"@type":"Answer","text":"평단가 계산은 동일하게 적용되지만, 레버리지 포지션은 물타기로 청산가도 함께 바뀝니다. 청산가는 거래소의 유지증거금 기준으로 별도로 다시 확인해야 합니다."}}
+]}
+</script>
+<style>
+  :root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2330;--border:#2a3140;--ink:#e6edf3;--ink2:#9aa7b4;--ink3:#6b7683;--up:#f6465d;--down:#3b82f6;--accent:#f0b90b}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:'Segoe UI','Malgun Gothic',sans-serif;line-height:1.6}
+  .wrap{max-width:720px;margin:0 auto;padding:28px 16px 60px}
+  h1{font-size:26px;margin-bottom:6px}
+  h1 span{color:var(--accent)}
+  .sub{color:var(--ink2);font-size:14px;margin-bottom:24px}
+  h2{font-size:18px;margin:34px 0 10px;color:var(--accent)}
+  p{font-size:14px;color:var(--ink2);margin-bottom:10px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:520px){.grid{grid-template-columns:1fr}}
+  label{display:block;font-size:12px;color:var(--ink3);margin-bottom:5px}
+  input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--ink);font-size:15px}
+  input:focus{border-color:var(--accent);outline:none}
+  .sect{font-size:13px;font-weight:700;color:var(--ink2);margin:14px 0 8px}
+  .sect:first-child{margin-top:0}
+  .res{margin-top:18px;background:var(--surface2);border-radius:12px;padding:16px;display:none}
+  .res.on{display:block}
+  .r-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:14px}
+  .r-row:last-child{border-bottom:0}
+  .r-row b{font-variant-numeric:tabular-nums}
+  .r-row b.hl{color:var(--accent);font-size:17px}
+  .r-row b.up{color:var(--up)}
+  ul{margin:0 0 10px 18px}
+  li{font-size:14px;color:var(--ink2);margin-bottom:7px}
+  .cta{display:block;text-align:center;background:linear-gradient(92deg,#ffd452,#f0b90b);color:#111;font-weight:800;font-size:15px;padding:15px;border-radius:12px;text-decoration:none;margin-top:26px}
+  .mini-cta{display:block;text-align:center;margin-top:12px;background:rgba(240,185,11,.12);border:1.5px solid rgba(240,185,11,.55);color:var(--accent);font-weight:800;font-size:13.5px;padding:13px 10px;border-radius:10px;text-decoration:none;line-height:1.55;word-break:keep-all}
+  .mini-cta .sub2{display:block;margin-top:5px;font-size:11.5px;font-weight:600;color:#d8dee8;word-break:keep-all}
+  .cta small{display:block;font-size:12px;font-weight:600;color:#3a2c00;margin-top:2px}
+  a{color:var(--accent)}
+  .note{font-size:12px;color:var(--ink3);margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>💧 물타기 <span>계산기</span></h1>
+  <div class="sub">평단가와 금액만 입력하면 물타기 후 <b>새 평단</b>과 <b>본전까지 필요한 상승률</b>을 바로 계산해드려요 — 코인·주식 모두 OK, 무료·가입 없음</div>
+
+  <div class="card">
+    <div class="sect">① 지금 들고 있는 포지션</div>
+    <div class="grid">
+      <div><label>현재 평단가</label><input type="number" id="p1" placeholder="예: 64500"></div>
+      <div><label>투자 금액</label><input type="number" id="a1" placeholder="예: 100 (만원이든 달러든 OK)"></div>
+    </div>
+    <div class="sect">② 물타기 (추가 매수)</div>
+    <div class="grid">
+      <div><label>물타기 가격 (지금 가격)</label><input type="number" id="p2" placeholder="예: 60000"></div>
+      <div><label>물타기 금액</label><input type="number" id="a2" placeholder="예: 100 (①과 같은 단위)"></div>
+    </div>
+    <div class="res" id="res">
+      <div class="r-row"><span>물타기 후 새 평단</span><b class="hl" id="rAvg">—</b></div>
+      <div class="r-row"><span>평단이 내려온 폭</span><b id="rDrop">—</b></div>
+      <div class="r-row"><span>총 투자 금액</span><b id="rTotal">—</b></div>
+      <div class="r-row"><span>본전(새 평단)까지 필요한 상승률</span><b class="up" id="rNeed">—</b></div>
+      <a class="mini-cta" id="clinicGo" href="https://btcdash.github.io/?src=calc2cl#clinic">🩺 잠깐 — <b>물탈 자리인지부터</b> 확인하세요<span class="sub2">시장 전체와 대조해<br><b>홀딩 · 익절 · 정리</b> 중 하나로 답해드립니다<br>지금 무료 진단 →</span></a>
+    </div>
+    <div class="note">* 가격 단위는 원·달러 아무거나 괜찮아요 — ①과 ②만 같은 단위면 됩니다. 수수료는 미반영 근사치예요.</div>
+  </div>
+
+  <a class="cta" href="https://btcdash.github.io/">📊 지금 물탈 자리인지 실시간 판정 받기<small>비트코인 실시간 대시보드 — 김프 · 고래 체결 · 지표 20종 종합 판정 · 무료</small></a>
+
+  <h2>물타기 계산기 사용법</h2>
+  <ul>
+    <li><b>① 현재 평단가와 투자 금액 입력</b> — 지금 들고 있는 포지션의 평균 매수가와 총 투자 금액을 넣어요. 거래소 앱의 보유 자산 화면에 나오는 숫자 그대로면 됩니다.</li>
+    <li><b>② 물타기 가격과 금액 입력</b> — 추가 매수하려는 가격(보통 지금 시세)과 금액을 넣어요.</li>
+    <li><b>③ 결과 확인</b> — 새 평단가, 평단이 내려온 폭, 총 투자 금액, 그리고 <b>본전까지 필요한 상승률</b>이 즉시 계산돼요. 입력값을 바꾸면 결과도 실시간으로 바뀝니다.</li>
+  </ul>
+
+  <h2>계산 예시</h2>
+  <p>비트코인을 평단 <b>7,000만 원</b>에 <b>100만 원</b>어치 보유 중인데, 가격이 <b>6,000만 원</b>으로 떨어져서 <b>100만 원</b>을 더 산다고 해볼게요. 새 평단은 약 <b>6,462만 원</b>이 됩니다. 평단이 7.7% 내려왔고, 본전(새 평단)까지 필요한 상승률은 <b>+7.7%</b>가 돼요. 물타기 전에는 +16.7%가 올라야 본전이었으니, 필요한 반등 폭이 절반 이하로 줄어든 셈이에요.</p>
+
+  <h2>물타기 계산 공식</h2>
+  <p>새 평단 = (기존 금액 + 추가 금액) ÷ (기존 수량 + 추가 수량). 같은 금액으로 물타면 평단은 두 가격의 중간 근처로 내려오고, 추가 금액이 클수록 물탄 가격 쪽으로 더 가까워져요. 수량 기준으로 계산할 때는 수량 = 금액 ÷ 가격으로 환산하면 같은 결과가 나옵니다.</p>
+
+  <h2>물타기와 불타기의 차이</h2>
+  <p><b>물타기</b>는 가격이 내려갔을 때 추가 매수해 평단을 낮추는 것, <b>불타기</b>는 가격이 올라갈 때 추가 매수해 수익 포지션을 키우는 거예요. 물타기는 본전 회복이 빨라지는 대신 하락이 이어지면 손실이 커지고, 불타기는 평단이 올라가는 대신 추세가 이어질 때 수익이 커져요. 어느 쪽이든 추가 매수 후의 평단과 본전 상승률을 숫자로 확인하고 들어가는 게 기본이고, 이 계산기가 그 숫자를 바로 보여줍니다.</p>
+
+  <h2>물타기 전에 꼭 확인할 3가지</h2>
+  <ul>
+    <li><b>지금이 물탈 자리인가?</b> — 떨어지는 칼날에 물타면 평단만 높은 채로 더 떨어져요. 시장 방향·과열 여부를 먼저 확인하세요.</li>
+    <li><b>물타고 나서 여유가 남는가?</b> — 마지막 총알까지 쓰는 물타기는 물타기가 아니라 올인이에요.</li>
+    <li><b>선물이라면 청산가는?</b> — 레버리지 포지션은 물타기로 평단과 함께 청산가도 움직여요. 반드시 다시 계산하세요.</li>
+  </ul>
+
+  <h2>자주 묻는 질문</h2>
+  <ul>
+    <li><b>Q. 주식 물타기 계산에도 쓸 수 있나요?</b><br>네. 공식이 같아서 코인·주식·ETF 모두 사용 가능해요. 원화든 달러든 두 입력의 단위만 맞추면 됩니다.</li>
+    <li><b>Q. 수수료도 반영되나요?</b><br>수수료·슬리피지는 반영하지 않은 근사치예요. 현물 수수료(보통 0.04~0.25%) 수준에서는 결과에 거의 영향이 없습니다.</li>
+    <li><b>Q. 물타기는 몇 번까지 하는 게 좋나요?</b><br>정답은 없지만, 총알을 한 번에 다 쓰지 않고 가격대별로 나눠서 계획하는 게 일반적이에요. 물타기 전에 "여기서 더 떨어지면 어떻게 할지"까지 정해두는 걸 권해요.</li>
+    <li><b>Q. 선물 레버리지 포지션은요?</b><br>평단 계산은 같지만 물타기하면 <b>청산가도 함께 움직여요</b>. 청산가는 거래소 유지증거금 기준으로 반드시 다시 확인하세요.</li>
+    <li><b>Q. 왜 "본전까지 필요한 상승률"이 중요한가요?</b><br>-20% 손실은 +25%가 올라야 본전이에요(하락과 상승은 비대칭). 물타기의 실익은 평단이 아니라 이 숫자가 얼마나 줄어드느냐로 판단하는 게 정확합니다.</li>
+  </ul>
+
+  <a class="cta" href="https://btcdash.github.io/">📊 지금 물탈 자리인지 실시간 판정 받기<small>비트코인 실시간 대시보드 — 김프 · 고래 체결 · 지표 20종 종합 판정 · 무료</small></a>
+  <p class="note">리치 트레이딩 라운지 — 실시간 <a href="https://btcdash.github.io/김프.html">김치프리미엄</a>, 고래 체결, 발표 일정, 모의 트레이딩까지 전부 무료로 제공해요.<br>본 계산기는 단순 계산 편의 도구이며 투자 권유·자문이 아닙니다. 투자 판단과 책임은 이용자 본인에게 있습니다.</p>
+</div>
+<script>
+  const $ = id => document.getElementById(id);
+  function calc(){
+    const p1=+$('p1').value, a1=+$('a1').value, p2=+$('p2').value, a2=+$('a2').value;
+    if(!(p1>0&&a1>0&&p2>0&&a2>0)){ $('res').classList.remove('on'); return; }
+    const q1=a1/p1, q2=a2/p2;
+    const avg=(a1+a2)/(q1+q2);
+    const drop=(1-avg/p1)*100;
+    const need=(avg/p2-1)*100;
+    if(!window.__calcTracked){ window.__calcTracked=true; try{gtag('event','calc_use',{tool:'multa_landing'})}catch(e){}; if(window.__sendTag) window.__sendTag('calc'); }
+    // 클리닉 브릿지: 입력한 평단을 실어 보냄 (BTC USDT 범위일 때만 — 원화·주식 값은 링크만)
+    try{ $('clinicGo').href = 'https://btcdash.github.io/?src=calc2cl' + (p1>=10000&&p1<=500000 ? '&pd='+Math.round(p1) : '') + '#clinic'; }catch(e){}
+    const f=n=>n>=100?n.toLocaleString(undefined,{maximumFractionDigits:1}):n.toLocaleString(undefined,{maximumFractionDigits:4});
+    $('rAvg').textContent=f(avg);
+    $('rDrop').textContent='-'+drop.toFixed(2)+'%';
+    $('rTotal').textContent=f(a1+a2);
+    $('rNeed').textContent='+'+need.toFixed(2)+'%';
+    $('res').classList.add('on');
+  }
+  ['p1','a1','p2','a2'].forEach(id=>$(id).addEventListener('input',calc));
+  // 방문·검색 유입 집계 (익명, 관리자 기기 제외 — 메인과 동일 방식)
+  try{
+    if(localStorage.getItem('owner')!=='1'){
+      let vid = localStorage.getItem('vid');
+      if(!vid){ vid = Math.random().toString(36).slice(2,12); localStorage.setItem('vid', vid); }
+      fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid})}).catch(()=>{});
+      const srcTag = (new URLSearchParams(location.search).get('src') || '').replace(/[^a-z0-9_]/gi,'').slice(0,8);
+      const r = document.referrer || '';
+      const eng = srcTag ? srcTag : /instagram\./.test(r) ? 'insta' : /google\./.test(r) ? 's_g' : /search\.naver|naver\.com\/search/.test(r) ? 's_n' : /daum\.net/.test(r) ? 's_d' : '';
+      if(eng) fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid, c:eng})}).catch(()=>{});
+      window.__sendTag = t => fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body: JSON.stringify({v:vid, c:t})}).catch(()=>{});
+      const today = new Date().toISOString().slice(0,10);
+      const lastday = localStorage.getItem('lastday');
+      if(lastday && lastday !== today) window.__sendTag('revisit');
+      localStorage.setItem('lastday', today);
+      // 3분+ 체류: 화면에 실제 표시된 시간 누적 180초 (탭만 열어둔 시간 제외)
+      let visSec = 0;
+      const visT = setInterval(()=>{
+        if(document.visibilityState==='visible' && ++visSec >= 180){ clearInterval(visT); window.__sendTag('stay3m'); }
+      }, 1000);
+      // 페이지 체류시간 — 화면 표시 시간만 재서 GA4 + 관리자 집계 양쪽 전송
+      let ttStart = document.visibilityState==='visible' ? Date.now() : 0;
+      const ttFlush = (final)=>{
+        if(!ttStart) return;
+        const sec = Math.round((Date.now()-ttStart)/1000);
+        ttStart = (!final && document.visibilityState==='visible') ? Date.now() : 0;
+        if(sec < 3 || sec > 7200) return;
+        try{ gtag('event','tab_time',{tab_name:'calc_land', seconds: sec, value: sec}); }catch(e){}
+        const body = JSON.stringify({v: vid, tt: 'calc_land', s: sec});
+        if(final && navigator.sendBeacon) navigator.sendBeacon('https://ntfy.sh/rich-btcdash-visit-x8a2k9', body);
+        else fetch('https://ntfy.sh/rich-btcdash-visit-x8a2k9', {method:'POST', body, keepalive:true}).catch(()=>{});
+      };
+      document.addEventListener('visibilitychange', ()=>{
+        if(document.visibilityState==='hidden') ttFlush(true);
+        else if(!ttStart) ttStart = Date.now();
+      });
+      window.addEventListener('pagehide', ()=>ttFlush(true));
+    }
+  }catch(e){}
+</script>
+</body>
+</html>
