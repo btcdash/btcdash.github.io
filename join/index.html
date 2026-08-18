@@ -686,6 +686,10 @@
   .ad .ad-title .gold{background:linear-gradient(92deg,#ffd452 10%,#ff9d2e 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
   .ad .ad-sub{font-size:14px;color:rgba(255,255,255,.85);margin-top:10px;font-weight:500}
   .ad .ad-sub-m{display:none}
+  /* 배너 부제 강조 — 기존 CTA와 같은 3.4s 호흡으로 은은하게만 빛남 */
+  .ad .ad-hl{color:#f0cb74;font-weight:700;text-shadow:0 0 6px rgba(240,185,11,.25);
+             animation:adhlglow 3.4s ease-in-out infinite}
+  @keyframes adhlglow{50%{text-shadow:0 0 13px rgba(240,185,11,.5)}}
   .ad .ad-cta{flex-shrink:0;font-weight:800;font-size:15px;padding:15px 26px;border-radius:12px;white-space:nowrap;color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.4)}
   .ad-2 .ad-cta{background:linear-gradient(92deg,#2ea6ff,#4be1ff);color:#062038}
   .ad-1 .ad-cta{background:linear-gradient(92deg,#ffd452,#ff9d2e);color:#2b1600}
@@ -892,8 +896,8 @@
         <div>
           <span class="ad-badge">🏆 역대 최고 +400% · 기수 평균 +170%</span>
           <div class="ad-title">수천 개 지표가 훑고, <br><span class="gold">트레이더가 거른다</span></div>
-          <div class="ad-sub">걸러진 자리는 참여자에게 실시간 공유 — <b style="color:#ffd452">조건 없이 24시간 체험</b>, 지금 바로 입장돼요</div>
-          <div class="ad-sub-m"><b style="color:#ffd452">조건 없이 24시간 체험</b> · 지금 바로 입장</div>
+          <div class="ad-sub">걸러진 자리는 참여자에게 실시간 공유 — <b class="ad-hl">조건 없이 24시간 체험</b>, 지금 바로 입장돼요</div>
+          <div class="ad-sub-m"><b class="ad-hl">조건 없이 24시간 체험</b> · 지금 바로 입장</div>
         </div>
         <span class="ad-cta">🏆 챌린지 입장하기 →</span>
       </div>
