@@ -89,7 +89,7 @@
       <div class="r-row"><span>평단이 내려온 폭</span><b id="rDrop">—</b></div>
       <div class="r-row"><span>총 투자 금액</span><b id="rTotal">—</b></div>
       <div class="r-row"><span>본전(새 평단)까지 필요한 상승률</span><b class="up" id="rNeed">—</b></div>
-      <a class="mini-cta" id="clinicGo" href="https://btcdash.github.io/?src=calc2cl#clinic">🩺 잠깐 — <b>물탈 자리인지부터</b> 확인하세요<span class="sub2">시장 전체와 대조해<br><b>홀딩 · 익절 · 정리</b> 중 하나로 답해드립니다<br>지금 무료 진단 →</span></a>
+      <a class="mini-cta" id="clinicGo" href="https://btcdash.github.io/join/?src=calc2cl#clinic">🩺 잠깐 — <b>물탈 자리인지부터</b> 확인하세요<span class="sub2">시장 전체와 대조해<br><b>홀딩 · 익절 · 정리</b> 중 하나로 답해드립니다<br>지금 무료 진단 →</span></a>
     </div>
     <div class="note">* 가격 단위는 원·달러 아무거나 괜찮아요 — ①과 ②만 같은 단위면 됩니다. 수수료는 미반영 근사치예요.</div>
   </div>
@@ -142,7 +142,7 @@
     const need=(avg/p2-1)*100;
     if(!window.__calcTracked){ window.__calcTracked=true; try{gtag('event','calc_use',{tool:'multa_landing'})}catch(e){}; if(window.__sendTag) window.__sendTag('calc'); }
     // 클리닉 브릿지: 입력한 평단을 실어 보냄 (BTC USDT 범위일 때만 — 원화·주식 값은 링크만)
-    try{ $('clinicGo').href = 'https://btcdash.github.io/?src=calc2cl' + (p1>=10000&&p1<=500000 ? '&pd='+Math.round(p1) : '') + '#clinic'; }catch(e){}
+    try{ $('clinicGo').href = 'https://btcdash.github.io/join/?src=calc2cl' + (p1>=10000&&p1<=500000 ? '&pd='+Math.round(p1) : '') + '#clinic'; }catch(e){}
     const f=n=>n>=100?n.toLocaleString(undefined,{maximumFractionDigits:1}):n.toLocaleString(undefined,{maximumFractionDigits:4});
     $('rAvg').textContent=f(avg);
     $('rDrop').textContent='-'+drop.toFixed(2)+'%';
